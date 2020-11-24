@@ -11,16 +11,19 @@ public:
   Sampler(const SampleData* sample, double sampleRate = -1);
 
   double sampleRate;
-  double gain;
   IInterpolator* interpolator;
 
-  // TODO: stereo
-  virtual int16_t getSample(double time);
+  void setGain(double gain);
+  void setPan(double pan);
+
+  virtual int16_t getSample(double time, int channel = 0);
 
 protected:
   const SampleData* sample;
   double offset;
   double lastTime;
+  double gain, pan, leftGain, rightGain;
+  void updateGain();
 };
 
 #endif

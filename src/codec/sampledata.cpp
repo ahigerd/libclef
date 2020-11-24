@@ -59,3 +59,17 @@ double SampleData::duration(double sampleRate) const
   }
   return m_duration * (this->sampleRate / sampleRate);
 }
+
+uint16_t SampleData::at(int index, int channel) const
+{
+  if (index < 0) {
+    return 0;
+  }
+  if (loopEnd > 0 && loopEnd > loopStart && index > loopEnd) {
+    index = loopStart + (index - loopStart) % (loopEnd - loopStart);
+  }
+  if (index >= numSamples()) {
+    return 0;
+  }
+  return channels[channel % channels.size()][index];
+}

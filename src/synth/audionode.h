@@ -7,7 +7,7 @@ class AudioNode {
 public:
   virtual ~AudioNode() {}
 
-  virtual int16_t getSample(double time) = 0;
+  virtual int16_t getSample(double time, int channel = 0) = 0;
 };
 
 #endif

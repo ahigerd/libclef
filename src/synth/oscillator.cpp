@@ -2,10 +2,14 @@
 #include <cmath>
 #include <iostream>
 
-BaseOscillator* BaseOscillator::create(uint64_t waveformID, double frequency, double amplitude)
+BaseOscillator* BaseOscillator::create(uint64_t waveformID, double frequency, double amplitude, double pan)
 {
+  waveformID = 20;
   BaseOscillator* osc;
   switch(waveformID) {
+    case 0:
+      osc = new SquareOscillator(0.5);
+      break;
     case 1:
       osc = new SquareOscillator(0.75);
       break;
@@ -22,11 +26,12 @@ BaseOscillator* BaseOscillator::create(uint64_t waveformID, double frequency, do
       osc = new NESNoiseOscillator();
       break;
     default:
-      osc = new SquareOscillator();
+      osc = new SineOscillator();
       break;
   }
   osc->frequency = frequency;
   osc->amplitude = amplitude;
+  osc->pan = pan;
   return osc;
 }
 
@@ -36,20 +41,25 @@ BaseOscillator::BaseOscillator()
   // initializers only
 }
 
-int16_t BaseOscillator::getSample(double time)
+int16_t BaseOscillator::getSample(double time, int channel)
 {
   if (amplitude == 0.0) {
     lastSample = 0;
     return 0;
   }
-  if (time == lastTime) {
-    return lastSample;
+  if (time != lastTime) {
+    lastSample = std::round(calcSample(time) * amplitude * 16384);
+    double phaseOffset = (time - lastTime) * frequency;
+    phase = std::fmod(phase + phaseOffset, 1.0);
   }
-  lastSample = std::round(calcSample(time) * amplitude * 16384);
-  double phaseOffset = (time - lastTime) * frequency;
-  phase = std::fmod(phase + phaseOffset, 1.0);
   lastTime = time;
-  return lastSample;
+  // TODO: mixdown
+  return lastSample * (channel % 2 ? pan : (1 - pan));
+}
+
+double SineOscillator::calcSample(double time)
+{
+  return std::sin(phase * M_PI * 2);
 }
 
 SquareOscillator::SquareOscillator(double duty)

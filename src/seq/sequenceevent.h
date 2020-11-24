@@ -53,6 +53,7 @@ public:
   double duration;
   double sampleRate;
   double volume;
+  double pan;
 };
 
 class OscillatorEvent : public BaseEvent<SequenceEvent::Oscillator> {
@@ -65,6 +66,7 @@ public:
   double duration;
   double frequency;
   double volume;
+  double pan;
 };
 
 class ModulatorEvent : public BaseEvent<SequenceEvent::Modulator> {

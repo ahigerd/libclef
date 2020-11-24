@@ -22,6 +22,13 @@ TestSequence::TestSequence() : BaseSequence()
       event->duration = .2;
       event->volume = .1;
       event->frequency = testNotes[i + j] * (j ? 1 : 0.5);
+      if (j == 0) {
+        event->pan = 0.5;
+      } else if (j == 1) {
+        event->pan = 0.25;
+      } else {
+        event->pan = 0.75;
+      }
       tracks[j].addEvent(event);
     }
   }
@@ -37,6 +44,7 @@ TestSequence::TestSequence() : BaseSequence()
   samp->timestamp = 1.0 + sample->duration();
   samp->sampleRate = sample->sampleRate * noteToFreq(74) / 440.0;
   samp->volume = 0.5;
+  samp->pan = 1;
   tracks[0].addEvent(samp);
 
   samp = new SampleEvent;
@@ -44,5 +52,6 @@ TestSequence::TestSequence() : BaseSequence()
   samp->timestamp = 1.0 + sample->duration() * 2;
   samp->sampleRate = sample->sampleRate * noteToFreq(78) / 440.0;
   samp->volume = 0.5;
+  samp->pan = 0;
   tracks[0].addEvent(samp);
 }

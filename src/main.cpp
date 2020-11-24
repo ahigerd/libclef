@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
     channels.emplace_back(new Channel(nullptr, seq.getTrack(i)));
   }
 
-  RiffWriter riff(44100, false);
+  RiffWriter riff(44100, true);
   riff.open("/dev/stdout");
   std::vector<int16_t> mixBuffer(1024);
   std::vector<int16_t> buffer(1024);

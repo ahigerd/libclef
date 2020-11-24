@@ -5,12 +5,13 @@
 
 class BaseOscillator : public AudioNode {
 public:
-  static BaseOscillator* create(uint64_t waveformID, double frequency = 440.0, double amplitude = 1.0);
+  static BaseOscillator* create(uint64_t waveformID, double frequency = 440.0, double amplitude = 1.0, double pan = 0.5);
 
   double frequency;
   double amplitude;
+  double pan;
 
-  virtual int16_t getSample(double time);
+  virtual int16_t getSample(double time, int channel = 0);
 
 protected:
   BaseOscillator();
@@ -20,6 +21,11 @@ protected:
   double phase;
 
   virtual double calcSample(double time) = 0;
+};
+
+class SineOscillator : public BaseOscillator {
+protected:
+  virtual double calcSample(double time);
 };
 
 class SquareOscillator : public BaseOscillator {

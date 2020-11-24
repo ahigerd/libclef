@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstdint>
+class SampleData;
 
 class IInterpolator
 {
@@ -18,19 +19,19 @@ public:
 
   virtual ~IInterpolator() {}
 
-  virtual int16_t interpolate(const std::vector<int16_t>& data, double time) const = 0;
+  virtual int16_t interpolate(const SampleData* data, double time, int channel = 0) const = 0;
 };
 
 class ZeroInterpolator : public IInterpolator
 {
 public:
-  virtual int16_t interpolate(const std::vector<int16_t>& data, double time) const;
+  virtual int16_t interpolate(const SampleData* data, double time, int channel = 0) const;
 };
 
 class LinearInterpolator : public IInterpolator
 {
 public:
-  virtual int16_t interpolate(const std::vector<int16_t>& data, double time) const;
+  virtual int16_t interpolate(const SampleData* data, double time, int channel = 0) const;
 };
 
 class CosineInterpolator : public IInterpolator
@@ -38,7 +39,7 @@ class CosineInterpolator : public IInterpolator
 public:
   CosineInterpolator();
 
-  virtual int16_t interpolate(const std::vector<int16_t>& data, double time) const;
+  virtual int16_t interpolate(const SampleData* data, double time, int channel = 0) const;
 
 private:
   double lut[8192];
@@ -47,7 +48,7 @@ private:
 class SharpInterpolator : public IInterpolator
 {
 public:
-  virtual int16_t interpolate(const std::vector<int16_t>& data, double time) const;
+  virtual int16_t interpolate(const SampleData* data, double time, int channel = 0) const;
 };
 
 
