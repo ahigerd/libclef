@@ -1,5 +1,6 @@
 #include "channel.h"
 #include "oscillator.h"
+#include "sampler.h"
 #include "../seq/itrack.h"
 #include "../seq/sequenceevent.h"
 #include <iostream>
@@ -39,8 +40,13 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
         break;
       }
       if (OscillatorEvent* oscEvent = event->cast<OscillatorEvent>()) {
-        BaseOscillator* osc = BaseOscillator::create(oscEvent->waveformID, oscEvent->frequency, 0.1);
+        BaseOscillator* osc = BaseOscillator::create(oscEvent->waveformID, oscEvent->frequency, oscEvent->volume);
         notes.emplace(std::make_pair(oscEvent->playbackID, new Note(event, osc, oscEvent->duration)));
+      } else if (SampleEvent* sampEvent = event->cast<SampleEvent>()) {
+        SampleData* sampleData = SampleData::get(sampEvent->sampleID);
+        Sampler* samp = new Sampler(sampleData, sampEvent->sampleRate <= 0 ? sampleData->sampleRate : sampEvent->sampleRate);
+        samp->gain = sampEvent->volume;
+        notes.emplace(std::make_pair(sampEvent->playbackID, new Note(event, samp, sampleData->duration(samp->sampleRate))));
       }
     }
   } while (event);

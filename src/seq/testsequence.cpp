@@ -1,10 +1,15 @@
 #include "testsequence.h"
 #include "itrack.h"
+#include "../utility.h"
+#include "../codec/riffcodec.h"
 
 static const double testNotes[] = { 440, 554.36, 659.26, 880, 1108.73 };
 
 TestSequence::TestSequence() : BaseSequence()
 {
+  RiffCodec riff;
+  SampleData* sample = riff.decodeFile("cembalo-1.wav");
+
   for (int i = 0; i < 3; i++) {
     tracks.push_back(BasicTrack());
   }
@@ -15,8 +20,29 @@ TestSequence::TestSequence() : BaseSequence()
       event->timestamp = i * .25;
       event->waveformID = 4 - j * 2;
       event->duration = .2;
+      event->volume = .1;
       event->frequency = testNotes[i + j] * (j ? 1 : 0.5);
       tracks[j].addEvent(event);
     }
   }
+
+  SampleEvent* samp = new SampleEvent;
+  samp->sampleID = sample->sampleID;
+  samp->timestamp = 1.0;
+  samp->volume = 0.5;
+  tracks[0].addEvent(samp);
+
+  samp = new SampleEvent;
+  samp->sampleID = sample->sampleID;
+  samp->timestamp = 1.0 + sample->duration();
+  samp->sampleRate = sample->sampleRate * noteToFreq(74) / 440.0;
+  samp->volume = 0.5;
+  tracks[0].addEvent(samp);
+
+  samp = new SampleEvent;
+  samp->sampleID = sample->sampleID;
+  samp->timestamp = 1.0 + sample->duration() * 2;
+  samp->sampleRate = sample->sampleRate * noteToFreq(78) / 440.0;
+  samp->volume = 0.5;
+  tracks[0].addEvent(samp);
 }

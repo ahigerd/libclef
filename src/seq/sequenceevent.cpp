@@ -7,7 +7,7 @@ inline uint64_t SampleEvent::nextPlaybackID()
   return _nextPlaybackID++;
 }
 
-SampleEvent::SampleEvent() : playbackID(nextPlaybackID())
+SampleEvent::SampleEvent() : playbackID(nextPlaybackID()), duration(-1), sampleRate(-1), volume(1.0)
 {
   // initializers only
 }
@@ -17,7 +17,7 @@ uint64_t OscillatorEvent::nextPlaybackID()
   return SampleEvent::nextPlaybackID();
 }
 
-OscillatorEvent::OscillatorEvent() : playbackID(nextPlaybackID())
+OscillatorEvent::OscillatorEvent() : playbackID(nextPlaybackID()), volume(1.0)
 {
   // initializers only
 }

@@ -52,9 +52,7 @@ public:
   uint64_t playbackID;  // for modulation
   double duration;
   double sampleRate;
-  uint32_t numSamples;
-  uint32_t loopStart;
-  uint32_t loopEnd;
+  double volume;
 };
 
 class OscillatorEvent : public BaseEvent<SequenceEvent::Oscillator> {
@@ -66,6 +64,7 @@ public:
   uint64_t playbackID;  // for modulation
   double duration;
   double frequency;
+  double volume;
 };
 
 class ModulatorEvent : public BaseEvent<SequenceEvent::Modulator> {
