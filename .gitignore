@@ -1,0 +1,10 @@
+*.mp3
+*.wav
+*.o
+*.sw*
+build
+seq2wav
+seq2wav_d
+seq2wav.exe
+seq2wav_d.exe
+*.dll
