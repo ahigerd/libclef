@@ -49,15 +49,12 @@ uint32_t SampleData::numSamples() const
   return m_numSamples;
 }
 
-double SampleData::duration(double sampleRate) const
+double SampleData::duration() const
 {
   if (m_duration < 0) {
     m_duration = numSamples() / this->sampleRate;
   }
-  if (sampleRate < 0 || sampleRate == this->sampleRate) {
-    return m_duration;
-  }
-  return m_duration * (this->sampleRate / sampleRate);
+  return m_duration;
 }
 
 int16_t SampleData::at(int index, int channel) const

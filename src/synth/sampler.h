@@ -8,22 +8,17 @@ class IInterpolator;
 
 class Sampler : public AudioNode {
 public:
-  Sampler(const SampleData* sample, double sampleRate = -1);
+  Sampler(const SampleData* sample, double pitchBend = 1.0);
 
-  double sampleRate;
+  AudioParameter pitchBend;
   IInterpolator* interpolator;
 
-  void setGain(double gain);
-  void setPan(double pan);
-
-  virtual int16_t getSample(double time, int channel = 0);
+  virtual int16_t generateSample(double time, int channel = 0);
 
 protected:
   const SampleData* sample;
   double offset;
   double lastTime;
-  double gain, pan, leftGain, rightGain;
-  void updateGain();
 };
 
 #endif

@@ -42,7 +42,7 @@ TestSequence::TestSequence() : BaseSequence()
   samp = new SampleEvent;
   samp->sampleID = sample->sampleID;
   samp->timestamp = 1.0 + sample->duration();
-  samp->sampleRate = sample->sampleRate * noteToFreq(74) / 440.0;
+  samp->pitchBend = noteToFreq(74) / 440.0;
   samp->volume = 0.5;
   samp->pan = 1;
   tracks[0].addEvent(samp);
@@ -50,7 +50,7 @@ TestSequence::TestSequence() : BaseSequence()
   samp = new SampleEvent;
   samp->sampleID = sample->sampleID;
   samp->timestamp = 1.0 + sample->duration() * 2;
-  samp->sampleRate = sample->sampleRate * noteToFreq(78) / 880.0;
+  samp->pitchBend = noteToFreq(78) / 880.0;
   samp->volume = 0.5;
   samp->pan = 0;
   tracks[0].addEvent(samp);

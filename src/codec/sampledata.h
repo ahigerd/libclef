@@ -11,7 +11,7 @@ struct SampleData {
   SampleData(double sampleRate = 44100.0, int loopStart = -1, int loopEnd = -1);
 
   uint32_t numSamples() const;
-  double duration(double sampleRate = -1) const;
+  double duration() const;
   int16_t at(int index, int channel = 0) const;
 
   uint64_t sampleID;

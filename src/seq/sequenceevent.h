@@ -51,7 +51,7 @@ public:
   uint64_t sampleID;    // looked up in sound bank
   uint64_t playbackID;  // for modulation
   double duration;
-  double sampleRate;
+  double pitchBend;
   double volume;
   double pan;
 };

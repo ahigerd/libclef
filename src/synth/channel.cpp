@@ -43,10 +43,10 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
         notes.emplace(std::make_pair(oscEvent->playbackID, new Note(event, osc, oscEvent->duration)));
       } else if (SampleEvent* sampEvent = event->cast<SampleEvent>()) {
         SampleData* sampleData = SampleData::get(sampEvent->sampleID);
-        Sampler* samp = new Sampler(sampleData, sampEvent->sampleRate <= 0 ? sampleData->sampleRate : sampEvent->sampleRate);
-        samp->setGain(sampEvent->volume);
-        samp->setPan(sampEvent->pan);
-        notes.emplace(std::make_pair(sampEvent->playbackID, new Note(event, samp, sampleData->duration(samp->sampleRate))));
+        Sampler* samp = new Sampler(sampleData, sampEvent->pitchBend);
+        samp->gain = sampEvent->volume;
+        samp->pan = sampEvent->pan;
+        notes.emplace(std::make_pair(sampEvent->playbackID, new Note(event, samp, sampleData->duration())));
       }
     }
   } while (event);
