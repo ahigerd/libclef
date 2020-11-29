@@ -14,7 +14,8 @@ public:
 
 protected:
   virtual int16_t generateSample(double time, int channel = 0);
-  double releasedAt, lastLevel;
+  double stepAt, lastLevel;
+  uint8_t step;
 };
 
 #endif
