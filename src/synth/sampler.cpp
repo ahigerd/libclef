@@ -5,7 +5,7 @@
 
 Sampler::Sampler(const SampleData* sample, double sampleRate)
 : sampleRate(sampleRate < 0 ? sample->sampleRate : sampleRate),
-  interpolator(IInterpolator::get(IInterpolator::Cosine)),
+  interpolator(IInterpolator::get(IInterpolator::Lagrange6)),
   sample(sample), offset(0), lastTime(0), gain(1.0), pan(0.5)
 {
   updateGain();
@@ -21,7 +21,7 @@ int16_t Sampler::getSample(double time, int channel)
   lastTime = time;
   // TODO: 2D panning?
   // TODO: mixdown using context
-  double result = interpolator->interpolate(sample, offset, channel) * (channel % 2 ? rightGain : leftGain);
+  double result = interpolator->interpolate(sample, offset, channel, sampleStep) * (channel % 2 ? rightGain : leftGain);
   offset += sampleStep;
   if (sample->loopStart >= 0 && offset >= sample->loopEnd) {
     offset -= sample->loopStart;

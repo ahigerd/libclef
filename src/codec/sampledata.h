@@ -12,7 +12,7 @@ struct SampleData {
 
   uint32_t numSamples() const;
   double duration(double sampleRate = -1) const;
-  uint16_t at(int index, int channel = 0) const;
+  int16_t at(int index, int channel = 0) const;
 
   uint64_t sampleID;
   double sampleRate;

@@ -9,6 +9,12 @@ inline T clamp(T2 value, T lower, T upper)
   return value < lower ? lower : (value > upper ? upper : value);
 }
 
+template <typename T>
+inline T lerp(T left, T right, double weight)
+{
+  return weight * (right - left) + left;
+}
+
 template <typename T, typename Container>
 T parseInt(const Container& buffer, int offset)
 {

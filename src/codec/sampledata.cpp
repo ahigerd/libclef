@@ -60,7 +60,7 @@ double SampleData::duration(double sampleRate) const
   return m_duration * (this->sampleRate / sampleRate);
 }
 
-uint16_t SampleData::at(int index, int channel) const
+int16_t SampleData::at(int index, int channel) const
 {
   if (index < 0) {
     return 0;
