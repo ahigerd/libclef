@@ -15,6 +15,12 @@ inline T lerp(T left, T right, double weight)
   return weight * (right - left) + left;
 }
 
+template <typename T>
+inline T lerp(T left, T right, double time, double t0, double t1)
+{
+  return (time - t0) / (t1 - t0) * (right - left) + left;
+}
+
 template <typename T, typename Container>
 T parseInt(const Container& buffer, int offset)
 {

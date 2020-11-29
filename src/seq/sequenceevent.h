@@ -43,30 +43,41 @@ public:
   virtual int eventType() const { return TypeID; }
 };
 
-class SampleEvent : public BaseEvent<SequenceEvent::Sample> {
-public:
+struct BaseNoteEvent {
   static uint64_t nextPlaybackID();
+  BaseNoteEvent();
+
+  uint64_t playbackID;  // for modulation
+  double duration;
+  double volume;
+  double pan;
+
+  bool useEnvelope;
+  double startGain, attack, hold, sustain, decay, release;
+  void setEnvelope(double attack, double sustain, double decay, double release);
+  void setEnvelope(double attack, double hold, double sustain, double decay, double release);
+  void setEnvelope(double start, double attack, double hold, double sustain, double decay, double release);
+};
+
+template <int TYPE_ID>
+class NoteEvent : public BaseEvent<TYPE_ID>, public BaseNoteEvent {
+public:
+};
+
+class SampleEvent : public NoteEvent<SequenceEvent::Sample> {
+public:
   SampleEvent();
 
   uint64_t sampleID;    // looked up in sound bank
-  uint64_t playbackID;  // for modulation
-  double duration;
   double pitchBend;
-  double volume;
-  double pan;
 };
 
-class OscillatorEvent : public BaseEvent<SequenceEvent::Oscillator> {
+class OscillatorEvent : public NoteEvent<SequenceEvent::Oscillator> {
 public:
-  static uint64_t nextPlaybackID();
   OscillatorEvent();
 
   uint64_t waveformID;  // passed to PSG
-  uint64_t playbackID;  // for modulation
-  double duration;
   double frequency;
-  double volume;
-  double pan;
 };
 
 class ModulatorEvent : public BaseEvent<SequenceEvent::Modulator> {

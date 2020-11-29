@@ -10,10 +10,12 @@ class AudioParameter {
 public:
   AudioParameter(double initialValue = 1.0);
   AudioParameter(AudioNode* source, double scale = 1/8192.0, double offset = 0);
+  AudioParameter(AudioParameter* source, double scale = 1.0, double offset = 0);
 
   double valueAt(double time) const;
   void setConstant(double value);
   void connect(AudioNode* source, double scale = 1/8192.0, double offset = 0);
+  void connect(AudioParameter* source, double scale = 1.0, double offset = 0);
 
   inline AudioParameter& operator=(double value) {
     setConstant(value);
@@ -24,8 +26,8 @@ public:
     return valueAt(time);
   }
 
-private:
   AudioNode* source;
+  AudioParameter* sourceParam;
   double scale;
   double constant;
 };
@@ -36,6 +38,7 @@ public:
 
   AudioParameter gain, pan;
 
+  virtual bool isActive() const = 0;
   int16_t getSample(double time, int channel = 0);
 
 protected:

@@ -2,22 +2,58 @@
 
 static uint64_t _nextPlaybackID = 0;
 
-inline uint64_t SampleEvent::nextPlaybackID()
+inline uint64_t BaseNoteEvent::nextPlaybackID()
 {
   return _nextPlaybackID++;
 }
 
-SampleEvent::SampleEvent() : playbackID(nextPlaybackID()), duration(-1), pitchBend(1.0), volume(1.0), pan(0.5)
+BaseNoteEvent::BaseNoteEvent()
+: playbackID(nextPlaybackID()), duration(-1), volume(1.0), pan(0.5), useEnvelope(false)
 {
   // initializers only
 }
 
-uint64_t OscillatorEvent::nextPlaybackID()
+void BaseNoteEvent::setEnvelope(double attack, double sustain, double decay, double release)
 {
-  return SampleEvent::nextPlaybackID();
+  useEnvelope = true;
+  startGain = 0.0;
+  hold = 0.0;
+  this->attack = attack;
+  this->sustain = sustain;
+  this->decay = decay;
+  this->release = release;
 }
 
-OscillatorEvent::OscillatorEvent() : playbackID(nextPlaybackID()), volume(1.0), pan(0.5)
+void BaseNoteEvent::setEnvelope(double attack, double hold, double sustain, double decay, double release)
+{
+  useEnvelope = true;
+  startGain = 0.0;
+  this->attack = attack;
+  this->hold = hold;
+  this->sustain = sustain;
+  this->decay = decay;
+  this->release = release;
+}
+
+void BaseNoteEvent::setEnvelope(double start, double attack, double hold, double sustain, double decay, double release)
+{
+  useEnvelope = true;
+  this->startGain = start;
+  this->attack = attack;
+  this->hold = hold;
+  this->sustain = sustain;
+  this->decay = decay;
+  this->release = release;
+}
+
+SampleEvent::SampleEvent()
+: pitchBend(1.0)
+{
+  // initializers only
+}
+
+OscillatorEvent::OscillatorEvent()
+: frequency(440.0)
 {
   // initializers only
 }

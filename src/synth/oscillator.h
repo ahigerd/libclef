@@ -9,6 +9,7 @@ public:
 
   AudioParameter frequency;
 
+  virtual bool isActive() const;
   virtual int16_t generateSample(double time, int channel = 0);
 
 protected:

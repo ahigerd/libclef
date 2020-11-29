@@ -54,4 +54,12 @@ TestSequence::TestSequence() : BaseSequence()
   samp->volume = 0.5;
   samp->pan = 0;
   tracks[0].addEvent(samp);
+
+  OscillatorEvent* e = new OscillatorEvent;
+  e->setEnvelope(.25, .5, .5, .5, .5, .5);
+  e->waveformID = 0;
+  e->duration = 5;
+  e->timestamp = 1.0 + sample->duration() * 3;
+  tracks[0].addEvent(e);
+
 }

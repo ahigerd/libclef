@@ -10,9 +10,14 @@ Sampler::Sampler(const SampleData* sample, double pitchBend)
   // initializers only
 }
 
+bool Sampler::isActive() const
+{
+  return sample->loopStart >= 0 || offset < sample->numSamples();
+}
+
 int16_t Sampler::generateSample(double time, int channel)
 {
-  if (sample->loopStart < 0 && offset >= sample->numSamples()) {
+  if (!isActive()) {
     return 0;
   }
   double timeStep = time - lastTime;

@@ -1,12 +1,16 @@
 #include "audionode.h"
 
 AudioParameter::AudioParameter(double initialValue)
-: source(nullptr), constant(initialValue)
 {
-  // initializers only
+  setConstant(initialValue);
 }
 
 AudioParameter::AudioParameter(AudioNode* source, double scale, double offset)
+{
+  connect(source, scale, offset);
+}
+
+AudioParameter::AudioParameter(AudioParameter* source, double scale, double offset)
 {
   connect(source, scale, offset);
 }
@@ -15,6 +19,8 @@ double AudioParameter::valueAt(double time) const
 {
   if (source) {
     return source->getSample(time) * scale + constant;
+  } else if (sourceParam) {
+    return sourceParam->valueAt(time) * scale + constant;
   } else {
     return constant;
   }
@@ -23,14 +29,24 @@ double AudioParameter::valueAt(double time) const
 void AudioParameter::setConstant(double value)
 {
   source = nullptr;
+  sourceParam = nullptr;
   constant = value;
 }
 
 void AudioParameter::connect(AudioNode* source, double scale, double offset)
 {
-  source = source;
+  this->source = source;
+  this->sourceParam = nullptr;
   this->scale = scale;
-  constant = offset;
+  this->constant = offset;
+}
+
+void AudioParameter::connect(AudioParameter* source, double scale, double offset)
+{
+  this->source = nullptr;
+  this->sourceParam = source;
+  this->scale = scale;
+  this->constant = offset;
 }
 
 AudioNode::AudioNode()

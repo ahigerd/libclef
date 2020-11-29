@@ -23,7 +23,7 @@ Channel::~Channel()
 uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
 {
   int numSamples = buffer.size() / 2;
-  double sampleTime = 1.0 / 44100.0;
+  double sampleTime = 1.0 / 44100.0; // TODO: ctx
   double endTime = timestamp + (numSamples * sampleTime);
   SequenceEvent* event;
   do {
@@ -38,15 +38,30 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
         nextEvent = event;
         break;
       }
+      AudioNode* noteNode = nullptr;
+      BaseNoteEvent* noteEvent = nullptr;
+      Note* note = nullptr;
       if (OscillatorEvent* oscEvent = event->cast<OscillatorEvent>()) {
+        noteEvent = oscEvent;
         BaseOscillator* osc = BaseOscillator::create(oscEvent->waveformID, oscEvent->frequency, oscEvent->volume, oscEvent->pan);
-        notes.emplace(std::make_pair(oscEvent->playbackID, new Note(event, osc, oscEvent->duration)));
+        note = new Note(event, osc, oscEvent->duration);
+        notes.emplace(std::make_pair(oscEvent->playbackID, note));
+        noteNode = osc;
       } else if (SampleEvent* sampEvent = event->cast<SampleEvent>()) {
+        noteEvent = sampEvent;
         SampleData* sampleData = SampleData::get(sampEvent->sampleID);
         Sampler* samp = new Sampler(sampleData, sampEvent->pitchBend);
         samp->gain = sampEvent->volume;
         samp->pan = sampEvent->pan;
-        notes.emplace(std::make_pair(sampEvent->playbackID, new Note(event, samp, sampleData->duration())));
+        note = new Note(event, samp, sampleData->duration());
+        notes.emplace(std::make_pair(sampEvent->playbackID, note));
+        noteNode = samp;
+      }
+      if (noteEvent && noteEvent->useEnvelope) {
+        Envelope* env = new Envelope(noteEvent->attack, noteEvent->hold, noteEvent->sustain, noteEvent->decay, noteEvent->release);
+        env->startGain = noteEvent->startGain;
+        noteNode->gain.connect(env);
+        note->envelope.reset(env);
       }
     }
   } while (event);
@@ -57,7 +72,17 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
       std::vector<uint64_t> toErase;
       for (auto& note : notes) {
         double start = note.second->event->timestamp;
-        if (start + note.second->duration < timestamp) {
+        bool stop = false;
+        if (!note.second->source->isActive()) {
+          stop = true;
+        } else if (start + note.second->duration < timestamp) {
+          if (note.second->envelope && note.second->envelope->isActive()) {
+            note.second->envelope->trigger = 0;
+          } else {
+            stop = true;
+          }
+        }
+        if (stop) {
           toErase.push_back(note.first);
         } else if (start <= timestamp) {
           // TODO: modulators

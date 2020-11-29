@@ -6,6 +6,7 @@
 #include <memory>
 #include <cstdint>
 #include "audionode.h"
+#include "envelope.h"
 class SynthContext;
 class ITrack;
 class SequenceEvent;
@@ -33,6 +34,7 @@ private:
 
     SequenceEvent* event;
     std::unique_ptr<AudioNode> source;
+    std::unique_ptr<Envelope> envelope;
     double duration;
   };
   std::unordered_map<uint64_t, std::unique_ptr<Note>> notes;

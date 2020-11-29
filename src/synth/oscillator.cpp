@@ -41,6 +41,12 @@ BaseOscillator::BaseOscillator()
   gain = 1.0;
 }
 
+bool BaseOscillator::isActive() const
+{
+  // Oscillators never end on their own
+  return true;
+}
+
 int16_t BaseOscillator::generateSample(double time, int channel)
 {
   if (time != lastTime) {
