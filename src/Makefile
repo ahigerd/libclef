@@ -9,11 +9,11 @@ endif
 ../seq2wav_d: $(patsubst %.cpp, ../build/%_d.o, $(wildcard *.cpp */*.cpp))
 	$(CXX) -std=gnu++14 -o $@ $^ -lasan
 
-../libseq2wav.a: $(patsubst %.cpp, ../build/%.o, $(filter-out src/main.cpp, $(wildcard *.cpp */*.cpp)))
+../libseq2wav.a: $(patsubst %.cpp, ../build/%.o, $(filter-out main.cpp, $(wildcard *.cpp */*.cpp)))
 	@rm -f $@
 	gcc-ar -rc $@ $^
 
-../libseq2wav.$(DLL): $(patsubst %.cpp, ../build/%.o, $(filter-out src/main.cpp, $(wildcard *.cpp */*.cpp)))
+../libseq2wav.$(DLL): $(patsubst %.cpp, ../build/%.o, $(filter-out main.cpp, $(wildcard *.cpp */*.cpp)))
 	$(CXX) -shared -o $@ $^
 
 ../build/%.o: %.cpp $(wildcard *.h */*.h) Makefile
