@@ -29,28 +29,30 @@ BaseOscillator* BaseOscillator::create(uint64_t waveformID, double frequency, do
       osc = new SineOscillator();
       break;
   }
-  osc->frequency = frequency;
-  osc->gain = amplitude;
-  osc->pan = pan;
+  osc->param(Frequency)->setConstant(frequency);
+  osc->param(Gain)->setConstant(amplitude);
+  osc->param(Pan)->setConstant(pan);
   return osc;
 }
 
 BaseOscillator::BaseOscillator()
-: frequency(440), lastSample(0), lastTime(0), phase(0)
+: lastSample(0), lastTime(0), phase(0)
 {
-  gain = 1.0;
+  addParam(Frequency, 440.0);
+  addParam(Gain, 1.0);
+  addParam(Pan, 0.5);
 }
 
 bool BaseOscillator::isActive() const
 {
-  return trigger.valueAt(0) > 0;
+  return true;
 }
 
 int16_t BaseOscillator::generateSample(double time, int channel)
 {
   if (time != lastTime) {
     lastSample = std::round(calcSample(time) * 32767);
-    double phaseOffset = (time - lastTime) * frequency(time);
+    double phaseOffset = (time - lastTime) * paramValue(Frequency, time);
     phase = std::fmod(phase + phaseOffset, 1.0);
   }
   lastTime = time;
@@ -63,14 +65,14 @@ double SineOscillator::calcSample(double)
 }
 
 SquareOscillator::SquareOscillator(double duty)
-: BaseOscillator(), dutyCycle(duty)
+: BaseOscillator()
 {
-  // initializers only
+  addParam(DutyCycle, duty);
 }
 
 double SquareOscillator::calcSample(double time)
 {
-  return phase < dutyCycle(time) ? 1.0 : -1.0;
+  return phase < paramValue(DutyCycle, time) ? 1.0 : -1.0;
 }
 
 TriangleOscillator::TriangleOscillator(int quantize, bool skew)

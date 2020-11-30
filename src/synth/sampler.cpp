@@ -4,15 +4,17 @@
 #include <iostream>
 
 Sampler::Sampler(const SampleData* sample, double pitchBend)
-: pitchBend(pitchBend), interpolator(IInterpolator::get(IInterpolator::Sinc)),
+: interpolator(IInterpolator::get(IInterpolator::Sinc)),
   sample(sample), offset(0), lastTime(0)
 {
-  // initializers only
+  addParam(PitchBend, pitchBend);
+  addParam(Gain, 1.0);
+  addParam(Pan, 0.5);
 }
 
 bool Sampler::isActive() const
 {
-  return trigger.valueAt(0) > 0 && (sample->loopStart >= 0 || offset < sample->numSamples());
+  return sample->loopStart >= 0 || offset < sample->numSamples();
 }
 
 int16_t Sampler::generateSample(double time, int channel)
@@ -21,7 +23,7 @@ int16_t Sampler::generateSample(double time, int channel)
     return 0;
   }
   double timeStep = time - lastTime;
-  double sampleStep = timeStep * sample->sampleRate * pitchBend(time);
+  double sampleStep = timeStep * sample->sampleRate * paramValue(PitchBend, time);
   lastTime = time;
   double result = interpolator->interpolate(sample, offset, channel, sampleStep);
   offset += sampleStep;

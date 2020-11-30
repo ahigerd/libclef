@@ -2,56 +2,62 @@
 #include "../utility.h"
 
 Envelope::Envelope(double attack, double hold, double sustain, double decay, double release)
-: startGain(0.0), attack(attack), hold(hold), sustain(sustain), decay(decay), release(release), stepAt(0), lastLevel(0), step(0)
+: stepAt(0), lastLevel(0), step(Attack)
 {
-  // initializers only
+  addParam(StartGain, 0.0);
+  addParam(Attack, attack);
+  addParam(Hold, hold);
+  addParam(Sustain, sustain);
+  addParam(Decay, decay);
+  addParam(Release, release);
+  addParam(Trigger, 1.0);
 }
 
 bool Envelope::isActive() const
 {
-  return step < 5;
+  return step != 0;
 }
 
 int16_t Envelope::filterSample(double time, int channel, int16_t sample)
 {
-  if (step < 4 && trigger(time) <= 0) {
+  if (step && step != Release && paramValue(Trigger, time) <= 0) {
     stepAt = time;
-    step = 4;
+    step = Release;
   }
   switch (step) {
-    case 0: {
-      double a = attack(time);
+    case Attack: {
+      double a = paramValue(Attack, time);
       if (time < a) {
-        return (lastLevel = lerp(startGain(time), 1.0, time, 0.0, a)) * sample;
+        return (lastLevel = lerp(paramValue(StartGain, time), 1.0, time, 0.0, a)) * sample;
       }
-      step = 1;
+      step = Hold;
       stepAt = time;
     }
-    case 1: {
-      double h = stepAt + hold(time);
+    case Hold: {
+      double h = stepAt + paramValue(Hold, time);
       if (time < h) {
         lastLevel = 1.0;
         return sample;
       }
-      step = 2;
+      step = Sustain;
       stepAt = time;
     }
-    case 2: {
-      double d = stepAt + decay(time);
+    case Sustain: {
+      double d = stepAt + paramValue(Decay, time);
       if (time < d) {
-        return (lastLevel = lerp(1.0, sustain(time), time, stepAt, d)) * sample;
+        return (lastLevel = lerp(1.0, paramValue(Sustain, time), time, stepAt, d)) * sample;
       }
-      step = 3;
+      step = Decay;
       stepAt = time;
     }
-    case 3: {
-      lastLevel = sustain(time);
+    case Decay: {
+      lastLevel = paramValue(Sustain, time);
       return lastLevel * sample;
     }
-    case 4: {
-      double r = release(time);
+    case Release: {
+      double r = paramValue(Release, time);
       if (time > stepAt + r) {
-        step = 5;
+        step = 0;
         return 0;
       }
       return lerp(lastLevel, 0.0, time, stepAt, stepAt + r) * sample;

@@ -7,9 +7,18 @@
 
 class AudioNode {
 public:
+  enum ParamType {
+    Gain = 'gain',
+    Pan = 'pan ',
+    Trigger = 'trig',
+  };
+
   virtual ~AudioNode() {}
 
-  AudioParam gain, pan, trigger;
+  std::shared_ptr<AudioParam> param(int32_t key) const;
+  void addParam(int32_t key, double initialValue);
+  void addParam(int32_t key, std::shared_ptr<AudioParam> param);
+  double paramValue(int32_t key, double time, double defaultValue = 0) const;
 
   virtual bool isActive() const = 0;
   virtual int16_t getSample(double time, int channel = 0);
@@ -18,6 +27,9 @@ protected:
   AudioNode();
 
   virtual int16_t generateSample(double time, int channel = 0) = 0;
+
+private:
+  std::unordered_map<int32_t, std::shared_ptr<AudioParam>> params;
 };
 
 class FilterNode : public AudioNode {

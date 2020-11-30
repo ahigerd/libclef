@@ -8,9 +8,12 @@ class IInterpolator;
 
 class Sampler : public AudioNode {
 public:
+  enum ParamType {
+    PitchBend = 'bend',
+  };
+
   Sampler(const SampleData* sample, double pitchBend = 1.0);
 
-  AudioParam pitchBend;
   IInterpolator* interpolator;
 
   virtual bool isActive() const;

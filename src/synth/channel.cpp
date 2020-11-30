@@ -52,14 +52,14 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
         SampleData* sampleData = SampleData::get(sampEvent->sampleID);
         Sampler* samp = new Sampler(sampleData, sampEvent->pitchBend);
         noteNode.reset(samp);
-        samp->gain = sampEvent->volume;
-        samp->pan = sampEvent->pan;
+        samp->param(AudioNode::Gain)->setConstant(sampEvent->volume);
+        samp->param(AudioNode::Pan)->setConstant(sampEvent->pan);
         note = new Note(event, noteNode, sampleData->duration());
         notes.emplace(std::make_pair(sampEvent->playbackID, note));
       }
       if (noteEvent && noteEvent->useEnvelope) {
         Envelope* env = new Envelope(noteEvent->attack, noteEvent->hold, noteEvent->sustain, noteEvent->decay, noteEvent->release);
-        env->startGain = noteEvent->startGain;
+        env->param(Envelope::StartGain)->setConstant(noteEvent->startGain);
         env->connect(noteNode);
         noteNode.reset(env);
         note->source = noteNode;
@@ -71,20 +71,29 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
     for (int ch = 0; ch < 2; ch++) {
       int32_t sample = 0;
       std::vector<uint64_t> toErase;
-      for (auto& note : notes) {
-        double start = note.second->event->timestamp;
+      for (auto& iter : notes) {
+        uint64_t noteID = iter.first;
+        auto& note = iter.second;
+        double start = note->event->timestamp;
         bool stop = false;
-        if (!note.second->source->isActive()) {
+        if (!note->source->isActive()) {
           stop = true;
-        } else if (start + note.second->duration < timestamp) {
-          note.second->source->trigger = 0;
-          stop = !note.second->source->isActive();
+        } else if (start + note->duration < timestamp) {
+          auto trigger = note->source->param(AudioNode::Trigger);
+          if (trigger) {
+            if (trigger->valueAt(timestamp - start)) {
+              trigger->setConstant(0);
+            }
+            stop = !note->source->isActive();
+          } else {
+            stop = true;
+          }
         }
         if (stop) {
-          toErase.push_back(note.first);
+          toErase.push_back(noteID);
         } else if (start <= timestamp) {
           // TODO: modulators
-          sample += note.second->source->getSample(timestamp - start, ch);
+          sample += note->source->getSample(timestamp - start, ch);
         }
       }
       for (uint64_t id : toErase) {
