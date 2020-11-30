@@ -17,7 +17,7 @@ seq2wav_d: FORCE src/Makefile
 seq2wav: FORCE src/Makefile
 	$(MAKE) -C src ../seq2wav
 
-libseq2wav.a: FORCE src/Makefile
+libseq2wav.a: FORCE src/Makefile $(patsubst src/%.h, include/%.h, $(wildcard src/*.h src/*/*.h))
 	$(MAKE) -C src ../libseq2wav.a
 
 libseq2wav.$(DLL): FORCE src/Makefile $(patsubst src/%.h, include/%.h, $(wildcard src/*.h src/*/*.h))
@@ -29,5 +29,8 @@ include/%.h: src/%.h
 
 clean: FORCE
 	$(MAKE) -C src clean
+	rm -f include/*.h include/*/*.h
+	rmdir include/*
+	rmdir include
 
 FORCE:
