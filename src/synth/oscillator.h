@@ -7,7 +7,7 @@ class BaseOscillator : public AudioNode {
 public:
   static BaseOscillator* create(uint64_t waveformID, double frequency = 440.0, double amplitude = 1.0, double pan = 0.5);
 
-  AudioParameter frequency;
+  AudioParam frequency;
 
   virtual bool isActive() const;
   virtual int16_t generateSample(double time, int channel = 0);
@@ -31,7 +31,7 @@ class SquareOscillator : public BaseOscillator {
 public:
   SquareOscillator(double duty = 0.5);
 
-  AudioParameter dutyCycle;
+  AudioParam dutyCycle;
 
 protected:
   virtual double calcSample(double time);

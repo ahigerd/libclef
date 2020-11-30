@@ -10,7 +10,7 @@ class Sampler : public AudioNode {
 public:
   Sampler(const SampleData* sample, double pitchBend = 1.0);
 
-  AudioParameter pitchBend;
+  AudioParam pitchBend;
   IInterpolator* interpolator;
 
   virtual bool isActive() const;

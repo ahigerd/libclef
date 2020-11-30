@@ -43,8 +43,7 @@ BaseOscillator::BaseOscillator()
 
 bool BaseOscillator::isActive() const
 {
-  // Oscillators never end on their own
-  return true;
+  return trigger.valueAt(0) > 0;
 }
 
 int16_t BaseOscillator::generateSample(double time, int channel)

@@ -4,7 +4,7 @@
 #include "../seq/itrack.h"
 #include "../seq/sequenceevent.h"
 
-Channel::Note::Note(SequenceEvent* event, AudioNode* source, double duration)
+Channel::Note::Note(SequenceEvent* event, std::shared_ptr<AudioNode> source, double duration)
 : event(event), source(source), duration(duration)
 {
   // initializers only
@@ -38,30 +38,31 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
         nextEvent = event;
         break;
       }
-      AudioNode* noteNode = nullptr;
+      std::shared_ptr<AudioNode> noteNode = nullptr;
       BaseNoteEvent* noteEvent = nullptr;
       Note* note = nullptr;
       if (OscillatorEvent* oscEvent = event->cast<OscillatorEvent>()) {
         noteEvent = oscEvent;
         BaseOscillator* osc = BaseOscillator::create(oscEvent->waveformID, oscEvent->frequency, oscEvent->volume, oscEvent->pan);
-        note = new Note(event, osc, oscEvent->duration);
+        noteNode.reset(osc);
+        note = new Note(event, noteNode, oscEvent->duration);
         notes.emplace(std::make_pair(oscEvent->playbackID, note));
-        noteNode = osc;
       } else if (SampleEvent* sampEvent = event->cast<SampleEvent>()) {
         noteEvent = sampEvent;
         SampleData* sampleData = SampleData::get(sampEvent->sampleID);
         Sampler* samp = new Sampler(sampleData, sampEvent->pitchBend);
+        noteNode.reset(samp);
         samp->gain = sampEvent->volume;
         samp->pan = sampEvent->pan;
-        note = new Note(event, samp, sampleData->duration());
+        note = new Note(event, noteNode, sampleData->duration());
         notes.emplace(std::make_pair(sampEvent->playbackID, note));
-        noteNode = samp;
       }
       if (noteEvent && noteEvent->useEnvelope) {
         Envelope* env = new Envelope(noteEvent->attack, noteEvent->hold, noteEvent->sustain, noteEvent->decay, noteEvent->release);
         env->startGain = noteEvent->startGain;
-        noteNode->gain.connect(env);
-        note->envelope.reset(env);
+        env->connect(noteNode);
+        noteNode.reset(env);
+        note->source = noteNode;
       }
     }
   } while (event);
@@ -76,11 +77,8 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
         if (!note.second->source->isActive()) {
           stop = true;
         } else if (start + note.second->duration < timestamp) {
-          if (note.second->envelope && note.second->envelope->isActive()) {
-            note.second->envelope->trigger = 0;
-          } else {
-            stop = true;
-          }
+          note.second->source->trigger = 0;
+          stop = !note.second->source->isActive();
         }
         if (stop) {
           toErase.push_back(note.first);

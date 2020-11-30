@@ -27,14 +27,13 @@ private:
   SequenceEvent* nextEvent;
 
   struct Note {
-    Note(SequenceEvent* event, AudioNode* source, double duration);
+    Note(SequenceEvent* event, std::shared_ptr<AudioNode> source, double duration);
     Note(const Note& other) = default;
     Note(Note&& other) = default;
     Note& operator=(const Note& other) = default;
 
-    SequenceEvent* event;
-    std::unique_ptr<AudioNode> source;
-    std::unique_ptr<Envelope> envelope;
+    std::shared_ptr<SequenceEvent> event;
+    std::shared_ptr<AudioNode> source;
     double duration;
   };
   std::unordered_map<uint64_t, std::unique_ptr<Note>> notes;

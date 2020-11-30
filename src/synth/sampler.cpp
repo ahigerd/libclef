@@ -12,7 +12,7 @@ Sampler::Sampler(const SampleData* sample, double pitchBend)
 
 bool Sampler::isActive() const
 {
-  return sample->loopStart >= 0 || offset < sample->numSamples();
+  return trigger.valueAt(0) > 0 && (sample->loopStart >= 0 || offset < sample->numSamples());
 }
 
 int16_t Sampler::generateSample(double time, int channel)
