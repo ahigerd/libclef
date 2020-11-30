@@ -1,16 +1,17 @@
 #include "channel.h"
 #include "oscillator.h"
 #include "sampler.h"
+#include "synthcontext.h"
 #include "../seq/itrack.h"
 #include "../seq/sequenceevent.h"
 
-Channel::Note::Note(SequenceEvent* event, std::shared_ptr<AudioNode> source, double duration)
+Channel::Note::Note(std::shared_ptr<SequenceEvent> event, std::shared_ptr<AudioNode> source, double duration)
 : event(event), source(source), duration(duration)
 {
   // initializers only
 }
 
-Channel::Channel(SynthContext* ctx, ITrack* track)
+Channel::Channel(const SynthContext* ctx, ITrack* track)
 : gain(0.5), ctx(ctx), track(track), nextEvent(nullptr)
 {
   timestamp = 0;
@@ -23,9 +24,8 @@ Channel::~Channel()
 uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
 {
   int numSamples = buffer.size() / 2;
-  double sampleTime = 1.0 / 44100.0; // TODO: ctx
-  double endTime = timestamp + (numSamples * sampleTime);
-  SequenceEvent* event;
+  double endTime = timestamp + (numSamples * ctx->sampleTime);
+  std::shared_ptr<SequenceEvent> event;
   do {
     if (nextEvent) {
       event = nextEvent;
@@ -43,14 +43,14 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
       Note* note = nullptr;
       if (OscillatorEvent* oscEvent = event->cast<OscillatorEvent>()) {
         noteEvent = oscEvent;
-        BaseOscillator* osc = BaseOscillator::create(oscEvent->waveformID, oscEvent->frequency, oscEvent->volume, oscEvent->pan);
+        BaseOscillator* osc = BaseOscillator::create(ctx, oscEvent->waveformID, oscEvent->frequency, oscEvent->volume, oscEvent->pan);
         noteNode.reset(osc);
         note = new Note(event, noteNode, oscEvent->duration);
         notes.emplace(std::make_pair(oscEvent->playbackID, note));
       } else if (SampleEvent* sampEvent = event->cast<SampleEvent>()) {
         noteEvent = sampEvent;
         SampleData* sampleData = SampleData::get(sampEvent->sampleID);
-        Sampler* samp = new Sampler(sampleData, sampEvent->pitchBend);
+        Sampler* samp = new Sampler(ctx, sampleData, sampEvent->pitchBend);
         noteNode.reset(samp);
         samp->param(AudioNode::Gain)->setConstant(sampEvent->volume);
         samp->param(AudioNode::Pan)->setConstant(sampEvent->pan);
@@ -58,7 +58,7 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
         notes.emplace(std::make_pair(sampEvent->playbackID, note));
       }
       if (noteEvent && noteEvent->useEnvelope) {
-        Envelope* env = new Envelope(noteEvent->attack, noteEvent->hold, noteEvent->sustain, noteEvent->decay, noteEvent->release);
+        Envelope* env = new Envelope(ctx, noteEvent->attack, noteEvent->hold, noteEvent->sustain, noteEvent->decay, noteEvent->release);
         env->param(Envelope::StartGain)->setConstant(noteEvent->startGain);
         env->connect(noteNode);
         noteNode.reset(env);
@@ -102,7 +102,7 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
       buffer[pos] = sample * gain;
       ++pos;
     }
-    timestamp += sampleTime;
+    timestamp += ctx->sampleTime;
   }
   return pos;
 }

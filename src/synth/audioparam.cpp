@@ -1,17 +1,19 @@
 #include "audioparam.h"
 #include "audionode.h"
 
-AudioParam::AudioParam(double initialValue)
+AudioParam::AudioParam(const SynthContext* ctx, double initialValue) : ctx(ctx)
 {
   setConstant(initialValue);
 }
 
 AudioParam::AudioParam(std::shared_ptr<AudioNode> source, double scale, double offset)
+: ctx(source->ctx)
 {
   connect(source, scale, offset);
 }
 
 AudioParam::AudioParam(std::shared_ptr<AudioParam> source, double scale, double offset)
+: ctx(source->ctx)
 {
   connect(source, scale, offset);
 }

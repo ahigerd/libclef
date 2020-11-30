@@ -1,11 +1,11 @@
 #include "sampler.h"
+#include "synthcontext.h"
 #include "iinterpolator.h"
 #include "../utility.h"
-#include <iostream>
 
-Sampler::Sampler(const SampleData* sample, double pitchBend)
-: interpolator(IInterpolator::get(IInterpolator::Sinc)),
-  sample(sample), offset(0), lastTime(0)
+Sampler::Sampler(const SynthContext* ctx, const SampleData* sample, double pitchBend)
+: AudioNode(ctx), interpolator(IInterpolator::get(IInterpolator::Sinc)),
+  sample(sample), offset(0), lastTime(-1)
 {
   addParam(PitchBend, pitchBend);
   addParam(Gain, 1.0);
@@ -22,13 +22,14 @@ int16_t Sampler::generateSample(double time, int channel)
   if (!isActive()) {
     return 0;
   }
-  double timeStep = time - lastTime;
-  double sampleStep = timeStep * sample->sampleRate * paramValue(PitchBend, time);
-  lastTime = time;
-  double result = interpolator->interpolate(sample, offset, channel, sampleStep);
-  offset += sampleStep;
+  double sampleStep = ctx->sampleTime * sample->sampleRate * paramValue(PitchBend, time);
+  if (time != lastTime) {
+    offset += sampleStep;
+    lastTime = time;
+  }
+  double result = sampleStep == 1 ? sample->at(offset, channel) : interpolator->interpolate(sample, offset, channel, sampleStep);
   if (sample->loopStart >= 0 && offset >= sample->loopEnd) {
-    offset -= sample->loopStart;
+    offset -= (sample->loopEnd - sample->loopStart);
   }
   return clamp<int16_t>(result, -0x8000, 0x7FFF);
 }

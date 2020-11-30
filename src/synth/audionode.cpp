@@ -1,6 +1,6 @@
 #include "audionode.h"
 
-AudioNode::AudioNode()
+AudioNode::AudioNode(const SynthContext* ctx) : ctx(ctx)
 {
   // initializers only
 }
@@ -16,7 +16,7 @@ std::shared_ptr<AudioParam> AudioNode::param(int32_t param) const
 
 void AudioNode::addParam(int32_t key, double initialValue)
 {
-  params[key].reset(new AudioParam(initialValue));
+  params[key].reset(new AudioParam(ctx, initialValue));
 }
 
 void AudioNode::addParam(int32_t key, std::shared_ptr<AudioParam> param)
@@ -40,6 +40,11 @@ int16_t AudioNode::getSample(double time, int channel)
   double pan = paramValue(Pan, time, 0.5);
   double scale = paramValue(Gain, time, 1.0) * (channel % 2 ? pan : (1 - pan));
   return scale ? generateSample(time, channel) * scale : 0;
+}
+
+FilterNode::FilterNode(const SynthContext* ctx) : AudioNode(ctx)
+{
+  // initializers only
 }
 
 void FilterNode::connect(std::shared_ptr<AudioNode> source)

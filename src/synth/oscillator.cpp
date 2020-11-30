@@ -2,31 +2,30 @@
 #include <cmath>
 #include <iostream>
 
-BaseOscillator* BaseOscillator::create(uint64_t waveformID, double frequency, double amplitude, double pan)
+BaseOscillator* BaseOscillator::create(const SynthContext* ctx, uint64_t waveformID, double frequency, double amplitude, double pan)
 {
-  waveformID = 20;
   BaseOscillator* osc;
   switch(waveformID) {
     case 0:
-      osc = new SquareOscillator(0.5);
+      osc = new SquareOscillator(ctx, 0.5);
       break;
     case 1:
-      osc = new SquareOscillator(0.75);
+      osc = new SquareOscillator(ctx, 0.75);
       break;
     case 2:
-      osc = new SquareOscillator(0.25);
+      osc = new SquareOscillator(ctx, 0.25);
       break;
     case 3:
-      osc = new SquareOscillator(0.125);
+      osc = new SquareOscillator(ctx, 0.125);
       break;
     case 4:
-      osc = new TriangleOscillator();
+      osc = new TriangleOscillator(ctx);
       break;
     case 5:
-      osc = new NESNoiseOscillator();
+      osc = new NESNoiseOscillator(ctx);
       break;
     default:
-      osc = new SineOscillator();
+      osc = new SineOscillator(ctx);
       break;
   }
   osc->param(Frequency)->setConstant(frequency);
@@ -35,8 +34,8 @@ BaseOscillator* BaseOscillator::create(uint64_t waveformID, double frequency, do
   return osc;
 }
 
-BaseOscillator::BaseOscillator()
-: lastSample(0), lastTime(0), phase(0)
+BaseOscillator::BaseOscillator(const SynthContext* ctx)
+: AudioNode(ctx), lastSample(0), lastTime(0), phase(0)
 {
   addParam(Frequency, 440.0);
   addParam(Gain, 1.0);
@@ -59,13 +58,18 @@ int16_t BaseOscillator::generateSample(double time, int channel)
   return lastSample;
 }
 
+SineOscillator::SineOscillator(const SynthContext* ctx) : BaseOscillator(ctx)
+{
+  // initializers only
+}
+
 double SineOscillator::calcSample(double)
 {
   return std::sin(phase * M_PI * 2);
 }
 
-SquareOscillator::SquareOscillator(double duty)
-: BaseOscillator()
+SquareOscillator::SquareOscillator(const SynthContext* ctx, double duty)
+: BaseOscillator(ctx)
 {
   addParam(DutyCycle, duty);
 }
@@ -75,8 +79,8 @@ double SquareOscillator::calcSample(double time)
   return phase < paramValue(DutyCycle, time) ? 1.0 : -1.0;
 }
 
-TriangleOscillator::TriangleOscillator(int quantize, bool skew)
-: BaseOscillator(), quantize(quantize), skew(skew)
+TriangleOscillator::TriangleOscillator(const SynthContext* ctx, int quantize, bool skew)
+: BaseOscillator(ctx), quantize(quantize), skew(skew)
 {
   // initializers only
 }
@@ -102,8 +106,8 @@ double TriangleOscillator::calcSample(double)
   return level * 2.0 - 1.0;
 }
 
-NESNoiseOscillator::NESNoiseOscillator()
-: BaseOscillator(), state(1), lastPhase(0)
+NESNoiseOscillator::NESNoiseOscillator(const SynthContext* ctx)
+: BaseOscillator(ctx), state(1), lastPhase(0)
 {
   // initializers only
 }
@@ -118,8 +122,8 @@ double NESNoiseOscillator::calcSample(double)
   return (state & 0x0001) ? 1 : -1;
 }
 
-NESNoise93Oscillator::NESNoise93Oscillator(uint16_t seed)
-: BaseOscillator(), state(seed), lastPhase(0)
+NESNoise93Oscillator::NESNoise93Oscillator(const SynthContext* ctx, uint16_t seed)
+: BaseOscillator(ctx), state(seed), lastPhase(0)
 {
   // initializers only
 }

@@ -10,7 +10,7 @@ public:
   virtual ~ITrack();
 
   virtual bool isFinished() const = 0;
-  virtual SequenceEvent* nextEvent() = 0;
+  virtual std::shared_ptr<SequenceEvent> nextEvent() = 0;
 };
 
 class BasicTrack : public ITrack {
@@ -18,13 +18,13 @@ public:
   BasicTrack();
 
   virtual bool isFinished() const;
-  virtual SequenceEvent* nextEvent();
+  virtual std::shared_ptr<SequenceEvent> nextEvent();
 
   void addEvent(SequenceEvent* event);
 
 protected:
   int position;
-  std::vector<std::unique_ptr<SequenceEvent>> events;
+  std::vector<std::shared_ptr<SequenceEvent>> events;
 };
 
 #endif

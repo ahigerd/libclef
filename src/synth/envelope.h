@@ -16,7 +16,7 @@ public:
     Release = 'rels',
   };
 
-  Envelope(double attack, double hold, double sustain, double decay, double release);
+  Envelope(const SynthContext* ctx, double attack, double hold, double sustain, double decay, double release);
 
   virtual bool isActive() const;
 

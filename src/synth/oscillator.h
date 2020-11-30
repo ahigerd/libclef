@@ -10,13 +10,13 @@ public:
     DutyCycle = 'duty',
   };
 
-  static BaseOscillator* create(uint64_t waveformID, double frequency = 440.0, double amplitude = 1.0, double pan = 0.5);
+  static BaseOscillator* create(const SynthContext* ctx, uint64_t waveformID, double frequency = 440.0, double amplitude = 1.0, double pan = 0.5);
 
   virtual bool isActive() const;
   virtual int16_t generateSample(double time, int channel = 0);
 
 protected:
-  BaseOscillator();
+  BaseOscillator(const SynthContext* ctx);
 
   int16_t lastSample;
   double lastTime;
@@ -26,13 +26,16 @@ protected:
 };
 
 class SineOscillator : public BaseOscillator {
+public:
+  SineOscillator(const SynthContext* ctx);
+
 protected:
   virtual double calcSample(double time);
 };
 
 class SquareOscillator : public BaseOscillator {
 public:
-  SquareOscillator(double duty = 0.5);
+  SquareOscillator(const SynthContext* ctx, double duty = 0.5);
 
 protected:
   virtual double calcSample(double time);
@@ -40,7 +43,7 @@ protected:
 
 class TriangleOscillator : public BaseOscillator {
 public:
-  TriangleOscillator(int quantize = 0, bool skew = false);
+  TriangleOscillator(const SynthContext* ctx, int quantize = 0, bool skew = false);
 
   int quantize;
   bool skew;
@@ -51,7 +54,7 @@ protected:
 
 class NESNoiseOscillator : public BaseOscillator {
 public:
-  NESNoiseOscillator();
+  NESNoiseOscillator(const SynthContext* ctx);
 
 protected:
   virtual double calcSample(double time);
@@ -63,7 +66,7 @@ private:
 
 class NESNoise93Oscillator : public BaseOscillator {
 public:
-  NESNoise93Oscillator(uint16_t seed = 1);
+  NESNoise93Oscillator(const SynthContext* ctx, uint16_t seed = 1);
 
 protected:
   virtual double calcSample(double time);

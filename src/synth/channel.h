@@ -13,7 +13,7 @@ class SequenceEvent;
 
 class Channel {
 public:
-  Channel(SynthContext* ctx, ITrack* track);
+  Channel(const SynthContext* ctx, ITrack* track);
   ~Channel();
 
   double gain;
@@ -22,12 +22,12 @@ public:
   bool isFinished() const;
 
 private:
-  SynthContext* ctx;
+  const SynthContext* const ctx;
   ITrack* track;
-  SequenceEvent* nextEvent;
+  std::shared_ptr<SequenceEvent> nextEvent;
 
   struct Note {
-    Note(SequenceEvent* event, std::shared_ptr<AudioNode> source, double duration);
+    Note(std::shared_ptr<SequenceEvent> event, std::shared_ptr<AudioNode> source, double duration);
     Note(const Note& other) = default;
     Note(Note&& other) = default;
     Note& operator=(const Note& other) = default;

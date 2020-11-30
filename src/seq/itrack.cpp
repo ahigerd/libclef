@@ -9,7 +9,7 @@ BasicTrack::BasicTrack() : position(0)
 
 void BasicTrack::addEvent(SequenceEvent* event)
 {
-  events.push_back(std::unique_ptr<SequenceEvent>(event));
+  events.push_back(std::shared_ptr<SequenceEvent>(event));
 }
 
 bool BasicTrack::isFinished() const
@@ -17,12 +17,12 @@ bool BasicTrack::isFinished() const
   return position >= events.size();
 }
 
-SequenceEvent* BasicTrack::nextEvent()
+std::shared_ptr<SequenceEvent> BasicTrack::nextEvent()
 {
   if (position >= events.size()) {
     return nullptr;
   }
-  SequenceEvent* event = events[position].get();
+  auto& event = events[position];
   position++;
   return event;
 }

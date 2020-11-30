@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <unordered_map>
 #include "audioparam.h"
+class SynthContext;
 
 class AudioNode {
 public:
@@ -23,8 +24,10 @@ public:
   virtual bool isActive() const = 0;
   virtual int16_t getSample(double time, int channel = 0);
 
+  const SynthContext* const ctx;
+
 protected:
-  AudioNode();
+  AudioNode(const SynthContext* ctx);
 
   virtual int16_t generateSample(double time, int channel = 0) = 0;
 
@@ -39,6 +42,8 @@ public:
   virtual bool isActive() const;
 
 protected:
+  FilterNode(const SynthContext* ctx);
+
   virtual int16_t generateSample(double time, int channel = 0);
   virtual int16_t filterSample(double time, int channel, int16_t sample) = 0;
   std::shared_ptr<AudioNode> source;

@@ -1,8 +1,8 @@
 #include "envelope.h"
 #include "../utility.h"
 
-Envelope::Envelope(double attack, double hold, double sustain, double decay, double release)
-: stepAt(0), lastLevel(0), step(Attack)
+Envelope::Envelope(const SynthContext* ctx, double attack, double hold, double sustain, double decay, double release)
+: FilterNode(ctx), stepAt(0), lastLevel(0), step(Attack)
 {
   addParam(StartGain, 0.0);
   addParam(Attack, attack);
