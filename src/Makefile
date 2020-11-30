@@ -30,9 +30,10 @@ SOURCES = $(filter-out main.cpp, $(wildcard *.cpp */*.cpp))
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -ggdb -fsanitize=address -c -o $@ $<
 
-clean: FORCE
-	-rm -f ../build/*.o ../build/*.d ../build/*/*.o ../build/*/*.d
-	-rm -f ../seq2wav ../seq2wav_d ../libseq2wav.a ../$(LIB)seq2wav.$(DLL) ../libseq2wav_d.a ../$(LIB)seq2wav_d.$(DLL)
+../build/Makefile.d: main.cpp $(SOURCES)
+	@mkdir -p $(dir $@)
+	-rm -f $@
+	$(foreach src, $^, $(CXX) $(CXXFLAGS) -MT $@ -MM -MP -MF - $(src) >> $@;)
 
 include ../build/Makefile.d
 
