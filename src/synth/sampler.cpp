@@ -4,8 +4,7 @@
 #include "../utility.h"
 
 Sampler::Sampler(const SynthContext* ctx, const SampleData* sample, double pitchBend)
-: AudioNode(ctx), interpolator(IInterpolator::get(IInterpolator::Sinc)),
-  sample(sample), offset(0), lastTime(-1)
+: AudioNode(ctx), interpolator(ctx->interpolator), sample(sample), offset(0), lastTime(-1)
 {
   addParam(PitchBend, pitchBend);
   addParam(Gain, 1.0);

@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 struct Channel;
+struct IInterpolator;
 
 struct SynthContext {
   SynthContext(double sampleRate);
@@ -13,6 +14,7 @@ struct SynthContext {
   double sampleRate;
   double sampleTime;
   std::vector<std::unique_ptr<Channel>> channels;
+  IInterpolator* interpolator;
 };
 
 #endif

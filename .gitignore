@@ -3,8 +3,10 @@
 *.o
 *.sw*
 build
+include
 seq2wav
 seq2wav_d
-seq2wav.exe
-seq2wav_d.exe
 *.dll
+*.a
+*.so
+*.exe
