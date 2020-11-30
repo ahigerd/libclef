@@ -15,3 +15,8 @@ SampleData* ICodec::decodeFile(const std::string& filename, uint64_t sampleID)
   }
   return decode(buffer, sampleID);
 }
+
+SampleData* ICodec::decode(const std::vector<uint8_t>& buffer, uint64_t sampleID)
+{
+  return decodeRange(buffer.begin(), buffer.end(), sampleID);
+}

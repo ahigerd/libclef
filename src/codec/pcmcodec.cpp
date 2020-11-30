@@ -7,10 +7,10 @@ PcmCodec::PcmCodec(int sampleBits, int channels, bool bigEndian)
   // initializers only
 }
 
-SampleData* PcmCodec::decode(const std::vector<uint8_t>& buffer, uint64_t sampleID)
+SampleData* PcmCodec::decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID)
 {
   SampleData* sampleData = sampleID ? new SampleData(sampleID) : new SampleData();
-  int length = buffer.size() / channels / sampleBytes;
+  int length = (end - start) / channels / sampleBytes;
   for (int i = 0; i < channels; i++) {
     sampleData->channels.push_back(std::vector<int16_t>());
     sampleData->channels[i].reserve(length);
@@ -21,9 +21,9 @@ SampleData* PcmCodec::decode(const std::vector<uint8_t>& buffer, uint64_t sample
       int32_t sample = 0;
       for (int b = 0; b < sampleBytes; b++) {
         if (bigEndian) {
-          sample = (sample << 8) | buffer[offset];
+          sample = (sample << 8) | *start++;
         } else {
-          sample |= buffer[offset] << (b * 8);
+          sample |= *start++ << (b * 8);
         }
         ++offset;
       }

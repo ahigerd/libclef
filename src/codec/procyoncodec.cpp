@@ -23,26 +23,33 @@ int16_t ProcyonCodec::getNextSample(int8_t value)
   return clamp<int16_t>((sample + 32) >> 6, -0x7FFF, 0x7FFF);
 }
 
-std::vector<int16_t> ProcyonCodec::decode(const std::vector<uint8_t>& buffer)
+SampleData* ProcyonCodec::decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID)
 {
   history = 0;
   predictor = 0;
-  int length = buffer.size();
-  std::vector<int16_t> sample;
+  SampleData* sampleData = sampleID ? new SampleData(sampleID) : new SampleData();
+  int length = end - start;
+  sampleData->channels.push_back(std::vector<int16_t>());
+  sampleData->channels[0].reserve(length);
+  std::vector<int16_t>& sample = sampleData->channels[0];
   sample.reserve((length * 30) >> 4);
-  for (int offset = 0; offset < length; offset += 16) {
-    int index = uint8_t(buffer[offset + 15] ^ 0x80) >> 4;
-    scale = 6 + (buffer[offset + 15] & 0x0f);
+  uint8_t buffer[16];
+  while (start != end) {
+    for (int i = 0; i < 16; i++) {
+      buffer[i] = *start++;
+    }
+    int index = uint8_t(buffer[15] ^ 0x80) >> 4;
+    scale = 6 + (buffer[15] & 0x0f);
     factor0 = procyonFactor[index][0];
     factor1 = procyonFactor[index][1];
 
     for (int i = 0; i < 15; i++) {
       // Shift left and then right in order to get sign extension
-      int8_t low = int8_t(uint8_t(buffer[offset + i]) << 4) >> 4;
-      int8_t high = int8_t(buffer[offset + i] ^ 0x80) >> 4;
+      int8_t low = int8_t(uint8_t(buffer[i]) << 4) >> 4;
+      int8_t high = int8_t(buffer[i] ^ 0x80) >> 4;
       sample.push_back(getNextSample(low));
       sample.push_back(getNextSample(high));
     }
   }
-  return sample;
+  return sampleData;
 }

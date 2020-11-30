@@ -7,7 +7,7 @@ class ProcyonCodec : public ICodec {
 public:
   ProcyonCodec();
 
-  virtual std::vector<int16_t> decode(const std::vector<uint8_t>& buffer);
+  virtual SampleData* decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID = 0);
 
 protected:
   int32_t history, predictor;

@@ -11,9 +11,9 @@ public:
     OKI4s,
     // TODO: Microsoft
   };
-  AdpcmCodec(Format format);
+  AdpcmCodec(Format format, int interleave = 0);
 
-  virtual SampleData* decode(const std::vector<uint8_t>& buffer, uint64_t sampleID = 0);
+  virtual SampleData* decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID = 0);
 
 protected:
   Format format;
@@ -21,10 +21,11 @@ protected:
   int maxStep;
   const int8_t* indexTable;
 
-  int16_t predictor;
-  int8_t index;
+  int16_t predictor[2];
+  int8_t index[2];
+  int interleave;
 
-  int16_t getNextSample(uint8_t value);
+  int16_t getNextSample(uint8_t value, int channel);
 };
 
 #endif

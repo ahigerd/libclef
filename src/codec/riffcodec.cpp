@@ -4,14 +4,15 @@
 #include <memory>
 #include <exception>
 
-SampleData* RiffCodec::decode(const std::vector<uint8_t>& buffer, uint64_t sampleID)
+SampleData* RiffCodec::decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID)
 {
+  const uint8_t* buffer = &start[0];
   uint32_t magic = parseIntBE<uint32_t>(buffer, 0);
   if (magic != 'RIFF') {
     throw std::runtime_error("not a RIFF file");
   }
   uint32_t size = parseInt<uint32_t>(buffer, 4) + 8;
-  if (size > buffer.size()) {
+  if (size > end - start) {
     throw std::runtime_error("RIFF data is truncated");
   }
   magic = parseIntBE<uint32_t>(buffer, 8);
@@ -42,8 +43,8 @@ SampleData* RiffCodec::decode(const std::vector<uint8_t>& buffer, uint64_t sampl
     } else if (magic == 'data') {
       data.insert(
         data.end(),
-        buffer.begin() + (offset + 8),
-        buffer.begin() + (offset + chunkSize)
+        buffer + (offset + 8),
+        buffer + (offset + chunkSize)
       );
     }
     offset += 8 + chunkSize;

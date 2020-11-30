@@ -25,8 +25,8 @@ static const int16_t oki4sStep[] = {
 };
 static const int maxOki4sStep = (sizeof(oki4sStep) >> 1) - 1;
 
-AdpcmCodec::AdpcmCodec(AdpcmCodec::Format format)
-: format(format), predictor(0), index(0)
+AdpcmCodec::AdpcmCodec(AdpcmCodec::Format format, int interleave)
+: format(format), predictor{ 0, 0 }, index{ 0, 0 }, interleave(interleave)
 {
   if (format == OKI4s) {
     stepTable = oki4sStep;
@@ -35,50 +35,61 @@ AdpcmCodec::AdpcmCodec(AdpcmCodec::Format format)
     stepTable = imaStep;
     maxStep = maxImaStep;
   }
+  indexTable = adpcmIndex;
 }
 
-int16_t AdpcmCodec::getNextSample(uint8_t value)
+int16_t AdpcmCodec::getNextSample(uint8_t value, int channel)
 {
-  int16_t step = stepTable[index];
+  int16_t step = stepTable[index[channel]];
   int32_t delta = step >> 3;
   if (value & 0x04) delta += step;
   if (value & 0x02) delta += step >> 1;
   if (value & 0x01) delta += step >> 2;
   if (value & 0x08) delta = -delta;
   if (format == NDS) {
-    if (predictor + delta == -0x8000) {
-      predictor = -0x8000;
+    if (predictor[channel] + delta == -0x8000) {
+      predictor[channel] = -0x8000;
     } else {
-      predictor = clamp<int16_t>(predictor + delta, -0x7fff, 0x7fff);
+      predictor[channel] = clamp<int16_t>(predictor[channel] + delta, -0x7fff, 0x7fff);
     }
   } else {
-    predictor = clamp<int16_t>(predictor + delta, -0x8000, 0x7fff);
+    predictor[channel] = clamp<int16_t>(predictor[channel] + delta, -0x8000, 0x7fff);
   }
-  index = clamp<int8_t>(index + indexTable[value & 0x07], 0, maxStep);
-  return predictor;
+  index[channel] = clamp<int8_t>(index[channel] + indexTable[value & 0x07], 0, maxStep);
+  return predictor[channel];
 }
 
-SampleData* AdpcmCodec::decode(const std::vector<uint8_t>& buffer, uint64_t sampleID)
+SampleData* AdpcmCodec::decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID)
 {
   SampleData* sampleData = sampleID ? new SampleData(sampleID) : new SampleData();
-  int length = buffer.size();
-  int i = 0;
+  int length = end - start;
 
   if (length > 4 && format == NDS) {
-    predictor = (buffer[0] << 8) | buffer[1];
-    index = clamp<int8_t>(int16_t((buffer[2] << 8) | buffer[3]), 0, maxStep);
-    i = 4;
+    predictor[0] = (*start++ << 8) | *start++;
+    index[0] = clamp<int8_t>(int16_t((*start++ << 8) | *start++), 0, maxStep);
+    length -= 4;
   } else {
-    predictor = 0;
-    index = 0;
+    predictor[0] = 0;
+    predictor[1] = 0;
+    index[0] = 0;
+    index[1] = 0;
   }
 
   sampleData->channels.push_back(std::vector<int16_t>());
-  std::vector<int16_t>& sample = sampleData->channels[0];
-  sample.reserve((length - i) << 1);
-  for (; i < length; i++) {
-    sample.push_back(getNextSample(buffer[i] & 0x0f));
-    sample.push_back(getNextSample(uint8_t(buffer[i] & 0xf0) >> 4));
+  int highChannel = interleave < 0 ? 1 : 0;
+  if (interleave) {
+    sampleData->channels.push_back(std::vector<int16_t>());
+    sampleData->channels[0].reserve(length);
+    sampleData->channels[1].reserve(length);
+  } else {
+    sampleData->channels[0].reserve(length << 1);
+  }
+  if (interleave <= 0) {
+    while (start != end) {
+      uint8_t byte = *start++;
+      sampleData->channels[0].push_back(getNextSample(byte & 0x0f, 0));
+      sampleData->channels[highChannel].push_back(getNextSample((byte & 0xf0) >> 4, highChannel));
+    }
   }
   return sampleData;
 }
