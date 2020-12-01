@@ -11,7 +11,7 @@ TestSequence::TestSequence() : BaseSequence()
   SampleData* sample = riff.decodeFile("cembalo-1.wav");
 
   for (int i = 0; i < 3; i++) {
-    tracks.push_back(BasicTrack());
+    addTrack(new BasicTrack());
   }
 
   for (int i = 0; i < 3; i++) {
@@ -29,7 +29,7 @@ TestSequence::TestSequence() : BaseSequence()
       } else {
         event->pan = 0.75;
       }
-      tracks[j].addEvent(event);
+      tracks[j]->addEvent(event);
     }
   }
 
@@ -37,7 +37,7 @@ TestSequence::TestSequence() : BaseSequence()
   samp->sampleID = sample->sampleID;
   samp->timestamp = 1.0;
   samp->volume = 0.5;
-  tracks[0].addEvent(samp);
+  tracks[0]->addEvent(samp);
 
   samp = new SampleEvent;
   samp->sampleID = sample->sampleID;
@@ -45,7 +45,7 @@ TestSequence::TestSequence() : BaseSequence()
   samp->pitchBend = noteToFreq(74) / 440.0;
   samp->volume = 0.5;
   samp->pan = 1;
-  tracks[0].addEvent(samp);
+  tracks[0]->addEvent(samp);
 
   samp = new SampleEvent;
   samp->sampleID = sample->sampleID;
@@ -53,13 +53,13 @@ TestSequence::TestSequence() : BaseSequence()
   samp->pitchBend = noteToFreq(78) / 880.0;
   samp->volume = 0.5;
   samp->pan = 0;
-  tracks[0].addEvent(samp);
+  tracks[0]->addEvent(samp);
 
   OscillatorEvent* e = new OscillatorEvent;
   e->setEnvelope(.25, .5, .5, .5, .5, .5);
   e->waveformID = -1;
   e->duration = 2.5;
   e->timestamp = 1.0 + sample->duration() * 3;
-  tracks[0].addEvent(e);
+  tracks[0]->addEvent(e);
 
 }

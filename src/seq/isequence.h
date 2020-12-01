@@ -32,15 +32,19 @@ public:
   }
 
   virtual ITrack* getTrack(int index) {
-    return &tracks[index];
+    return tracks[index].get();
   }
 
   virtual const ITrack* getTrack(int index) const {
-    return &tracks[index];
+    return tracks[index].get();
   }
 
 protected:
-  std::vector<Track> tracks;
+  virtual void addTrack(Track* track) {
+    tracks.emplace_back(track);
+  }
+
+  std::vector<std::unique_ptr<Track>> tracks;
 };
 
 #endif
