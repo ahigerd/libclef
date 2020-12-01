@@ -1,6 +1,6 @@
 #include "riffcodec.h"
 #include "pcmcodec.h"
-#include "../utility.h"
+#include "utility.h"
 #include <memory>
 #include <exception>
 

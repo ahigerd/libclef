@@ -2,8 +2,8 @@
 #include "oscillator.h"
 #include "sampler.h"
 #include "synthcontext.h"
-#include "../seq/itrack.h"
-#include "../seq/sequenceevent.h"
+#include "seq/itrack.h"
+#include "seq/sequenceevent.h"
 
 Channel::Note::Note(std::shared_ptr<SequenceEvent> event, std::shared_ptr<AudioNode> source, double duration)
 : event(event), source(source), duration(duration)
@@ -21,9 +21,11 @@ Channel::~Channel()
 {
 }
 
-uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
+uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
 {
-  int numSamples = buffer.size() / 2;
+  if (numSamples < 0 || numSamples * 2 > buffer.size()) {
+    numSamples = buffer.size() / 2;
+  }
   double endTime = timestamp + (numSamples * ctx->sampleTime);
   std::shared_ptr<SequenceEvent> event;
   do {
@@ -68,7 +70,7 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
   } while (event);
   int pos = 0;
   while (pos < buffer.size() && !isFinished()) {
-    for (int ch = 0; ch < 2; ch++) {
+    for (int ch = 0; ch < ctx->outputChannels; ch++) {
       int32_t sample = 0;
       std::vector<uint64_t> toErase;
       for (auto& iter : notes) {
@@ -93,6 +95,7 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer)
           toErase.push_back(noteID);
         } else if (start <= timestamp) {
           // TODO: modulators
+          // TODO: mixdown if source is stereo and output is mono
           sample += note->source->getSample(timestamp - start, ch);
         }
       }

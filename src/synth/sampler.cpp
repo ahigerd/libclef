@@ -1,7 +1,7 @@
 #include "sampler.h"
 #include "synthcontext.h"
 #include "iinterpolator.h"
-#include "../utility.h"
+#include "utility.h"
 
 Sampler::Sampler(const SynthContext* ctx, const SampleData* sample, double pitchBend)
 : AudioNode(ctx), interpolator(ctx->interpolator), sample(sample), offset(0), lastTime(-1)

@@ -1,5 +1,5 @@
 #include "adpcmcodec.h"
-#include "../utility.h"
+#include "utility.h"
 
 static const int8_t adpcmIndex[] = { -1, -1, -1, -1, 2, 4, 6, 8, };
 

@@ -40,12 +40,12 @@ bool RiffWriter::open(const std::string& filename)
   return true;
 }
 
-void RiffWriter::write(const std::vector<char>& data)
+void RiffWriter::write(const uint8_t* data, size_t length)
 {
   if (rewriteSize) {
-    size += data.size();
+    size += length;
   }
-  file.write(data.data(), data.size());
+  file.write(reinterpret_cast<const char*>(data), length);
 }
 
 void RiffWriter::write(const std::vector<int16_t>& data)

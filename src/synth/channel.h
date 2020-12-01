@@ -18,7 +18,7 @@ public:
 
   double gain;
 
-  uint32_t fillBuffer(std::vector<int16_t>& buffer);
+  uint32_t fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples = -1);
   bool isFinished() const;
 
 private:

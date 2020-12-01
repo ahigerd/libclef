@@ -1,6 +1,6 @@
 #include "iinterpolator.h"
-#include "../codec/sampledata.h"
-#include "../utility.h"
+#include "codec/sampledata.h"
+#include "utility.h"
 #include <cmath>
 #include <iostream>
 

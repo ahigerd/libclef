@@ -13,7 +13,13 @@ public:
   ~RiffWriter();
 
   bool open(const std::string& filename);
-  void write(const std::vector<char>& data);
+  void write(const uint8_t* data, size_t length);
+  inline void write(const int8_t* data, size_t length)
+    { write(reinterpret_cast<const uint8_t*>(data), length); }
+  inline void write(const std::vector<int8_t>& data)
+    { write(data.data(), data.size()); }
+  inline void write(const std::vector<uint8_t>& data)
+    { write(data.data(), data.size()); }
   void write(const std::vector<int16_t>& data);
   void close();
 

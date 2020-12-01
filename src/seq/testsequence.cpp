@@ -1,7 +1,7 @@
 #include "testsequence.h"
 #include "itrack.h"
-#include "../utility.h"
-#include "../codec/riffcodec.h"
+#include "utility.h"
+#include "codec/riffcodec.h"
 
 static const double testNotes[] = { 440, 554.36, 659.26, 880, 1108.73 };
 

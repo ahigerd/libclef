@@ -4,17 +4,26 @@
 #include <cstdint>
 #include <vector>
 #include <memory>
-struct Channel;
-struct IInterpolator;
+class Channel;
+class IInterpolator;
+class RiffWriter;
 
 struct SynthContext {
-  SynthContext(double sampleRate);
+  SynthContext(double sampleRate, int outputChannels = 2);
   ~SynthContext();
 
-  double sampleRate;
-  double sampleTime;
+  const double sampleRate;
+  const int outputChannels;
+  const double sampleTime;
   std::vector<std::unique_ptr<Channel>> channels;
   IInterpolator* interpolator;
+
+  size_t fillBuffer(uint8_t* buffer, size_t length);
+  void stream(std::ostream& output);
+  void save(RiffWriter* riff);
+
+private:
+  std::vector<int16_t> mixBuffer;
 };
 
 #endif

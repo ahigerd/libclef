@@ -2,7 +2,7 @@
 #define S2W_SAMPLER_H
 
 #include "audionode.h"
-#include "../codec/sampledata.h"
+#include "codec/sampledata.h"
 #include <vector>
 class IInterpolator;
 

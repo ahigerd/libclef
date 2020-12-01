@@ -1,5 +1,5 @@
 #include "pcmcodec.h"
-#include "../utility.h"
+#include "utility.h"
 
 PcmCodec::PcmCodec(int sampleBits, int channels, bool bigEndian)
 : sampleBytes(sampleBits >> 3), channels(channels), bigEndian(bigEndian)

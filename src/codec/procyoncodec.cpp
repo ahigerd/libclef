@@ -1,5 +1,5 @@
 #include "procyoncodec.h"
-#include "../utility.h"
+#include "utility.h"
 
 static const int16_t procyonFactor[][2] = {
   { 0, 0 },     { 60, 0 }, { 115, -52 }, { 98, -55 },
