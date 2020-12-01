@@ -1,4 +1,5 @@
 #include "isequence.h"
+#include "sequenceevent.h"
 
 ISequence::~ISequence() {}
 
@@ -20,4 +21,14 @@ bool ISequence::isFinished() const
     }
   }
   return true;
+}
+
+StreamSequence::StreamSequence(uint64_t sampleID, double startTime)
+{
+  BasicTrack* track = new BasicTrack;
+  SampleEvent* event = new SampleEvent;
+  event->sampleID = sampleID;
+  event->timestamp = startTime;
+  track->addEvent(event);
+  tracks.emplace_back(track);
 }

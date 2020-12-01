@@ -47,4 +47,9 @@ protected:
   std::vector<std::unique_ptr<Track>> tracks;
 };
 
+class StreamSequence : public BaseSequence<> {
+public:
+  StreamSequence(uint64_t sampleID, double startTime = 0);
+};
+
 #endif
