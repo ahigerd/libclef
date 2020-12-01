@@ -19,7 +19,14 @@ SOURCES = $(filter-out main.cpp, $(wildcard *.cpp */*.cpp))
 	@rm -f $@
 	gcc-ar -rc $@ $^
 
+../libseq2wav_d.a: $(patsubst %.cpp, ../build/%_d.o, $(SOURCES))
+	@rm -f $@
+	gcc-ar -rc $@ $^
+
 ../$(LIB)seq2wav.$(DLL): $(patsubst %.cpp, ../build/%.o, $(SOURCES))
+	$(CXX) -shared -o $@ $^
+
+../$(LIB)seq2wav_d.$(DLL): $(patsubst %.cpp, ../build/%_d.o, $(SOURCES))
 	$(CXX) -shared -o $@ $^
 
 ../build/%.o: %.cpp Makefile
