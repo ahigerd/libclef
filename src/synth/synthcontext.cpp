@@ -16,6 +16,16 @@ SynthContext::~SynthContext()
 {
 }
 
+void SynthContext::addChannel(Channel* channel)
+{
+  channels.emplace_back(channel);
+}
+
+void SynthContext::addChannel(ITrack* track)
+{
+  addChannel(new Channel(this, track));
+}
+
 size_t SynthContext::fillBuffer(uint8_t* buffer, size_t length)
 {
   size_t numSamples = length >> 1;

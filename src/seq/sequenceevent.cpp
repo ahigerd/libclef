@@ -57,3 +57,9 @@ OscillatorEvent::OscillatorEvent()
 {
   // initializers only
 }
+
+KillEvent::KillEvent(uint64_t playbackID)
+: playbackID(playbackID)
+{
+  // initializers only
+}

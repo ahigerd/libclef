@@ -12,6 +12,7 @@ public:
     Sample,
     Oscillator,
     Modulator,
+    Kill,
   };
 
   double timestamp;
@@ -84,6 +85,13 @@ class ModulatorEvent : public BaseEvent<SequenceEvent::Modulator> {
 public:
   uint64_t playbackID;
   IModulator* modulator;
+};
+
+class KillEvent : public BaseEvent<SequenceEvent::Kill> {
+public:
+  KillEvent(uint64_t playbackID);
+
+  uint64_t playbackID;
 };
 
 #endif

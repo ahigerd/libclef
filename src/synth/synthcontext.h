@@ -6,6 +6,7 @@
 #include <memory>
 class Channel;
 class IInterpolator;
+class ITrack;
 class RiffWriter;
 
 struct SynthContext {
@@ -17,6 +18,9 @@ struct SynthContext {
   const double sampleTime;
   std::vector<std::unique_ptr<Channel>> channels;
   IInterpolator* interpolator;
+
+  void addChannel(Channel* channel);
+  void addChannel(ITrack* track);
 
   size_t fillBuffer(uint8_t* buffer, size_t length);
   void stream(std::ostream& output);

@@ -4,6 +4,7 @@
 #include "synthcontext.h"
 #include "seq/itrack.h"
 #include "seq/sequenceevent.h"
+#include <iostream>
 
 Channel::Note::Note(std::shared_ptr<SequenceEvent> event, std::shared_ptr<AudioNode> source, double duration)
 : event(event), source(source), duration(duration)
@@ -52,12 +53,21 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
       } else if (SampleEvent* sampEvent = event->cast<SampleEvent>()) {
         noteEvent = sampEvent;
         SampleData* sampleData = SampleData::get(sampEvent->sampleID);
+        if (!sampleData) {
+          std::cerr << "ERROR: sample " << std::hex << sampEvent->sampleID << std::dec << " not found" << std::endl;
+          continue;
+        }
         Sampler* samp = new Sampler(ctx, sampleData, sampEvent->pitchBend);
         noteNode.reset(samp);
         samp->param(AudioNode::Gain)->setConstant(sampEvent->volume);
         samp->param(AudioNode::Pan)->setConstant(sampEvent->pan);
-        note = new Note(event, noteNode, sampleData->duration());
+        note = new Note(event, noteNode, sampEvent->duration >= 0 ? sampEvent->duration : sampleData->duration());
         notes.emplace(std::make_pair(sampEvent->playbackID, note));
+      } else if (KillEvent* killEvent = event->cast<KillEvent>()) {
+        auto noteIter = notes.find(killEvent->playbackID);
+        if (noteIter != notes.end()) {
+          notes.erase(noteIter);
+        }
       }
       if (noteEvent && noteEvent->useEnvelope) {
         Envelope* env = new Envelope(ctx, noteEvent->attack, noteEvent->hold, noteEvent->sustain, noteEvent->decay, noteEvent->release);
