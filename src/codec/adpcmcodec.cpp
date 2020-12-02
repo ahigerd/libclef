@@ -1,5 +1,6 @@
 #include "adpcmcodec.h"
 #include "utility.h"
+#include <iostream>
 
 static const int8_t adpcmIndex[] = { -1, -1, -1, -1, 2, 4, 6, 8, };
 
@@ -84,7 +85,13 @@ SampleData* AdpcmCodec::decodeRange(std::vector<uint8_t>::const_iterator start, 
   } else {
     sampleData->channels[0].reserve(length << 1);
   }
-  if (interleave <= 0) {
+  if (interleave == 0 && format == OKI4s) {
+    while (start != end) {
+      uint8_t byte = *start++;
+      sampleData->channels[0].push_back(getNextSample((byte & 0xf0) >> 4, 0));
+      sampleData->channels[0].push_back(getNextSample(byte & 0x0f, 0));
+    }
+  } else if (interleave <= 0) {
     while (start != end) {
       uint8_t byte = *start++;
       sampleData->channels[0].push_back(getNextSample(byte & 0x0f, 0));
