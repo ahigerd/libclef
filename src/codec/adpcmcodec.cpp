@@ -1,6 +1,6 @@
 #include "adpcmcodec.h"
 #include "utility.h"
-#include <iostream>
+#include <algorithm>
 
 static const int8_t adpcmIndex[] = { -1, -1, -1, -1, 2, 4, 6, 8, };
 
@@ -47,7 +47,7 @@ int16_t AdpcmCodec::getNextSample(uint8_t value, int channel)
   if (value & 0x02) delta += step >> 1;
   if (value & 0x01) delta += step >> 2;
   if (value & 0x08) delta = -delta;
-  if (format == NDS) {
+  if (format == DSP) {
     if (predictor[channel] + delta == -0x8000) {
       predictor[channel] = -0x8000;
     } else {
@@ -65,7 +65,7 @@ SampleData* AdpcmCodec::decodeRange(std::vector<uint8_t>::const_iterator start, 
   SampleData* sampleData = sampleID ? new SampleData(sampleID) : new SampleData();
   int length = end - start;
 
-  if (length > 4 && format == NDS) {
+  if (length > 4 && format == DSP) {
     predictor[0] = (*start++ << 8) | *start++;
     index[0] = clamp<int8_t>(int16_t((*start++ << 8) | *start++), 0, maxStep);
     length -= 4;
@@ -77,26 +77,25 @@ SampleData* AdpcmCodec::decodeRange(std::vector<uint8_t>::const_iterator start, 
   }
 
   sampleData->channels.push_back(std::vector<int16_t>());
-  int highChannel = interleave < 0 ? 1 : 0;
+  int lowChannel = 0, highChannel = 0;
+  uint8_t lowShift = 0, highShift = 4;
   if (interleave) {
+    highChannel = 1;
     sampleData->channels.push_back(std::vector<int16_t>());
     sampleData->channels[0].reserve(length);
     sampleData->channels[1].reserve(length);
   } else {
     sampleData->channels[0].reserve(length << 1);
   }
-  if (interleave == 0 && format == OKI4s) {
-    while (start != end) {
-      uint8_t byte = *start++;
-      sampleData->channels[0].push_back(getNextSample((byte & 0xf0) >> 4, 0));
-      sampleData->channels[0].push_back(getNextSample(byte & 0x0f, 0));
-    }
-  } else if (interleave <= 0) {
-    while (start != end) {
-      uint8_t byte = *start++;
-      sampleData->channels[0].push_back(getNextSample(byte & 0x0f, 0));
-      sampleData->channels[highChannel].push_back(getNextSample((byte & 0xf0) >> 4, highChannel));
-    }
+  if (format == OKI4s) {
+    std::swap(lowChannel, highChannel);
+    std::swap(lowShift, highShift);
+  }
+  while (start != end) {
+    uint8_t low = *start >> lowShift;
+    uint8_t high = *start++ >> highShift;
+    sampleData->channels[lowChannel].push_back(getNextSample(low, lowChannel));
+    sampleData->channels[highChannel].push_back(getNextSample(high, highChannel));
   }
   return sampleData;
 }

@@ -7,7 +7,7 @@ class AdpcmCodec : public ICodec {
 public:
   enum Format {
     IMA,
-    NDS,
+    DSP,
     OKI4s,
     // TODO: Microsoft
   };
