@@ -89,7 +89,7 @@ public:
 
 class KillEvent : public BaseEvent<SequenceEvent::Kill> {
 public:
-  KillEvent(uint64_t playbackID);
+  KillEvent(uint64_t playbackID, double timestamp);
 
   uint64_t playbackID;
 };

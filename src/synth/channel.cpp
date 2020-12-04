@@ -66,7 +66,7 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
       } else if (KillEvent* killEvent = event->cast<KillEvent>()) {
         auto noteIter = notes.find(killEvent->playbackID);
         if (noteIter != notes.end()) {
-          notes.erase(noteIter);
+          noteIter->second->duration = killEvent->timestamp - noteIter->second->event->timestamp;
         }
       }
       if (noteEvent && noteEvent->useEnvelope) {

@@ -58,8 +58,8 @@ OscillatorEvent::OscillatorEvent()
   // initializers only
 }
 
-KillEvent::KillEvent(uint64_t playbackID)
+KillEvent::KillEvent(uint64_t playbackID, double timestamp)
 : playbackID(playbackID)
 {
-  // initializers only
+  this->timestamp = timestamp;
 }
