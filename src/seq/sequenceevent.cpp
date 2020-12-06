@@ -1,6 +1,6 @@
 #include "sequenceevent.h"
 
-static uint64_t _nextPlaybackID = 0;
+static uint64_t _nextPlaybackID = 1;
 
 inline uint64_t BaseNoteEvent::nextPlaybackID()
 {
