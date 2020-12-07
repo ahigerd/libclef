@@ -5,9 +5,9 @@ ifeq ($(OS),Windows_NT)
 	EXPORT = __declspec(dllexport)
 endif
 
-PLUGIN = dummy
+PLUGIN = TODO
 
-CXXFLAGS = -std=gnu++14 -fPIC -Wno-multichar -I../../seq2wav/include -march=native $(shell pkg-config --cflags audacious) -DPLUGIN_NAME=\"$(PLUGIN)\" "-DEXPORT=$(EXPORT)"
+CXXFLAGS = -std=gnu++14 -fPIC -Wno-multichar -I../../src -I../../seq2wav/include -march=native $(shell pkg-config --cflags audacious) -DPLUGIN_NAME=\"$(PLUGIN)\" "-DEXPORT=$(EXPORT)"
 CXXFLAGS_R = $(CXXFLAGS) -O3
 CXXFLAGS_D = $(CXXFLAGS) -ggdb -fsanitize=address
 LDFLAGS = -L../../seq2wav $(shell pkg-config --libs audacious)
@@ -15,8 +15,9 @@ LDFLAGS_R = $(LDFLAGS) -lseq2wav
 LDFLAGS_D = $(LDFLAGS) -lseq2wav_d -lasan
 
 SOURCES = $(wildcard *.cpp */*.cpp)
-OBJS_R = $(patsubst %.cpp, build/%.o, $(SOURCES))
-OBJS_D = $(patsubst %.cpp, build/%_d.o, $(SOURCES))
+BASE_OBJS = $(filter-out %_d.o,$(wildcard ../../build/*.o ../../build/*/*.o))
+OBJS_R = $(patsubst %.cpp, build/%.o, $(SOURCES)) $(BASE_OBJS)
+OBJS_D = $(patsubst %.cpp, build/%_d.o, $(SOURCES)) $(BASE_OBJS)
 
 ../../aud_$(PLUGIN)$(DLL): ../../seq2wav/libseq2wav.a $(OBJS_R)
 	$(CXX) -shared -o $@ $(OBJS_R) $(LDFLAGS_R)
