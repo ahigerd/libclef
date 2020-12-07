@@ -14,6 +14,11 @@ SampleData* SampleData::get(uint64_t sampleID)
   return iter->second.get();
 }
 
+void SampleData::purge()
+{
+  sampleCache.clear();
+}
+
 uint64_t nextSampleID()
 {
   do {

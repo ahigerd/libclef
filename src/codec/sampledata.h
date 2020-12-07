@@ -6,6 +6,7 @@
 
 struct SampleData {
   static SampleData* get(uint64_t sampleID);
+  static void purge();
 
   SampleData(uint64_t sampleID, double sampleRate = 44100.0, int loopStart = -1, int loopEnd = -1);
   SampleData(double sampleRate = 44100.0, int loopStart = -1, int loopEnd = -1);
