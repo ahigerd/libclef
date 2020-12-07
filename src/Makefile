@@ -1,5 +1,5 @@
 # Don't use -march=native for code intended for distribution
-CXXFLAGS = -std=gnu++14 -Wno-multichar -I. -march=native
+CXXFLAGS = -fPIC -std=gnu++14 -Wno-multichar -I. -march=native
 
 SOURCES = $(filter-out main.cpp, $(wildcard *.cpp */*.cpp))
 
