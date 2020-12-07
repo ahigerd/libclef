@@ -1,5 +1,5 @@
-#ifndef MONPITOR_COMMANDARGS_H
-#define MONPITOR_COMMANDARGS_H
+#ifndef S2W_COMMANDARGS_H
+#define S2W_COMMANDARGS_H
 
 #include <string>
 #include <map>

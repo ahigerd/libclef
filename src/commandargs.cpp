@@ -2,20 +2,22 @@
 #include <sstream>
 #include <iomanip>
 
-CommandArgs::CommandArgs(std::initializer_list<FlagDef> _defs) {
+CommandArgs::CommandArgs(std::initializer_list<FlagDef> _defs)
+{
   for (const FlagDef& def : _defs) {
     if (def.longFlag.empty() && def.shortFlag.empty()) {
       positionalDefs.push_back(def);
     } else {
       defs["--" + def.longFlag] = def;
       if (!def.shortFlag.empty()) {
-        shortFlags["-" + def.shortFlag] = def.longFlag;
+        shortFlags["-" + def.shortFlag] = "--" + def.longFlag;
       }
     }
   }
 }
 
-std::string CommandArgs::parse(int argc, char** argv) {
+std::string CommandArgs::parse(int argc, char** argv)
+{
   bool expectArg = false;
   std::string argKey;
   for (int i = 1; i < argc; i++) {
@@ -45,15 +47,18 @@ std::string CommandArgs::parse(int argc, char** argv) {
   return std::string();
 }
 
-const std::vector<std::string>& CommandArgs::positional() const {
+const std::vector<std::string>& CommandArgs::positional() const
+{
   return _positional;
 }
 
-bool CommandArgs::hasKey(const std::string& longFlag) const {
+bool CommandArgs::hasKey(const std::string& longFlag) const
+{
   return flags.count(longFlag) > 0;
 }
 
-std::string CommandArgs::getString(const std::string& longFlag, std::string defaultValue) const {
+std::string CommandArgs::getString(const std::string& longFlag, std::string defaultValue) const
+{
   auto iter = flags.find(longFlag);
   if (iter == flags.end()) {
     return defaultValue;
@@ -61,7 +66,8 @@ std::string CommandArgs::getString(const std::string& longFlag, std::string defa
   return iter->second;
 }
 
-int CommandArgs::getInt(const std::string& longFlag, int defaultValue) const {
+int CommandArgs::getInt(const std::string& longFlag, int defaultValue) const
+{
   auto iter = flags.find(longFlag);
   if (iter == flags.end()) {
     return defaultValue;
@@ -69,7 +75,8 @@ int CommandArgs::getInt(const std::string& longFlag, int defaultValue) const {
   return std::stoi(iter->second, 0, 0);
 }
 
-double CommandArgs::getFloat(const std::string& longFlag, double defaultValue) const {
+double CommandArgs::getFloat(const std::string& longFlag, double defaultValue) const
+{
   auto iter = flags.find(longFlag);
   if (iter == flags.end()) {
     return defaultValue;
@@ -77,7 +84,8 @@ double CommandArgs::getFloat(const std::string& longFlag, double defaultValue) c
   return std::stod(iter->second);
 }
 
-std::string CommandArgs::usageText(const std::string& programName) const {
+std::string CommandArgs::usageText(const std::string& programName) const
+{
   int columnWidth = 6;
   for (auto iter : defs) {
     int flagLength = 2 + iter.second.longFlag.length();

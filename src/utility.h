@@ -41,6 +41,8 @@ T parseIntBE(const Container& buffer, int offset)
   return T(result);
 }
 
+int countBits(uint64_t value);
+
 double noteToFreq(double midiNote);
 
 #endif
