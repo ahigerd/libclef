@@ -10,6 +10,21 @@ static TagsM3U::TagMap m3uKeys = {
   { "-X-TARGETDURATION", "LENGTH_SECONDS_FP" },
 };
 
+std::string TagsM3U::relativeTo(const std::string& trackPath)
+{
+  int slashPos = trackPath.rfind(
+#ifdef _WIN32
+    '\\'
+#else
+    '/'
+#endif
+  );
+  if (slashPos == std::string::npos) {
+    return "!tags.m3u";
+  }
+  return trackPath.substr(0, slashPos + 1) + "!tags.m3u";
+}
+
 TagsM3U::TagsM3U() : autoTrack(false)
 {
   // initializers only
@@ -224,8 +239,16 @@ void TagsM3U::addTrack(const std::string& trackName)
 
 int TagsM3U::findTrack(const std::string& trackName) const
 {
+  int slashPos = trackName.rfind(
+#ifdef _WIN32
+    '\\'
+#else
+    '/'
+#endif
+  );
+  std::string filename = trackName.substr(slashPos + 1);
   for (int i = 0; i < tracks.size(); i++) {
-    if (tracks.at(i) == trackName) {
+    if (tracks.at(i) == filename) {
       return i;
     }
   }

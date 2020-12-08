@@ -10,6 +10,8 @@ class TagsM3U {
 public:
   using TagMap = std::unordered_map<std::string, std::string>;
 
+  static std::string relativeTo(const std::string& trackPath);
+
   TagsM3U();
   TagsM3U(std::istream& file);
 
