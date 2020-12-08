@@ -2,6 +2,7 @@
 #define S2W_UTILITY_H
 
 #include <cstdint>
+#include <string>
 
 template <typename T, typename T2>
 inline T clamp(T2 value, T lower, T upper)
@@ -44,5 +45,7 @@ T parseIntBE(const Container& buffer, int offset)
 int countBits(uint64_t value);
 
 double noteToFreq(double midiNote);
+
+std::string trim(const std::string& str);
 
 #endif

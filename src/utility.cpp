@@ -16,3 +16,15 @@ int countBits(uint64_t value)
   }
   return result;
 }
+
+std::string trim(const std::string& str)
+{
+  auto begin = str.begin(), end = str.end();
+  while (begin != end && std::isspace(*begin)) {
+    begin++;
+  }
+  while (end != begin && std::isspace(*end)) {
+    end--;
+  }
+  return std::string(begin, end);
+}
