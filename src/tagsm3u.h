@@ -30,11 +30,11 @@ public:
   void addTrack(const std::string& trackName);
 
 private:
-  void populateTag(bool globalTag, std::string tag, const std::string& value);
+  void populateTag(bool globalTag, std::string tag, std::string value);
   std::vector<std::string> tracks;
   std::unordered_map<int, TagMap> tags;
   TagMap globalTags, fileTags, invalid;
-  int autoTrack;
+  bool autoTrack;
 };
 
 #endif

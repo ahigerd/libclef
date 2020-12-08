@@ -10,12 +10,12 @@ static TagsM3U::TagMap m3uKeys = {
   { "-X-TARGETDURATION", "LENGTH_SECONDS_FP" },
 };
 
-TagsM3U::TagsM3U() : autoTrack(-1)
+TagsM3U::TagsM3U() : autoTrack(false)
 {
   // initializers only
 }
 
-TagsM3U::TagsM3U(std::istream& file) : autoTrack(-1)
+TagsM3U::TagsM3U(std::istream& file) : autoTrack(false)
 {
   std::string line;
   while (file) {
@@ -36,6 +36,11 @@ void TagsM3U::parseLine(const std::string& _line)
     if (!fileTags.count("title")) {
       fileTags["title"] = line;
     }
+    if (autoTrack && !fileTags.count("track")) {
+      std::stringstream trackSS;
+      trackSS << (tracks.size() + 1);
+      fileTags["track"] = trackSS.str();
+    }
     tags[tracks.size()] = fileTags;
     tracks.push_back(line);
     // Copy the current global tag state into the tags for the next file.
@@ -45,13 +50,22 @@ void TagsM3U::parseLine(const std::string& _line)
   line = trim(line.substr(1));
   std::string tag, value;
   bool globalTag = line[0] == '@';
-  if (line[0] == '$' || line[0] == '%' || line[0] == '@') {
+  if (line[0] == '$') {
+    // vgmstream-style directives
+    if (line == "$AUTOTRACK") {
+      autoTrack = true;
+    }
+  } else if (line[0] == '%' || line[0] == '@') {
     // vgmstream-style tags
     int end = line.find(line[0], 1);
     if (end == std::string::npos) {
       // A tag can be terminated with another token
       // If it isn't, then it ends at the first whitespace
       end = line.find(' ');
+      if (end == std::string::npos) {
+        // If there's no whitespace at all then it's invalid
+        return;
+      }
     }
     tag = trim(line.substr(1, end - 1));
     value = trim(line.substr(end + 1));
@@ -136,7 +150,7 @@ void TagsM3U::parseLine(const std::string& _line)
     } else {
       auto iter = m3uKeys.find(tag);
       if (iter != m3uKeys.end()) {
-        tag = iter->first;
+        tag = iter->second;
         // album, artist, and genre stick until overridden
         // everything else is an extension
         globalTag = tag[0] != '-';
@@ -149,15 +163,19 @@ void TagsM3U::parseLine(const std::string& _line)
   populateTag(globalTag, tag, value);
 }
 
-void TagsM3U::populateTag(bool globalTag, std::string tag, const std::string& value)
+void TagsM3U::populateTag(bool globalTag, std::string tag, std::string value)
 {
   tag = trim(tag);
+  value = trim(value);
+  if (tag.empty()) {
+    return;
+  }
   for (char& ch : tag) {
     ch = std::tolower(ch);
   }
-  fileTags[tag] = trim(value);
+  fileTags[tag] = value;
   if (globalTag) {
-    globalTags[tag] = trim(value);
+    globalTags[tag] = value;
   }
 }
 
