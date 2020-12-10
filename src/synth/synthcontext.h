@@ -22,6 +22,7 @@ struct SynthContext {
   void addChannel(Channel* channel);
   void addChannel(ITrack* track);
 
+  double currentTime() const;
   void seek(double timestamp);
   size_t fillBuffer(uint8_t* buffer, size_t length);
   void stream(std::ostream& output);
@@ -29,6 +30,7 @@ struct SynthContext {
 
 private:
   std::vector<int16_t> mixBuffer;
+  double currentTimestamp;
 };
 
 #endif

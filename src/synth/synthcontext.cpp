@@ -7,7 +7,8 @@
 static const int BUFFER_SIZE = 1024;
 
 SynthContext::SynthContext(double sampleRate, int outputChannels)
-: sampleRate(sampleRate), sampleTime(1.0 / sampleRate), outputChannels(outputChannels), interpolator(IInterpolator::get(IInterpolator::Zero)), mixBuffer(BUFFER_SIZE >> 1)
+: sampleRate(sampleRate), sampleTime(1.0 / sampleRate), outputChannels(outputChannels),
+  interpolator(IInterpolator::get(IInterpolator::Zero)), mixBuffer(BUFFER_SIZE >> 1), currentTimestamp(0)
 {
   // initializers only
 }
@@ -26,8 +27,14 @@ void SynthContext::addChannel(ITrack* track)
   addChannel(new Channel(this, track));
 }
 
+double SynthContext::currentTime() const
+{
+  return currentTimestamp;
+}
+
 void SynthContext::seek(double timestamp)
 {
+  currentTimestamp = timestamp;
   for (auto& ch : channels) {
     ch->seek(timestamp);
   }
@@ -51,6 +58,7 @@ size_t SynthContext::fillBuffer(uint8_t* buffer, size_t length)
       written = chWritten;
     }
   }
+  currentTimestamp += written * sampleTime / (2 * channels.size());
   return written;
 }
 
