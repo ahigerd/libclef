@@ -4,7 +4,7 @@
 #include "utility.h"
 
 Sampler::Sampler(const SynthContext* ctx, const SampleData* sample, double pitchBend)
-: AudioNode(ctx), interpolator(ctx->interpolator), sample(sample), offset(0), lastTime(-1)
+: AudioNode(ctx), interpolator(ctx->interpolator), sample(sample), offset(0), lastTime(0)
 {
   addParam(PitchBend, pitchBend);
   addParam(Gain, 1.0);
@@ -21,14 +21,16 @@ int16_t Sampler::generateSample(double time, int channel)
   if (!isActive()) {
     return 0;
   }
-  double sampleStep = ctx->sampleTime * sample->sampleRate * paramValue(PitchBend, time);
-  if (time != lastTime) {
+  double sampleStepBase = ctx->sampleTime * sample->sampleRate;
+  double sampleStep = sampleStepBase * paramValue(PitchBend, time);
+  while (time > lastTime) {
     offset += sampleStep;
-    lastTime = time;
+    lastTime += ctx->sampleTime;
+    sampleStep = sampleStepBase * paramValue(PitchBend, time);
   }
-  double result = sampleStep == 1 ? sample->at(offset, channel) : interpolator->interpolate(sample, offset, channel, sampleStep);
   if (sample->loopStart >= 0 && offset >= sample->loopEnd) {
     offset -= (sample->loopEnd - sample->loopStart);
   }
+  double result = sampleStep == 1 ? sample->at(offset, channel) : interpolator->interpolate(sample, offset, channel, sampleStep);
   return clamp<int16_t>(result, -0x8000, 0x7FFF);
 }

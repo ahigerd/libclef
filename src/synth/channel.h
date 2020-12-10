@@ -18,6 +18,7 @@ public:
 
   double gain;
 
+  void seek(double timestamp);
   uint32_t fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples = -1);
   bool isFinished() const;
 

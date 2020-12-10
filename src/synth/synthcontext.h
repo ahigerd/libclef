@@ -22,6 +22,7 @@ struct SynthContext {
   void addChannel(Channel* channel);
   void addChannel(ITrack* track);
 
+  void seek(double timestamp);
   size_t fillBuffer(uint8_t* buffer, size_t length);
   void stream(std::ostream& output);
   void save(RiffWriter* riff);

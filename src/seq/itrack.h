@@ -10,7 +10,16 @@ public:
   virtual ~ITrack();
 
   virtual bool isFinished() const = 0;
-  virtual std::shared_ptr<SequenceEvent> nextEvent() = 0;
+  virtual std::shared_ptr<SequenceEvent> nextEvent();
+
+  virtual void reset();
+  virtual void seek(double timestamp);
+
+protected:
+  virtual std::shared_ptr<SequenceEvent> readNextEvent() = 0;
+  virtual void internalReset() = 0;
+  std::shared_ptr<SequenceEvent> seekEvent;
+  std::shared_ptr<SequenceEvent> lastEvent;
 };
 
 class BasicTrack : public ITrack {
@@ -18,11 +27,12 @@ public:
   BasicTrack();
 
   virtual bool isFinished() const;
-  virtual std::shared_ptr<SequenceEvent> nextEvent();
 
   void addEvent(SequenceEvent* event);
 
 protected:
+  virtual std::shared_ptr<SequenceEvent> readNextEvent();
+  virtual void internalReset();
   int position;
   std::vector<std::shared_ptr<SequenceEvent>> events;
 };

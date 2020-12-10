@@ -124,3 +124,14 @@ bool Channel::isFinished() const
 {
   return !nextEvent && !notes.size() && track->isFinished();
 }
+
+void Channel::seek(double timestamp)
+{
+  if (timestamp == this->timestamp) {
+    return;
+  }
+  notes.clear();
+  nextEvent = std::shared_ptr<SequenceEvent>();
+  track->seek(timestamp);
+  this->timestamp = timestamp;
+}
