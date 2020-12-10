@@ -12,8 +12,20 @@ public:
 
   static std::string relativeTo(const std::string& trackPath);
 
+  template <typename Iter>
+  static TagsM3U fromData(Iter begin, Iter end) {
+    TagsM3U m3u;
+    for (Iter iter = begin, lineEnd = begin; iter != end; iter = lineEnd) {
+      while (lineEnd != end && *++lineEnd != '\n') {}
+      m3u.parseLine(std::string(iter, lineEnd));
+    }
+    return m3u;
+  }
+
   TagsM3U();
   TagsM3U(std::istream& file);
+  TagsM3U(const TagsM3U& other) = default;
+  TagsM3U(TagsM3U&& other) = default;
 
   void parseLine(const std::string& line);
 

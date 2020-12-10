@@ -47,5 +47,8 @@ int countBits(uint64_t value);
 double noteToFreq(double midiNote);
 
 std::string trim(const std::string& str);
+std::wstring toUtf16(const std::string& str);
+std::string formatDuration(double seconds);
+std::string formatDuration(const std::string& seconds);
 
 #endif
