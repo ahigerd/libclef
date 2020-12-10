@@ -12,6 +12,7 @@ class ITrack;
 class SequenceEvent;
 
 class Channel {
+  friend class SynthContext;
 public:
   Channel(const SynthContext* ctx, ITrack* track);
   ~Channel();

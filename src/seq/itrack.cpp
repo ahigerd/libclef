@@ -61,7 +61,7 @@ std::shared_ptr<SequenceEvent> ITrack::nextEvent()
   return event;
 }
 
-BasicTrack::BasicTrack() : position(0)
+BasicTrack::BasicTrack() : position(0), maximumTimestamp(0)
 {
   // initializers only
 }
@@ -69,6 +69,15 @@ BasicTrack::BasicTrack() : position(0)
 void BasicTrack::addEvent(SequenceEvent* event)
 {
   events.push_back(std::shared_ptr<SequenceEvent>(event));
+  if (BaseNoteEvent* note = dynamic_cast<BaseNoteEvent*>(event)) {
+    if (event->timestamp + note->duration > maximumTimestamp) {
+      maximumTimestamp = event->timestamp + note->duration;
+      return;
+    }
+  }
+  if (event->timestamp > maximumTimestamp) {
+    maximumTimestamp = event->timestamp;
+  }
 }
 
 bool BasicTrack::isFinished() const
@@ -89,4 +98,9 @@ std::shared_ptr<SequenceEvent> BasicTrack::readNextEvent()
 void BasicTrack::internalReset()
 {
   position = 0;
+}
+
+double BasicTrack::length() const
+{
+  return maximumTimestamp;
 }

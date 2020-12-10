@@ -1,5 +1,6 @@
 #include "synthcontext.h"
 #include "channel.h"
+#include "seq/itrack.h"
 #include "iinterpolator.h"
 #include "riffwriter.h"
 #include "utility.h"
@@ -8,7 +9,7 @@ static const int BUFFER_SIZE = 1024;
 
 SynthContext::SynthContext(double sampleRate, int outputChannels)
 : sampleRate(sampleRate), sampleTime(1.0 / sampleRate), outputChannels(outputChannels),
-  interpolator(IInterpolator::get(IInterpolator::Zero)), mixBuffer(BUFFER_SIZE >> 1), currentTimestamp(0)
+  interpolator(IInterpolator::get(IInterpolator::Zero)), mixBuffer(BUFFER_SIZE >> 1), currentTimestamp(0), maximumTimestamp(0)
 {
   // initializers only
 }
@@ -19,6 +20,10 @@ SynthContext::~SynthContext()
 
 void SynthContext::addChannel(Channel* channel)
 {
+  double length = channel->track->length();
+  if (length > maximumTimestamp) {
+    maximumTimestamp = length;
+  }
   channels.emplace_back(channel);
 }
 
@@ -30,6 +35,11 @@ void SynthContext::addChannel(ITrack* track)
 double SynthContext::currentTime() const
 {
   return currentTimestamp;
+}
+
+double SynthContext::maximumTime() const
+{
+  return maximumTimestamp;
 }
 
 void SynthContext::seek(double timestamp)

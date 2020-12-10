@@ -14,6 +14,7 @@ public:
 
   virtual void reset();
   virtual void seek(double timestamp);
+  virtual double length() const = 0;
 
 protected:
   virtual std::shared_ptr<SequenceEvent> readNextEvent() = 0;
@@ -27,6 +28,7 @@ public:
   BasicTrack();
 
   virtual bool isFinished() const;
+  virtual double length() const;
 
   void addEvent(SequenceEvent* event);
 
@@ -34,6 +36,7 @@ protected:
   virtual std::shared_ptr<SequenceEvent> readNextEvent();
   virtual void internalReset();
   int position;
+  double maximumTimestamp;
   std::vector<std::shared_ptr<SequenceEvent>> events;
 };
 
