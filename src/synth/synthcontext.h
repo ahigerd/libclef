@@ -9,7 +9,8 @@ class IInterpolator;
 class ITrack;
 class RiffWriter;
 
-struct SynthContext {
+class SynthContext {
+public:
   SynthContext(double sampleRate, int outputChannels = 2);
   ~SynthContext();
 

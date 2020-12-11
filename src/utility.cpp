@@ -1,5 +1,6 @@
 #include "utility.h"
 #include <cmath>
+#include <cctype>
 #include <codecvt>
 #include <locale>
 #include <sstream>

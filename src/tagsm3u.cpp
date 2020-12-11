@@ -12,13 +12,7 @@ static TagsM3U::TagMap m3uKeys = {
 
 std::string TagsM3U::relativeTo(const std::string& trackPath)
 {
-  int slashPos = trackPath.find_last_of(
-#ifdef _WIN32
-    "\\/"
-#else
-    "/"
-#endif
-  );
+  int slashPos = trackPath.find_last_of(PATH_CHARS);
   if (slashPos == std::string::npos) {
     return "!tags.m3u";
   }
@@ -239,13 +233,7 @@ void TagsM3U::addTrack(const std::string& trackName)
 
 int TagsM3U::findTrack(const std::string& trackName) const
 {
-  int slashPos = trackName.find_last_of(
-#ifdef _WIN32
-    "\\/"
-#else
-    "/"
-#endif
-  );
+  int slashPos = trackName.find_last_of(PATH_CHARS);
   std::string filename = trackName.substr(slashPos + 1);
   for (int i = 0; i < tracks.size(); i++) {
     if (tracks.at(i) == filename) {

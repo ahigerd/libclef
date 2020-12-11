@@ -1,6 +1,7 @@
 #ifndef S2W_IINTERPOLATOR_H
 #define S2W_IINTERPOLATOR_H
 
+#include "s2wconfig.h"
 #include <vector>
 #include <cstdint>
 class SampleData;

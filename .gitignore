@@ -10,3 +10,6 @@ seq2wav_d
 *.a
 *.so
 *.exe
+*.lib
+*.exp
+*.obj

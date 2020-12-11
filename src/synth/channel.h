@@ -1,10 +1,10 @@
 #ifndef S2W_CHANNEL_H
 #define S2W_CHANNEL_H
 
+#include "s2wconfig.h"
 #include <unordered_map>
 #include <vector>
 #include <memory>
-#include <cstdint>
 #include "audionode.h"
 #include "envelope.h"
 class SynthContext;

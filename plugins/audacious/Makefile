@@ -1,13 +1,11 @@
 DLL = .so
-EXPORT = __attribute__((visibility(\"default\")))
 ifeq ($(OS),Windows_NT)
 	DLL = .dll
-	EXPORT = __declspec(dllexport)
 endif
 
 PLUGIN = TODO
 
-CXXFLAGS = -std=gnu++14 -fPIC -Wno-multichar -I../../src -I../../seq2wav/include -march=native $(shell pkg-config --cflags audacious) -DPLUGIN_NAME=\"$(PLUGIN)\" "-DEXPORT=$(EXPORT)"
+CXXFLAGS = -std=gnu++14 -fPIC -Wno-multichar -I../../src -I../../seq2wav/include -march=native $(shell pkg-config --cflags audacious) -DPLUGIN_NAME=\"$(PLUGIN)\"
 CXXFLAGS_R = $(CXXFLAGS) -O3
 CXXFLAGS_D = $(CXXFLAGS) -ggdb -fsanitize=address
 LDFLAGS = -L../../seq2wav $(shell pkg-config --libs audacious)

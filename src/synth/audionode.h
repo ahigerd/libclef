@@ -1,7 +1,7 @@
 #ifndef S2W_AUDIONODE_H
 #define S2W_AUDIONODE_H
 
-#include <cstdint>
+#include "s2wconfig.h"
 #include <unordered_map>
 #include "audioparam.h"
 class SynthContext;
