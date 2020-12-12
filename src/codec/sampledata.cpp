@@ -30,7 +30,9 @@ uint64_t nextSampleID()
 SampleData::SampleData(uint64_t sampleID, double sampleRate, int loopStart, int loopEnd)
 : sampleID(sampleID), sampleRate(sampleRate), loopStart(loopStart), loopEnd(loopEnd)
 {
-  sampleCache[sampleID].reset(this);
+  if (sampleID != Uncached) {
+    sampleCache[sampleID].reset(this);
+  }
   m_numSamples = -1;
   m_duration = -1;
 }

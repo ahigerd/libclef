@@ -5,6 +5,9 @@
 #include <vector>
 
 struct SampleData {
+  enum {
+    Uncached = 0xFFFFFFFFFFFFFFFF,
+  };
   static SampleData* get(uint64_t sampleID);
   static void purge();
 

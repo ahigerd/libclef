@@ -6,6 +6,8 @@ static: libseq2wav.a
 
 INCLUDES = $(patsubst src/%.h, include/%.h, $(wildcard src/*.h src/*/*.h))
 
+includes: $(INCLUDES)
+
 build/Makefile.d: $(wildcard src/*.cpp src/*/*.cpp src/*.h src/*/*.h) Makefile src/Makefile
 	$(MAKE) -C src ../build/Makefile.d
 

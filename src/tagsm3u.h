@@ -16,8 +16,9 @@ public:
   template <typename Iter>
   static TagsM3U fromData(Iter begin, Iter end) {
     TagsM3U m3u;
-    for (Iter iter = begin, lineEnd = begin; iter != end; iter = lineEnd) {
-      while (lineEnd != end && *++lineEnd != '\n') {}
+    for (Iter iter = begin, lineEnd = begin; iter < end; iter = lineEnd) {
+      while (lineEnd < end && *lineEnd++ != '\n') {}
+      if (lineEnd >= end) break;
       m3u.parseLine(std::string(iter, lineEnd));
     }
     return m3u;
