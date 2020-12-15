@@ -3,6 +3,11 @@ CXXFLAGS = -fPIC -std=gnu++14 -Wno-multichar -I. -march=native
 
 SOURCES = $(filter-out main.cpp, $(wildcard *.cpp */*.cpp))
 
+DLL = so
+ifeq ($(OS),Windows_NT)
+	DLL = dll
+endif
+
 ../seq2wav: ../build/main.o ../libseq2wav.a
 	$(CXX) -std=gnu++14 -o $@ $^
 
@@ -13,9 +18,8 @@ SOURCES = $(filter-out main.cpp, $(wildcard *.cpp */*.cpp))
 	rm -f $@
 	gcc-ar -rc $@ $^
 
-../libseq2wav_d.a: $(patsubst %.cpp, ../build/%_d.o, $(SOURCES)) ../build/Makefile.d
-	rm -f $@
-	gcc-ar -rc $@ $^
+../libseq2wav_d.$(DLL): $(patsubst %.cpp, ../build/%_d.o, $(SOURCES)) ../build/Makefile.d
+	$(CXX) -shared -o $@ $(CXXFLAGS) $(patsubst %.cpp, ../build/%_d.o, $(SOURCES))
 
 ../build/%.o: %.cpp Makefile
 	@mkdir -p $(dir $@)

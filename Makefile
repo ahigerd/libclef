@@ -4,6 +4,11 @@ debug: seq2wav_d
 
 static: libseq2wav.a
 
+DLL = so
+ifeq ($(OS),Windows_NT)
+	DLL = dll
+endif
+
 INCLUDES = $(patsubst src/%.h, include/%.h, $(wildcard src/*.h src/*/*.h))
 
 includes: $(INCLUDES)
@@ -14,7 +19,7 @@ build/Makefile.d: $(wildcard src/*.cpp src/*/*.cpp src/*.h src/*/*.h) Makefile s
 seq2wav seq2wav_d: src/Makefile build/Makefile.d
 	$(MAKE) -C src ../$@
 
-libseq2wav.a libseq2wav_d.a: src/Makefile build/Makefile.d $(INCLUDES)
+libseq2wav.a libseq2wav_d.$(DLL): src/Makefile build/Makefile.d $(INCLUDES)
 	$(MAKE) -C src ../$@
 
 include/%.h: src/%.h

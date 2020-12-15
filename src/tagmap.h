@@ -7,10 +7,10 @@
 #include <unordered_map>
 #include <string>
 
+using TagMap = std::unordered_map<std::string, std::string>;
+
 class TagsM3U {
 public:
-  using TagMap = std::unordered_map<std::string, std::string>;
-
   static std::string relativeTo(const std::string& trackPath);
 
   template <typename Iter>

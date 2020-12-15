@@ -1,9 +1,9 @@
-#include "tagsm3u.h"
+#include "tagmap.h"
 #include "utility.h"
 #include <sstream>
 #include <cctype>
 
-static TagsM3U::TagMap m3uKeys = {
+static TagMap m3uKeys = {
   { "ALB", "ALBUM" },
   { "ART", "ARTIST" },
   { "GENRE", "GENRE" },
@@ -243,7 +243,7 @@ int TagsM3U::findTrack(const std::string& trackName) const
   return -1;
 }
 
-const TagsM3U::TagMap& TagsM3U::allTags(int trackIndex) const
+const TagMap& TagsM3U::allTags(int trackIndex) const
 {
   if (trackIndex < 0 || trackIndex > tracks.size()) {
     std::cerr << "Invalid track index" << std::endl;
