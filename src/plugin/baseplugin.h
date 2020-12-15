@@ -59,6 +59,7 @@ public:
   int channels() const;
   int sampleRate() const;
   bool play(const std::string& filename, std::istream& file);
+  double currentTime() const;
   void seek(double time);
   void unload();
 

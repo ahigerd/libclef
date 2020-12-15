@@ -2,6 +2,7 @@
 #include "baseplugin.h"
 #include "synth/synthcontext.h"
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <vector>
 
@@ -30,7 +31,9 @@ TagMap TagsM3UMixin::readTags(const OpenFn& openFile, const std::string& filenam
 
 S2WPluginBase::S2WPluginBase() : ctx(nullptr)
 {
-  // initializers only
+  openFile = [](const std::string& filename) {
+    return std::unique_ptr<std::istream>(new std::ifstream(filename.c_str(), std::ios::in | std::ios::binary));
+  };
 }
 
 bool S2WPluginBase::matchExtension(const std::string& filename) const
@@ -50,18 +53,30 @@ bool S2WPluginBase::matchExtension(const std::string& filename) const
 
 TagMap S2WPluginBase::getTags(const std::string& filename, std::istream& file) const
 {
-  auto pos = file.tellg();
-  TagMap tagMap = getTagsBase(filename, file);
-  if (!tagMap.count("length_seconds_fp")) {
-    std::ostringstream ss;
-    file.seekg(pos);
-    double len = length(filename, file);
-    if (len > 0) {
-      ss << len;
-      tagMap["length_seconds_fp"] = ss.str();
+  try {
+    auto pos = file.tellg();
+    TagMap tagMap = getTagsBase(filename, file);
+    if (!tagMap.count("length_seconds_fp")) {
+      std::ostringstream ss;
+      file.seekg(pos);
+      double len = length(filename, file);
+      if (len > 0) {
+        ss << len;
+        tagMap["length_seconds_fp"] = ss.str();
+      }
     }
+    if (!tagMap.count("display_title") && tagMap.count("title")) {
+      std::string displayTitle = tagMap["title"];
+      std::string artist = tagMap.count("artist") ? tagMap.at("artist") : std::string();
+      if (!artist.empty()) {
+        displayTitle = artist + " - " + displayTitle;
+      }
+      tagMap["display_title"] = displayTitle;
+    }
+    return tagMap;
+  } catch (...) {
+    return TagMap();
   }
-  return tagMap;
 }
 
 void S2WPluginBase::setOpener(const OpenFn& opener)
@@ -96,6 +111,7 @@ int S2WPluginBase::sampleRate() const
 bool S2WPluginBase::play(const std::string& filename, std::istream& file)
 {
   try {
+    file.seekg(0);
     ctx = prepare(filename, file);
     if (!ctx || ctx->channels.size() == 0) {
       unload();
@@ -109,6 +125,14 @@ bool S2WPluginBase::play(const std::string& filename, std::istream& file)
     std::cerr << "Unknown exception in play()" << std::endl;
     return false;
   }
+}
+
+double S2WPluginBase::currentTime() const
+{
+  if (ctx) {
+    return ctx->currentTime();
+  }
+  return 0;
 }
 
 void S2WPluginBase::seek(double time)
