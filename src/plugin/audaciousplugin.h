@@ -24,7 +24,28 @@ class vfsfile_istream : public std::istream {
 
   protected:
     std::streamsize xsgetn(char* s, std::streamsize count) { return source->fread(s, 1, count); }
-    traits_type::int_type underflow() { return traits_type::eof(); }
+
+    traits_type::int_type underflow() {
+      char result[1];
+      int ok = source->fread(result, 1, 1);
+      if (ok) {
+        if (source->fseek(-1, VFS_SEEK_CUR)) {
+          return traits_type::eof();
+        }
+        return result[0];
+      }
+      return traits_type::eof();
+    }
+
+    traits_type::int_type uflow() {
+      char result[1];
+      int ok = source->fread(result, 1, 1);
+      if (ok) {
+        return result[0];
+      }
+      return traits_type::eof();
+    }
+
     traits_type::pos_type seekoff(traits_type::off_type off, std::ios_base::seekdir dir, std::ios_base::openmode which = std::ios_base::in) {
       if (off != 0) {
         int err = 1;
