@@ -4,7 +4,7 @@ cli: "$(PLUGIN_NAME).exe"
 
 all: cli plugins
 
-plugins: audacious winamp foobar
+plugins: winamp foobar
 
 audacious: "aud_$(PLUGIN_NAME).dll"
 

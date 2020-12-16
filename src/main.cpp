@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
   }
 
   RiffWriter riff(ctx.sampleRate, true);
-  riff.open("/dev/stdout");
+  riff.open("sample.wav");
   ctx.save(&riff);
   riff.close();
 }
