@@ -14,6 +14,7 @@
 
 static std::unordered_map<std::string, std::string> tagKeys = {
   { "length_seconds_fp", "" },
+  { "display_title", "" },
   { "track", "tracknumber" },
 };
 
@@ -39,17 +40,50 @@ class foofile_istream : public std::istream {
     }
 
     traits_type::int_type underflow() {
+      char result[1];
+      int ok = m_file->read(result, 1, *m_abort);
+      if (ok) {
+        m_file->seek_ex(-1, file::seek_from_current, *m_abort);
+        return result[0];
+      }
       return traits_type::eof();
+    }
+
+    traits_type::int_type uflow() {
+      char result[1];
+      int ok = m_file->read(result, 1, *m_abort);
+      if (ok) {
+        return result[0];
+      }
+      return traits_type::eof();
+    }
+
+    traits_type::pos_type seekoff(traits_type::off_type off, std::ios_base::seekdir dir, std::ios_base::openmode which = std::ios_base::in) {
+      if (off != 0) {
+        if (dir == std::ios_base::beg) {
+          m_file->seek_ex(off, file::seek_from_beginning, *m_abort);
+        } else if (dir == std::ios_base::end) {
+          m_file->seek_ex(off, file::seek_from_eof, *m_abort);
+        } else {
+          m_file->seek_ex(off, file::seek_from_current, *m_abort);
+        }
+      }
+      return m_file->get_position(*m_abort);
+    }
+
+    traits_type::pos_type seekpos(traits_type::pos_type pos, std::ios_base::openmode which = std::ios_base::in) {
+      m_file->seek(pos, *m_abort);
+      return m_file->get_position(*m_abort);
     }
   };
 
 public:
   foofile_istream(service_ptr_t<file> p_filehint, const char* p_path, t_input_open_reason p_reason, abort_callback& p_abort)
-    : std::istream(new foofile_streambuf(p_filehint, p_path, p_reason, p_abort)) {}
+    : std::istream(new foofile_streambuf(p_filehint, p_path, p_reason, p_abort)) { seekg(0); }
   foofile_istream(service_ptr_t<file> p_file, abort_callback& p_abort)
-    : std::istream(new foofile_streambuf(p_file, p_abort)) {}
+    : std::istream(new foofile_streambuf(p_file, p_abort)) { seekg(0); }
   foofile_istream(const std::string& filename, abort_callback& p_abort)
-    : std::istream(new foofile_streambuf(nullptr, filename.c_str(), input_open_info_read, p_abort)) {}
+    : std::istream(new foofile_streambuf(nullptr, filename.c_str(), input_open_info_read, p_abort)) { seekg(0); }
   ~foofile_istream() { delete rdbuf(nullptr); }
 
   service_ptr_t<file>& fooFile() { return static_cast<foofile_streambuf*>(rdbuf())->m_file; }
@@ -60,11 +94,15 @@ static abort_callback_impl dummyAbort;
 template <typename S2WPluginInfo>
 class input_seq2wav : public input_stubs {
   using PluginType = S2WPlugin<S2WPluginInfo>;
-  static PluginType plugin;
 public:
+  static PluginType plugin;
+
   input_seq2wav() {
+
     plugin.setOpener([](const std::string& filename) {
-      return std::unique_ptr<std::istream>(new foofile_istream(filename, dummyAbort));
+      auto stream = std::unique_ptr<std::istream>(new foofile_istream(filename, dummyAbort));
+      stream->seekg(0);
+      return stream;
     });
   }
 
@@ -149,8 +187,30 @@ public:
   std::string m_filename;
 };
 
+bool s2wFoobarMeta(const S2WPluginBase& plugin)
+{
+  DECLARE_COMPONENT_VERSION_COPY(plugin.pluginName().c_str(), plugin.version().c_str(), plugin.about().c_str());
+
+  static std::vector<std::unique_ptr<input_file_type_impl>> filetype_instances;
+  static std::vector<std::unique_ptr<service_factory_single_ref_t<input_file_type_impl>>> filetype_services;
+  static std::vector<std::string> stringBuffer;
+  for (const auto& ext : plugin.extensions()) {
+    stringBuffer.emplace_back("*." + ext.first);
+    auto ift = new input_file_type_impl(ext.second.c_str(), stringBuffer.back().c_str(), true);
+    filetype_instances.emplace_back(ift);
+    filetype_services.emplace_back(new service_factory_single_ref_t<input_file_type_impl>(*ift));
+  }
+
+  return true;
+}
+
 #define SEQ2WAV_PLUGIN(S2WPluginInfo) \
-  template<> S2WPlugin<S2WPluginInfo> input_seq2wav<S2WPluginInfo>::plugin = S2WPlugin<S2WPluginInfo>(); \
-  static input_singletrack_factory_t<input_seq2wav<S2WPluginInfo>> g_input_seq2wav_factory;
+  using S2W = input_seq2wav<S2WPluginInfo>; \
+  template<> S2WPlugin<S2WPluginInfo> S2W::plugin = S2WPlugin<S2WPluginInfo>(); \
+  DECLARE_COMPONENT_VERSION_COPY(S2W::plugin.pluginName().c_str(), S2W::plugin.version().c_str(), S2W::plugin.about().c_str()); \
+  static bool metaOK = s2wFoobarMeta(S2W::plugin); \
+  static input_singletrack_factory_t<input_seq2wav<S2WPluginInfo>> g_input_seq2wav_factory; \
+  static std::string pluginFilename = "foo_input_" + S2WPluginInfo::pluginShortName + ".dll"; \
+  VALIDATE_COMPONENT_FILENAME(pluginFilename.c_str());
 
 #endif

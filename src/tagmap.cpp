@@ -246,7 +246,6 @@ int TagsM3U::findTrack(const std::string& trackName) const
 const TagMap& TagsM3U::allTags(int trackIndex) const
 {
   if (trackIndex < 0 || trackIndex > tracks.size()) {
-    std::cerr << "Invalid track index" << std::endl;
     return invalid;
   }
   return tags.at(trackIndex);

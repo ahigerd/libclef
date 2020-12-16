@@ -8,6 +8,10 @@
 struct S2WPluginInfo {
   S2WPLUGIN_STATIC_FIELDS
 
+  static std::string version() {
+    return "0.0.1";
+  }
+
   static bool isPlayable(std::istream& file) {
     // Implementations should check to see if the file is supported.
     // Return false or throw an exception to report failure.

@@ -13,7 +13,7 @@ using ConstPairList = const std::vector<std::pair<std::string, std::string>>;
 using OpenFn = std::function<std::unique_ptr<std::istream>(const std::string&)>;
 
 #define S2WPLUGIN_STATIC_FIELDS \
-  static const std::string pluginName, pluginShortName, about; \
+  static const std::string version, pluginName, pluginShortName, about; \
   static ConstPairList extensions;
 
 struct TagsM3UMixin {
@@ -39,6 +39,7 @@ struct DummyPluginInfo : public TagsM3UMixin {
   }
 };
 
+const std::string DummyPluginInfo::version = "0.0.1";
 const std::string DummyPluginInfo::pluginName = "seq2wav";
 ConstPairList DummyPluginInfo::extensions = { { "dummy", "Dummy files (*.dummy)" } };
 const std::string DummyPluginInfo::about =
@@ -63,15 +64,17 @@ public:
   void seek(double time);
   void unload();
 
-protected:
-  S2WPluginBase();
+  virtual const std::string& version() const = 0;
   virtual const std::string& pluginShortName() const = 0;
   virtual const std::string& pluginName() const = 0;
-  virtual ConstPairList extensions() const = 0;
+  virtual const ConstPairList& extensions() const = 0;
   virtual const std::string& about() const = 0;
   virtual bool isPlayable(const std::string& filename, std::istream& file) const = 0;
-  virtual TagMap getTagsBase(const std::string& filename, std::istream& file) const = 0;
   virtual double length(const std::string& filename, std::istream& file) const = 0;
+
+protected:
+  S2WPluginBase();
+  virtual TagMap getTagsBase(const std::string& filename, std::istream& file) const = 0;
   virtual SynthContext* prepare(const std::string& filename, std::istream& file) = 0;
   virtual void release() = 0;
 
@@ -84,25 +87,30 @@ class S2WPlugin : public S2WPluginBase, public PluginInfo {
 public:
   using Info = PluginInfo;
 
+  const std::string& version() const { return Info::version; }
   const std::string& pluginShortName() const { return Info::pluginShortName; }
   const std::string& pluginName() const { return Info::pluginName; }
-  ConstPairList extensions() const { return Info::extensions; }
+  const ConstPairList& extensions() const { return Info::extensions; }
   const std::string& about() const {
     static std::string message = Info::about + seq2wavCopyright();
     return message;
   }
   bool isPlayable(const std::string& filename, std::istream& file) const {
     try {
-      return matchExtension(filename) && Info::isPlayable(file);
+      if (!matchExtension(filename)) {
+        return false;
+      }
+      file.seekg(0);
+      return Info::isPlayable(file);
     } catch (...) {
       return false;
     }
   }
-  double length(const std::string& filename, std::istream& file) const { return Info::length(openFile, filename, file); }
+  double length(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::length(openFile, filename, file); }
 
 protected:
-  TagMap getTagsBase(const std::string& filename, std::istream& file) const { return Info::readTags(openFile, filename, file); }
-  SynthContext* prepare(const std::string& filename, std::istream& file) { return Info::prepare(openFile, filename, file); }
+  TagMap getTagsBase(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::readTags(openFile, filename, file); }
+  SynthContext* prepare(const std::string& filename, std::istream& file) { file.seekg(0); return Info::prepare(openFile, filename, file); }
   void release() { Info::release(); }
 };
 
