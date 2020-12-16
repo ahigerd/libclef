@@ -3,6 +3,7 @@
 *.o
 *.sw*
 build
+build_win
 include
 seq2wav
 seq2wav_d

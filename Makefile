@@ -1,13 +1,10 @@
-all: seq2wav
+include config.mak
 
-debug: seq2wav_d
+all: seq2wav$(EXE)
 
-static: libseq2wav.a
+debug: seq2wav_d$(EXE)
 
-DLL = so
-ifeq ($(OS),Windows_NT)
-	DLL = dll
-endif
+static: $(BUILDPATH)/libseq2wav.a
 
 INCLUDES = $(patsubst src/%.h, include/%.h, $(wildcard src/*.h src/*/*.h))
 
@@ -16,10 +13,10 @@ includes: $(INCLUDES)
 build/Makefile.d: $(wildcard src/*.cpp src/*/*.cpp src/*.h src/*/*.h) Makefile src/Makefile
 	$(MAKE) -C src ../build/Makefile.d
 
-seq2wav seq2wav_d: src/Makefile build/Makefile.d
+seq2wav$(EXE) seq2wav_d$(EXE): src/Makefile build/Makefile.d
 	$(MAKE) -C src ../$@
 
-libseq2wav.a libseq2wav_d.$(DLL): src/Makefile build/Makefile.d $(INCLUDES)
+$(BUILDPATH)/libseq2wav.a $(BUILDPATH)/libseq2wav_d.$(DLL): src/Makefile build/Makefile.d $(INCLUDES)
 	$(MAKE) -C src ../$@
 
 include/%.h: src/%.h
@@ -28,7 +25,7 @@ include/%.h: src/%.h
 
 clean: FORCE
 	-rm -f build/*.o build/*.d build/*/*.o build/Makefile.d
-	-rm -f seq2wav seq2wav_d libseq2wav.a libseq2wav_d.a
+	-rm -f seq2wav seq2wav_d $(BUILDPATH)/libseq2wav.a $(BUILDPATH)/libseq2wav_d.$(DLL)
 	-rm -f include/*.h include/*/*.h
 	-rmdir include/*
 	-rmdir include
