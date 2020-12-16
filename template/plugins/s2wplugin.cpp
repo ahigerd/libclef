@@ -1,60 +1,51 @@
 #include "plugin/baseplugin.h"
 #include "codec/sampledata.h"
-#include "ifs/ifssequence.h"
-#include "ifs/ifs.h"
-#include <array>
+
+// In the functions below, openFile() is provided by the plugin interface. Use this
+// instead of standard library functions to open additional files in order to use
+// the host's virtual filesystem.
 
 struct S2WPluginInfo {
   S2WPLUGIN_STATIC_FIELDS
 
   static bool isPlayable(std::istream& file) {
-    // Will throw if invalid
-    IFS ifs(file);
-    return true;
+    // Implementations should check to see if the file is supported.
+    // Return false or throw an exception to report failure.
+    return false;
   }
 
   static double length(const OpenFn& openFile, const std::string& filename, std::istream& file) {
-    IFSSequence seq;
-    seq.addIFS(new IFS(file));
-    return seq.duration();
+    // Implementations should return the length of the file in seconds.
+    return 0;
   }
 
-  static TagMap readTags(const OpenFn& openFile, const std::string& filename, std::istream& /* unused */) {
-    TagMap tagMap = TagsM3UMixin::readTags(openFile, filename);
-    if (!tagMap.count("title")) {
-      tagMap = TagsM3UMixin::readTags(openFile, IFS::pairedFile(filename));
-    }
-    return tagMap;
+  static TagMap readTags(const OpenFn& openFile, const std::string& filename, std::istream& file) {
+    // Implementations should read the tags from the file.
+    // If the file format does not support embedded tags, consider
+    // inheriting from TagsM3UMixin and removing this function.
+    return TagMap();
   }
 
   SynthContext* prepare(const OpenFn& openFile, const std::string& filename, std::istream& file) {
-    seq.reset(new IFSSequence);
-    seq->addIFS(new IFS(file));
-    try {
-      auto paired(openFile(IFS::pairedFile(filename)));
-      if (paired) {
-        seq->addIFS(new IFS(*paired));
-      }
-    } catch (...) {
-      // no paired file, ignore
-    }
+    // Prepare to play the file. Load any necessary data into memory and store any
+    // applicable state in members on this plugin object.
+
+    // Be sure to call this to clear the sample cache:
     SampleData::purge();
-    seq->load();
-    return seq->initContext();
+
+    return nullptr;
   }
 
   void release() {
-    seq.reset(nullptr);
+    // Release any retained state allocated in prepare().
   }
-
-  std::unique_ptr<IFSSequence> seq;
 };
 
-const std::string S2WPluginInfo::pluginName = "gitadora2wav Plugin";
-const std::string S2WPluginInfo::pluginShortName = "gitadora2wav";
-ConstPairList S2WPluginInfo::extensions = { { "ifs", "Konami IFS files (*.ifs)" } };
+const std::string S2WPluginInfo::pluginName = "Template Plugin";
+const std::string S2WPluginInfo::pluginShortName = "template";
+ConstPairList S2WPluginInfo::extensions = { { "dummy", "Dummy files (*.dummy)" } };
 const std::string S2WPluginInfo::about =
-  "gitadora2wav copyright (C) 2020 Adam Higerd\n"
+  "Template Plugin copyright (C) 2020 Adam Higerd\n"
   "Distributed under the MIT license.";
 
 SEQ2WAV_PLUGIN(S2WPluginInfo);
