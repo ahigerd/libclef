@@ -25,7 +25,11 @@ class foofile_istream : public std::istream {
   public:
     foofile_streambuf(service_ptr_t<file> p_filehint, const char* p_path, t_input_open_reason p_reason, abort_callback& p_abort)
     : m_file(p_filehint), m_abort(&p_abort) {
-      input_open_file_helper(m_file, p_path, p_reason, p_abort);
+      if (filesystem::g_exists(p_path, p_abort)) {
+        input_open_file_helper(m_file, p_path, p_reason, p_abort);
+      } else {
+        m_file.release();
+      }
     }
 
     foofile_streambuf(service_ptr_t<file> p_file, abort_callback& p_abort)
@@ -38,29 +42,39 @@ class foofile_istream : public std::istream {
 
   protected:
     std::streamsize xsgetn(char* data, std::streamsize length) {
+      if (!m_file.get_ptr()) {
+        return 0;
+      }
       return m_file->read(data, length, *m_abort);
     }
 
     traits_type::int_type underflow() {
-      char result[1];
-      int ok = m_file->read(result, 1, *m_abort);
-      if (ok) {
-        m_file->seek_ex(-1, file::seek_from_current, *m_abort);
-        return result[0];
+      if (m_file.get_ptr()) {
+        char result[1];
+        int ok = m_file->read(result, 1, *m_abort);
+        if (ok) {
+          m_file->seek_ex(-1, file::seek_from_current, *m_abort);
+          return result[0];
+        }
       }
       return traits_type::eof();
     }
 
     traits_type::int_type uflow() {
-      char result[1];
-      int ok = m_file->read(result, 1, *m_abort);
-      if (ok) {
-        return result[0];
+      if (m_file.get_ptr()) {
+        char result[1];
+        int ok = m_file->read(result, 1, *m_abort);
+        if (ok) {
+          return result[0];
+        }
       }
       return traits_type::eof();
     }
 
     traits_type::pos_type seekoff(traits_type::off_type off, std::ios_base::seekdir dir, std::ios_base::openmode which = std::ios_base::in) {
+      if (!m_file.get_ptr()) {
+        return traits_type::eof();
+      }
       if (off != 0) {
         if (dir == std::ios_base::beg) {
           m_file->seek_ex(off, file::seek_from_beginning, *m_abort);
@@ -74,18 +88,29 @@ class foofile_istream : public std::istream {
     }
 
     traits_type::pos_type seekpos(traits_type::pos_type pos, std::ios_base::openmode which = std::ios_base::in) {
+      if (!m_file.get_ptr()) {
+        return traits_type::eof();
+      }
       m_file->seek(pos, *m_abort);
       return m_file->get_position(*m_abort);
     }
   };
 
+  void prepare() {
+    if (!fooFile().get_ptr()) {
+      clear(std::ios::badbit);
+    } else {
+      seekg(0);
+    }
+  }
+
 public:
   foofile_istream(service_ptr_t<file> p_filehint, const char* p_path, t_input_open_reason p_reason, abort_callback& p_abort)
-    : std::istream(new foofile_streambuf(p_filehint, p_path, p_reason, p_abort)) { seekg(0); }
+    : std::istream(new foofile_streambuf(p_filehint, p_path, p_reason, p_abort)) { prepare(); }
   foofile_istream(service_ptr_t<file> p_file, abort_callback& p_abort)
-    : std::istream(new foofile_streambuf(p_file, p_abort)) { seekg(0); }
+    : std::istream(new foofile_streambuf(p_file, p_abort)) { prepare(); }
   foofile_istream(const std::string& filename, abort_callback& p_abort)
-    : std::istream(new foofile_streambuf(nullptr, filename.c_str(), input_open_info_read, p_abort)) { seekg(0); }
+    : std::istream(new foofile_streambuf(nullptr, filename.c_str(), input_open_info_read, p_abort)) { prepare(); }
   ~foofile_istream() { delete rdbuf(nullptr); }
 
   service_ptr_t<file>& fooFile() { return static_cast<foofile_streambuf*>(rdbuf())->m_file; }
@@ -100,7 +125,6 @@ public:
   static PluginType plugin;
 
   input_seq2wav() {
-
     plugin.setOpener([](const std::string& filename) {
       auto stream = std::unique_ptr<std::istream>(new foofile_istream(filename, dummyAbort));
       stream->seekg(0);
@@ -110,6 +134,9 @@ public:
 
 	void open(service_ptr_t<file> p_filehint, const char* p_path, t_input_open_reason p_reason, abort_callback& p_abort) {
     foofile_istream file(p_filehint, p_path, p_reason, p_abort);
+    if (!file) {
+      throw std::exception("File does not exist");
+    }
     if (!plugin.isPlayable(p_path, file)) {
       throw std::exception("File is not playable");
     }
