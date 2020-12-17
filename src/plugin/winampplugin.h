@@ -22,6 +22,17 @@
 #undef min
 #endif
 
+static ConstPairList fileInfoTags = {
+  { "title", "Title" },
+  { "artist", "Artist" },
+  { "album", "Album" },
+  { "albumartist", "Album Artist" },
+  { "year", "Year" },
+  { "date", "Date" },
+  { "genre", "Genre" },
+  { "comment", "Comment" },
+};
+
 template <typename S2WPluginInfo>
 class S2WModule : public In_Module {
   struct ExtExpand {
@@ -84,17 +95,16 @@ public:
     TagMap tagMap(plugin.getTags(filename, file));
     std::ostringstream ss;
     ss << "Filename:\t" << filename << std::endl;
-    if (tagMap.count("album")) {
-      ss << "Album:\t" << tagMap.at("album") << std::endl;
-    }
-    if (tagMap.count("artist")) {
-      ss << "Artist:\t" << tagMap.at("artist") << std::endl;
-    }
-    if (tagMap.count("title")) {
-      ss << "Title:\t" << tagMap.at("title") << std::endl;
-    }
     if (tagMap.count("length_seconds_fp")) {
       ss << "Duration:\t" << formatDuration(tagMap.at("length_seconds_fp"));
+    }
+    for (const auto& iter : fileInfoTags) {
+      if (iter.first == "year" && tagMap.count("date") && !tagMap.at("date").empty()) {
+        continue;
+      }
+      if (tagMap.count(iter.first) && !tagMap.at(iter.first).empty()) {
+        ss << iter.second << ":\t" << tagMap.at(iter.first) << std::endl;
+      }
     }
     MessageBoxW(hwndParent, toUtf16(ss.str()).c_str(), L"Track Info", MB_OK);
     return 1;

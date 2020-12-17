@@ -15,6 +15,7 @@
 #include <iostream>
 #include <sstream>
 #include <memory>
+#include <cstdlib>
 
 class vfsfile_istream : public std::istream {
   class vfsfile_streambuf : public std::basic_streambuf<char> {
@@ -117,6 +118,9 @@ public:
       }
     }
     std::string title = tagMap.count("title") ? tagMap.at("title") : std::string();
+    tuple.set_int(Tuple::Bitrate, 48 * 2 * 4); // actually kilobitrate: 48kHz * 2 channels * 4 bits/sample
+    tuple.set_str(Tuple::Codec, "Konami ADPCM");
+    tuple.set_str(Tuple::Quality, "Stereo, 48 kHz");
     if (title.empty()) {
       tuple.set_str(Tuple::Title, filename);
       return true;
@@ -125,8 +129,31 @@ public:
     if (tagMap.count("album")) {
       tuple.set_str(Tuple::Album, tagMap.at("album").c_str());
     }
+    if (tagMap.count("albumartist")) {
+      tuple.set_str(Tuple::AlbumArtist, tagMap.at("albumartist").c_str());
+    } else if (tagMap.count("album artist")) {
+      tuple.set_str(Tuple::AlbumArtist, tagMap.at("album artist").c_str());
+    }
     if (tagMap.count("artist")) {
       tuple.set_str(Tuple::Artist, tagMap.at("artist").c_str());
+    }
+    if (tagMap.count("genre")) {
+      tuple.set_str(Tuple::Genre, tagMap.at("genre").c_str());
+    }
+    if (tagMap.count("comment")) {
+      tuple.set_str(Tuple::Comment, tagMap.at("comment").c_str());
+    }
+    if (tagMap.count("year")) {
+      tuple.set_int(Tuple::Year, std::atoi(tagMap.at("year").c_str()));
+    }
+    if (tagMap.count("date")) {
+      tuple.set_str(Tuple::Date, tagMap.at("date").c_str());
+    }
+    if (tagMap.count("track")) {
+      int trackno = std::atoi(tagMap.at("track").c_str());
+      if (trackno) {
+        tuple.set_int(Tuple::Track, trackno);
+      }
     }
     return true;
   }
