@@ -26,7 +26,7 @@ static ConstPairList fileInfoTags = {
   { "title", "Title" },
   { "artist", "Artist" },
   { "album", "Album" },
-  { "albumartist", "Album Artist" },
+  { "albumartist", "Alb. Artist" },
   { "year", "Year" },
   { "date", "Date" },
   { "genre", "Genre" },
@@ -94,9 +94,9 @@ public:
     std::ifstream file(filename, std::ios::in | std::ios::binary);
     TagMap tagMap(plugin.getTags(filename, file));
     std::ostringstream ss;
-    ss << "Filename:\t" << filename << std::endl;
+    ss << "Filename:" << std::endl << filename << std::endl << std::endl;
     if (tagMap.count("length_seconds_fp")) {
-      ss << "Duration:\t" << formatDuration(tagMap.at("length_seconds_fp"));
+      ss << "Duration:\t" << formatDuration(tagMap.at("length_seconds_fp")) << std::endl;
     }
     for (const auto& iter : fileInfoTags) {
       if (iter.first == "year" && tagMap.count("date") && !tagMap.at("date").empty()) {

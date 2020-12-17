@@ -15,7 +15,9 @@
 static std::unordered_map<std::string, std::string> tagKeys = {
   { "length_seconds_fp", "" },
   { "display_title", "" },
+  { "year", "date" },
   { "track", "tracknumber" },
+  { "albumartist", "album artist" },
 };
 
 class foofile_istream : public std::istream {
@@ -116,6 +118,9 @@ public:
     fileInfo.set_length(plugin.length(p_path, file));
     TagMap tagMap = plugin.getTags(p_path, file);
     for (const auto& iter : tagMap) {
+      if (iter.first == "year" && tagMap.count("date") && !tagMap.at("date").empty()) {
+        continue;
+      }
       std::string key = tagKeys.count(iter.first) ? tagKeys.at(iter.first) : iter.first;
       if (key.empty()) {
         continue;
@@ -125,8 +130,7 @@ public:
     fileInfo.info_set_int("samplerate", 48000);
     fileInfo.info_set_int("channels", 2);
     fileInfo.info_set_int("bitspersample", 16);
-    fileInfo.info_set("encoding", "lossless");
-    fileInfo.info_set_bitrate(16 * 2 * 48); // actually kilobitrate
+    fileInfo.info_set_bitrate(4 * 2 * 48); // actually kilobitrate
   }
 
 	void get_info(file_info& p_info, abort_callback& p_abort) {
