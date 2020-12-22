@@ -30,6 +30,9 @@ struct DummyPluginInfo : public TagsM3UMixin {
   static double length(const OpenFn& openFile, const std::string& filename, std::istream& file) {
     return 0;
   }
+  static double sampleRate(const OpenFn& openFile, const std::string& filename, std::istream& file) {
+    return 44100;
+  }
   SynthContext* prepare(const OpenFn& openFile, const std::string& filename, std::istream& file) {
     // Implementations should retain appropriate pointers
     return nullptr;
@@ -58,7 +61,7 @@ public:
   int fillBuffer(uint8_t* buffer, int len);
 
   int channels() const;
-  int sampleRate() const;
+  int sampleRate() const; // of playing track
   bool play(const std::string& filename, std::istream& file);
   double currentTime() const;
   void seek(double time);
@@ -71,6 +74,7 @@ public:
   virtual const std::string& about() const = 0;
   virtual bool isPlayable(const std::string& filename, std::istream& file) const = 0;
   virtual double length(const std::string& filename, std::istream& file) const = 0;
+  virtual int sampleRate(const std::string& filename, std::istream& file) const = 0; // of unloaded track
 
 protected:
   S2WPluginBase();
@@ -107,6 +111,8 @@ public:
     }
   }
   double length(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::length(openFile, filename, file); }
+  int sampleRate(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::sampleRate(openFile, filename, file); }
+  inline int sampleRate() const { return S2WPluginBase::sampleRate(); }
 
 protected:
   TagMap getTagsBase(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::readTags(openFile, filename, file); }

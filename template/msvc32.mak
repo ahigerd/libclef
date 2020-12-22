@@ -1,4 +1,4 @@
-PLUGIN_NAME = gitadora2wav
+PLUGIN_NAME = sample
 
 cli: "$(PLUGIN_NAME).exe"
 

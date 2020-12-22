@@ -143,19 +143,20 @@ public:
 
       shouldStop = false;
       paused = false;
-      int latency = outMod->Open(48000, 2, 16, -1, -1);
+      int sampleRate = plugin.sampleRate();
+      int latency = outMod->Open(sampleRate, 2, 16, -1, -1);
       if (latency < 0) {
         plugin.unload();
         return 1;
       }
-      SetInfo(48 * 2 * 16, 48, 2, 1);
-      SAVSAInit(latency, 48000);
-      VSASetInfo(48000, 2);
+      SetInfo(sampleRate * 2 * 16 / 1000, sampleRate / 1000, 2, 1);
+      SAVSAInit(latency, sampleRate);
+      VSASetInfo(sampleRate, 2);
       outMod->SetVolume(-666);
       running = true;
       currentTrack = fn;
       seekPos = -1;
-      thread.reset(new std::thread([this]{
+      thread.reset(new std::thread([this, sampleRate]{
         try {
           uint8_t buffer[1200];
           while (true) {
@@ -185,7 +186,7 @@ public:
             SAAddPCMData(reinterpret_cast<char*>(buffer), 2, 16, playPos * 1000);
             VSAAddPCMData(reinterpret_cast<char*>(buffer), 2, 16, playPos * 1000);
             if (dsp_isactive()) {
-              written = dsp_dosamples(reinterpret_cast<short*>(buffer), written >> 2, 16, 2, 48000) * 4;
+              written = dsp_dosamples(reinterpret_cast<short*>(buffer), written >> 2, 16, 2, sampleRate) * 4;
             }
             outMod->Write(reinterpret_cast<char*>(buffer), written);
           }

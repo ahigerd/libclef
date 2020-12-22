@@ -50,8 +50,8 @@ class foofile_istream : public std::istream {
 
     traits_type::int_type underflow() {
       if (m_file.get_ptr()) {
-        char result[1];
-        int ok = m_file->read(result, 1, *m_abort);
+        uint8_t result[1];
+        int ok = m_file->read(reinterpret_cast<char*>(result), 1, *m_abort);
         if (ok) {
           m_file->seek_ex(-1, file::seek_from_current, *m_abort);
           return result[0];
@@ -62,8 +62,8 @@ class foofile_istream : public std::istream {
 
     traits_type::int_type uflow() {
       if (m_file.get_ptr()) {
-        char result[1];
-        int ok = m_file->read(result, 1, *m_abort);
+        uint8_t result[1];
+        int ok = m_file->read(reinterpret_cast<char*>(result), 1, *m_abort);
         if (ok) {
           return result[0];
         }
@@ -154,7 +154,7 @@ public:
       }
       fileInfo.meta_add(key.c_str(), iter.second.c_str());
     }
-    fileInfo.info_set_int("samplerate", 48000);
+    fileInfo.info_set_int("samplerate", plugin.sampleRate(p_path, file));
     fileInfo.info_set_int("channels", 2);
     fileInfo.info_set_int("bitspersample", 16);
     fileInfo.info_set_bitrate(4 * 2 * 48); // actually kilobitrate
@@ -186,7 +186,7 @@ public:
       plugin.unload();
       return false;
     }
-		p_chunk.set_data_fixedpoint(reinterpret_cast<char*>(buffer), written, 48000, 2, 16, audio_chunk::g_guess_channel_config(2));
+		p_chunk.set_data_fixedpoint(reinterpret_cast<char*>(buffer), written, plugin.sampleRate(), 2, 16, audio_chunk::g_guess_channel_config(2));
     return true;
   }
 	void decode_seek(double p_seconds, abort_callback& p_abort) {

@@ -18,6 +18,12 @@ struct S2WPluginInfo {
     return false;
   }
 
+  static int sampleRate(const OpenFn& openFile, const std::string& filename, std::istream& file) {
+    // Implementations should return the sample rate of the file.
+    // This can be hard-coded if the plugin always uses the same sample rate.
+    return 48000;
+  }
+
   static double length(const OpenFn& openFile, const std::string& filename, std::istream& file) {
     // Implementations should return the length of the file in seconds.
     return 0;
