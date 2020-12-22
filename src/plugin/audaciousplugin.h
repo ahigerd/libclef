@@ -9,8 +9,6 @@
 #include <libaudcore/audio.h>
 #include "codec/sampledata.h"
 #include "synth/synthcontext.h"
-#include "ifs/ifs.h"
-#include "ifs/ifssequence.h"
 #include "tagmap.h"
 #include <iostream>
 #include <sstream>

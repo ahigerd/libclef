@@ -176,7 +176,7 @@ public:
     p_abort.check();
     if (!ok) {
       plugin.unload();
-      throw exception_io_data("unable to load ifs");
+      throw exception_io_data("unable to load file");
     }
   }
 	bool decode_run(audio_chunk& p_chunk, abort_callback& p_abort) {
