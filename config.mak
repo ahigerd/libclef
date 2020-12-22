@@ -33,4 +33,4 @@ CXXFLAGS_R := $(CXXFLAGS) -O3
 CXXFLAGS_D := $(CXXFLAGS) -ggdb -fsanitize=address
 LDFLAGS := $(LDFLAGS) -L../seq2wav/$(BUILDPATH) -L../$(BUILDPATH)
 LDFLAGS_R := $(LDFLAGS) -lseq2wav
-LDFLAGS_D := $(LDFLAGS) -lasan -lseq2wav
+LDFLAGS_D := $(LDFLAGS) -lasan -lseq2wav_d

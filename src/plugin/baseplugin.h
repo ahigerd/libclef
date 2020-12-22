@@ -6,11 +6,11 @@
 #include <cstdint>
 #include <memory>
 #include <functional>
+#include "utility.h"
 #include "tagmap.h"
 #include "synth/synthcontext.h"
 
 using ConstPairList = const std::vector<std::pair<std::string, std::string>>;
-using OpenFn = std::function<std::unique_ptr<std::istream>(const std::string&)>;
 
 #define S2WPLUGIN_STATIC_FIELDS \
   static const std::string version, pluginName, pluginShortName, about; \

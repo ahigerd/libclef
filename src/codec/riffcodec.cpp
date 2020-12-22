@@ -1,5 +1,6 @@
 #include "riffcodec.h"
 #include "pcmcodec.h"
+#include "msadpcmcodec.h"
 #include "utility.h"
 #include <memory>
 #include <exception>
@@ -21,7 +22,7 @@ SampleData* RiffCodec::decodeRange(std::vector<uint8_t>::const_iterator start, s
   }
   uint32_t offset = 12;
   std::vector<uint8_t> data;
-  int sampleBits = 0, channels = 0, format = 0, sampleRate;
+  int sampleBits = 0, channels = 0, format = 0, sampleRate, blockAlign;
   while (offset < size) {
     if (offset + 8 > size) {
       throw std::runtime_error("RIFF data is invalid");
@@ -38,7 +39,7 @@ SampleData* RiffCodec::decodeRange(std::vector<uint8_t>::const_iterator start, s
       format = parseInt<uint16_t>(buffer, offset + 8);
       channels = parseInt<uint16_t>(buffer, offset + 10);
       sampleRate = parseInt<uint32_t>(buffer, offset + 12);
-      // TODO: block alignment
+      blockAlign = parseInt<uint16_t>(buffer, offset + 20);
       sampleBits = parseInt<uint16_t>(buffer, offset + 22);
     } else if (magic == 'data') {
       data.insert(
@@ -49,7 +50,14 @@ SampleData* RiffCodec::decodeRange(std::vector<uint8_t>::const_iterator start, s
     }
     offset += 8 + chunkSize;
   }
-  std::unique_ptr<ICodec> codec(new PcmCodec(sampleBits, channels, false));
+  std::unique_ptr<ICodec> codec;
+  if (format == 1) {
+    codec.reset(new PcmCodec(sampleBits, channels, false));
+  } else if (format == 2) {
+    codec.reset(new MsAdpcmCodec(blockAlign, channels));
+  } else {
+    throw std::runtime_error("Unsupported RIFF format");
+  }
   SampleData* sampleData = codec->decode(data, sampleID);
   sampleData->sampleRate = sampleRate;
   return sampleData;

@@ -3,8 +3,14 @@
 #include <cctype>
 #include <codecvt>
 #include <locale>
+#include <fstream>
 #include <sstream>
 #include <iomanip>
+
+std::unique_ptr<std::istream> openFstream(const std::string& path)
+{
+  return std::unique_ptr<std::istream>(new std::ifstream(path, std::ios::in | std::ios::binary));
+}
 
 double noteToFreq(double midiNote)
 {

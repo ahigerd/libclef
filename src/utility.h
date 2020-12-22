@@ -3,6 +3,12 @@
 
 #include <cstdint>
 #include <string>
+#include <memory>
+#include <functional>
+#include <iostream>
+
+using OpenFn = std::function<std::unique_ptr<std::istream>(const std::string&)>;
+std::unique_ptr<std::istream> openFstream(const std::string& path);
 
 template <typename T, typename T2>
 inline T clamp(T2 value, T lower, T upper)

@@ -2,7 +2,6 @@
 #include "baseplugin.h"
 #include "synth/synthcontext.h"
 #include <iostream>
-#include <fstream>
 #include <sstream>
 #include <vector>
 
@@ -31,9 +30,7 @@ TagMap TagsM3UMixin::readTags(const OpenFn& openFile, const std::string& filenam
 
 S2WPluginBase::S2WPluginBase() : ctx(nullptr)
 {
-  openFile = [](const std::string& filename) {
-    return std::unique_ptr<std::istream>(new std::ifstream(filename.c_str(), std::ios::in | std::ios::binary));
-  };
+  openFile = openFstream;
 }
 
 bool S2WPluginBase::matchExtension(const std::string& filename) const
