@@ -66,6 +66,9 @@ SampleData* MsAdpcmCodec::decodeRange(std::vector<uint8_t>::const_iterator start
   auto blockStart = start;
   while (blockStart < end) {
     auto blockEnd = blockStart + blockSize;
+    if (blockEnd > end) {
+      blockEnd = end;
+    }
     for (int i = 0; i < channels; i++) {
       decodeBlock(blockStart, blockEnd, i, sampleData->channels[i]);
     }

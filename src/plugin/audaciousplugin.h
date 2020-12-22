@@ -22,30 +22,40 @@ class vfsfile_istream : public std::istream {
     vfsfile_streambuf(VFSFile* source) : source(source), owned(nullptr) {}
 
   protected:
-    std::streamsize xsgetn(char* s, std::streamsize count) { return source->fread(s, 1, count); }
+    std::streamsize xsgetn(char* s, std::streamsize count) {
+      return source->fread(s, 1, count);
+    }
 
     traits_type::int_type underflow() {
-      char result[1];
-      int ok = source->fread(result, 1, 1);
-      if (ok) {
-        if (source->fseek(-1, VFS_SEEK_CUR)) {
-          return traits_type::eof();
+      if (source && *source) {
+        uint8_t result[1];
+        int ok = source->fread(reinterpret_cast<char*>(result), 1, 1);
+        if (ok) {
+          if (source->fseek(-1, VFS_SEEK_CUR)) {
+            return traits_type::eof();
+          }
+          return result[0];
         }
-        return result[0];
+      } else {
       }
       return traits_type::eof();
     }
 
     traits_type::int_type uflow() {
-      char result[1];
-      int ok = source->fread(result, 1, 1);
-      if (ok) {
-        return result[0];
+      if (source && *source) {
+        uint8_t result[1];
+        int ok = source->fread(reinterpret_cast<char*>(result), 1, 1);
+        if (ok) {
+          return result[0];
+        }
       }
       return traits_type::eof();
     }
 
     traits_type::pos_type seekoff(traits_type::off_type off, std::ios_base::seekdir dir, std::ios_base::openmode which = std::ios_base::in) {
+      if (!source || !*source) {
+        return traits_type::off_type(-1);
+      }
       if (off != 0) {
         int err = 1;
         if (dir == std::ios_base::beg) {
@@ -61,7 +71,11 @@ class vfsfile_istream : public std::istream {
       }
       return source->ftell();
     }
+
     traits_type::pos_type seekpos(traits_type::pos_type pos, std::ios_base::openmode which = std::ios_base::in) {
+      if (!source || !*source) {
+        return traits_type::off_type(-1);
+      }
       int err = source->fseek(pos, VFS_SEEK_SET);
       if (err) {
         return traits_type::off_type(-1);

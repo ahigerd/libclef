@@ -17,10 +17,12 @@ TagMap TagsM3UMixin::readTags(const OpenFn& openFile, const std::string& filenam
   std::string m3uPath = TagsM3U::relativeTo(filename);
   try {
     auto m3uStream(openFile(m3uPath));
-    TagsM3U m3u(*m3uStream);
-    TagMap tagMap = m3u.allTags(filename);
-    if (!tagMap.at("title").empty()) {
-      return tagMap;
+    if (*m3uStream) {
+      TagsM3U m3u(*m3uStream);
+      TagMap tagMap = m3u.allTags(filename);
+      if (!tagMap.at("title").empty()) {
+        return tagMap;
+      }
     }
   } catch (...) {
     // no entry for filename in !tags.m3u or title tag does not exist
