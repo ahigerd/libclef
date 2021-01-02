@@ -18,16 +18,16 @@ seq2wav\src:
 !include depends.mak
 
 .cpp.obj:
-	$(CPP) /DUNICODE /D_UNICODE /DNDEBUG /O2 /EHsc /I src /I seq2wav\src /I plugins\foobar2000 /I plugins /c /Fo$@ $<
+	$(CPP) /std:c++latest /DUNICODE /D_UNICODE /DNDEBUG /O2 /EHsc /I src /I seq2wav\src /I plugins\foobar2000 /I plugins /c /Fo$@ $<
 
-plugins\foobarplugin.obj: plugins\s2wplugin.cpp
-	$(CPP) /DUNICODE /D_UNICODE /DNDEBUG /DBUILD_FOOBAR /O2 /EHsc /I src /I seq2wav\src /I plugins\foobar2000 /I plugins /c /Fo$@ $**
+plugins\foobarplugin.obj: plugins\s2wplugin.cpp seq2wav\src\plugins\foobarplugin.h FORCE
+	$(CPP) /std:c++latest /DUNICODE /D_UNICODE /DNDEBUG /DBUILD_FOOBAR /O2 /EHsc /I src /I seq2wav\src /I plugins\foobar2000 /I plugins /c /Fo$@ plugins\s2wplugin.cpp
 
-plugins\audaciousplugin.obj: plugins\s2wplugin.cpp
-	$(CPP) /DUNICODE /D_UNICODE /DNDEBUG /DBUILD_AUDACIOUS /O2 /EHsc /I src /I seq2wav\src /c /Fo$@ $**
+plugins\audaciousplugin.obj: plugins\s2wplugin.cpp seq2wav\src\plugins\audaciousplugin.h FORCE
+	$(CPP) /std:c++latest /DUNICODE /D_UNICODE /DNDEBUG /DBUILD_AUDACIOUS /O2 /EHsc /I src /I seq2wav\src /c /Fo$@ plugins\s2wplugin.cpp
 
-plugins\winampplugin.obj: plugins\s2wplugin.cpp
-	$(CPP) /DUNICODE /D_UNICODE /DNDEBUG /DBUILD_WINAMP /O2 /EHsc /I src /I seq2wav\src /c /Fo$@ $**
+plugins\winampplugin.obj: plugins\s2wplugin.cpp seq2wav\src\plugins\winampplugin.h FORCE
+	$(CPP) /std:c++latest /DUNICODE /D_UNICODE /DNDEBUG /DBUILD_WINAMP /O2 /EHsc /I src /I seq2wav\src /c /Fo$@ plugins\s2wplugin.cpp
 
 "$(PLUGIN_NAME).exe": src\main.obj
 	link.exe /subsystem:console /out:$@ $**
