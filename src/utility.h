@@ -54,6 +54,7 @@ double noteToFreq(double midiNote);
 
 std::string trim(const std::string& str);
 std::wstring toUtf16(const std::string& str);
+std::string toUtf8(const std::wstring& str);
 std::string formatDuration(double seconds);
 std::string formatDuration(const std::string& seconds);
 

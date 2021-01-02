@@ -1,5 +1,5 @@
 # Note: Don't use -march=native for code intended for distribution. -msse2 is probably good.
-CXXFLAGS := -fPIC -std=gnu++14 -Wno-multichar -I../src -I../seq2wav/include -march=native -I. -Isrc/
+CXXFLAGS := -fPIC -std=gnu++17 -Wno-multichar -I../src -I../seq2wav/include -msse2 -I. -Isrc/
 
 DLL := so
 EXE :=

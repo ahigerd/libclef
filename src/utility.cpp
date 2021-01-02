@@ -6,10 +6,15 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <filesystem>
+
+#if __cplusplus < 201703L
+namespace std { using namespace std::experimental; }
+#endif
 
 std::unique_ptr<std::istream> openFstream(const std::string& path)
 {
-  return std::unique_ptr<std::istream>(new std::ifstream(path, std::ios::in | std::ios::binary));
+  return std::unique_ptr<std::istream>(new std::ifstream(std::filesystem::u8path(path), std::ios::in | std::ios::binary));
 }
 
 double noteToFreq(double midiNote)
@@ -44,6 +49,12 @@ std::wstring toUtf16(const std::string& str)
 {
   static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> utf16Codec;
   return utf16Codec.from_bytes(str);
+}
+
+std::string toUtf8(const std::wstring& str)
+{
+  static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> utf16Codec;
+  return utf16Codec.to_bytes(str);
 }
 
 std::string formatDuration(double seconds)

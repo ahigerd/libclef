@@ -42,6 +42,11 @@ bool S2WPluginBase::matchExtension(const std::string& filename) const
     return false;
   }
   std::string ext = filename.substr(dotPos + 1);
+  for (char& ch : ext) {
+    if (ch >= 'A' && ch <= 'Z') {
+      ch += ('a' - 'A');
+    }
+  }
   for (const auto& iter : extensions()) {
     if (ext == iter.first) {
       return true;

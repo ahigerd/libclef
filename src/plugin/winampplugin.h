@@ -1,6 +1,7 @@
 #ifndef S2W_WINAMPPLUGIN_H
 #define S2W_WINAMPPLUGIN_H
 
+#define UNICODE_INPUT_PLUGIN
 #include "s2wconfig.h"
 #include <windows.h>
 #include "in2.h"
@@ -17,6 +18,7 @@
 #include <mutex>
 #include <fstream>
 #include <sstream>
+#include <wchar.h>
 
 #ifdef min
 #undef min
@@ -67,15 +69,15 @@ public:
   static void init() {}
   static void quit() {}
   static void getFileInfo(const in_char* inFilename, in_char* outTitle, int* outMS) {
-    std::string filename = inFilename ? inFilename : "";
+    std::string filename = inFilename ? toUtf8(inFilename) : std::string();
     std::string title = filename;
     bool isCurrent = filename.empty();
     if (isCurrent) {
       title = filename = instance()->currentTrack;
       *outMS = instance()->length * 1000;
     }
-    std::ifstream file(filename, std::ios::in | std::ios::binary);
-    TagMap tagMap(plugin.getTags(filename, file));
+    auto file = plugin.openFile(filename);
+    TagMap tagMap(plugin.getTags(filename, *file));
     if (!isCurrent) {
       std::string len = tagMap.count("length_seconds_fp") ? tagMap.at("length_seconds_fp") : std::string();
       if (!len.empty()) {
@@ -88,11 +90,12 @@ public:
     if (tagMap.count("display_title")) {
       title = tagMap.at("display_title");
     }
-    strncpy(outTitle, title.c_str(), GETFILEINFO_TITLE_LENGTH);
+    wcsncpy(outTitle, toUtf16(title).c_str(), GETFILEINFO_TITLE_LENGTH / sizeof(wchar_t));
   }
-  static int infoBox(const in_char *filename, HWND hwndParent) {
-    std::ifstream file(filename, std::ios::in | std::ios::binary);
-    TagMap tagMap(plugin.getTags(filename, file));
+  static int infoBox(const in_char *inFilename, HWND hwndParent) {
+    std::string filename = toUtf8(inFilename);
+    auto file = plugin.openFile(filename);
+    TagMap tagMap(plugin.getTags(filename, *file));
     std::ostringstream ss;
     ss << "Filename:" << std::endl << filename << std::endl << std::endl;
     if (tagMap.count("length_seconds_fp")) {
@@ -111,10 +114,11 @@ public:
   }
   static int isOurFile(const in_char *fn)
   {
-    std::ifstream file(fn, std::ios::in | std::ios::binary);
-    return plugin.isPlayable(fn, file);
+    std::string path = toUtf8(fn);
+    auto file = plugin.openFile(path);
+    return plugin.isPlayable(path, *file);
   }
-  static int play(const in_char* fn) { return instance()->play(std::string(fn)); }
+  static int play(const in_char* fn) { return instance()->play(toUtf8(fn)); }
   int play(const std::string& fn)
   {
     try {
@@ -128,14 +132,14 @@ public:
         thread.reset(nullptr);
       }
       try {
-        std::ifstream file(fn, std::ios::in | std::ios::binary);
-        length = plugin.length(fn, file);
+        auto file = plugin.openFile(fn);
+        length = plugin.length(fn, *file);
       } catch (std::exception& e) {
         std::cerr << "Error reading length: " << e.what() << std::endl;
         return 1;
       }
-      std::ifstream file(fn, std::ios::in | std::ios::binary);
-      bool ok = plugin.play(fn, file);
+      auto file = plugin.openFile(fn);
+      bool ok = plugin.play(fn, *file);
       if (!ok) {
         plugin.unload();
         return 1;

@@ -75,6 +75,7 @@ public:
   virtual bool isPlayable(const std::string& filename, std::istream& file) const = 0;
   virtual double length(const std::string& filename, std::istream& file) const = 0;
   virtual int sampleRate(const std::string& filename, std::istream& file) const = 0; // of unloaded track
+  OpenFn openFile;
 
 protected:
   S2WPluginBase();
@@ -82,7 +83,6 @@ protected:
   virtual SynthContext* prepare(const std::string& filename, std::istream& file) = 0;
   virtual void release() = 0;
 
-  OpenFn openFile;
   SynthContext* ctx;
 };
 
