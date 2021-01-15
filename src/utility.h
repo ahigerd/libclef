@@ -10,6 +10,8 @@
 using OpenFn = std::function<std::unique_ptr<std::istream>(const std::string&)>;
 std::unique_ptr<std::istream> openFstream(const std::string& path);
 
+using Iter8 = std::vector<uint8_t>::const_iterator;
+
 template <typename T, typename T2>
 inline T clamp(T2 value, T lower, T upper)
 {

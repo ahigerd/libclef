@@ -21,6 +21,7 @@ public:
   inline void write(const std::vector<uint8_t>& data)
     { write(data.data(), data.size()); }
   void write(const std::vector<int16_t>& data);
+  void write(const std::vector<int16_t>& left, const std::vector<int16_t>& right);
   void close();
 
 private:

@@ -3,7 +3,31 @@
 #include "msadpcmcodec.h"
 #include "utility.h"
 #include <memory>
-#include <exception>
+#include <stdexcept>
+
+WaveFormatEx::WaveFormatEx() : format(0xFFFF)
+{
+  // initializers only
+}
+
+WaveFormatEx::WaveFormatEx(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end)
+{
+  if (end - start < 12) {
+    throw std::runtime_error("WAVEFORMATEX is invalid");
+  }
+  format = parseInt<uint16_t>(start, 0);
+  channels = parseInt<uint16_t>(start, 2);
+  sampleRate = parseInt<uint32_t>(start, 4);
+  byteRate = parseInt<uint32_t>(start, 8);
+  blockAlign = parseInt<uint16_t>(start, 12);
+  sampleBits = parseInt<uint16_t>(start, 14);
+  if (format != 1 && start + 18 < end) {
+    int exLen = parseInt<uint16_t>(start, 16);
+    if (exLen > 0 && start + 18 + exLen <= end) {
+      exData = std::vector<uint8_t>(start + 18, start + 18 + exLen);
+    }
+  }
+}
 
 SampleData* RiffCodec::decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID)
 {
@@ -22,7 +46,7 @@ SampleData* RiffCodec::decodeRange(std::vector<uint8_t>::const_iterator start, s
   }
   uint32_t offset = 12;
   std::vector<uint8_t> data;
-  int sampleBits = 0, channels = 0, format = 0, sampleRate, blockAlign;
+  WaveFormatEx fmt;
   while (offset < size) {
     if (offset + 8 > size) {
       throw std::runtime_error("RIFF data is invalid");
@@ -33,14 +57,7 @@ SampleData* RiffCodec::decodeRange(std::vector<uint8_t>::const_iterator start, s
       throw std::runtime_error("RIFF chunk data is invalid");
     }
     if (magic == 'fmt ') {
-      if (chunkSize < 16) {
-        throw std::runtime_error("RIFF fmt data is invalid");
-      }
-      format = parseInt<uint16_t>(buffer, offset + 8);
-      channels = parseInt<uint16_t>(buffer, offset + 10);
-      sampleRate = parseInt<uint32_t>(buffer, offset + 12);
-      blockAlign = parseInt<uint16_t>(buffer, offset + 20);
-      sampleBits = parseInt<uint16_t>(buffer, offset + 22);
+      fmt = WaveFormatEx(start + offset + 8, start + offset + chunkSize);
     } else if (magic == 'data') {
       data.insert(
         data.end(),
@@ -51,14 +68,14 @@ SampleData* RiffCodec::decodeRange(std::vector<uint8_t>::const_iterator start, s
     offset += 8 + chunkSize;
   }
   std::unique_ptr<ICodec> codec;
-  if (format == 1) {
-    codec.reset(new PcmCodec(sampleBits, channels, false));
-  } else if (format == 2) {
-    codec.reset(new MsAdpcmCodec(blockAlign, channels));
+  if (fmt.format == 1) {
+    codec.reset(new PcmCodec(fmt.sampleBits, fmt.channels, false));
+  } else if (fmt.format == 2) {
+    codec.reset(new MsAdpcmCodec(fmt.blockAlign, fmt.channels));
   } else {
     throw std::runtime_error("Unsupported RIFF format");
   }
   SampleData* sampleData = codec->decode(data, sampleID);
-  sampleData->sampleRate = sampleRate;
+  sampleData->sampleRate = fmt.sampleRate;
   return sampleData;
 }

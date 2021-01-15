@@ -59,6 +59,19 @@ void RiffWriter::write(const std::vector<int16_t>& data)
   }
 }
 
+void RiffWriter::write(const std::vector<int16_t>& left, const std::vector<int16_t>& right)
+{
+  int leftWords = left.size(), rightWords = right.size();
+  int words = leftWords < rightWords ? rightWords : leftWords;
+  if (rewriteSize) {
+    size += words * 4;
+  }
+  for (int i = 0; i < words; i++) {
+    writeLE<int16_t>(file, i < leftWords ? left[i] : 0);
+    writeLE<int16_t>(file, i < rightWords ? right[i] : 0);
+  }
+}
+
 void RiffWriter::close()
 {
   if (!file.is_open() || !file) {
