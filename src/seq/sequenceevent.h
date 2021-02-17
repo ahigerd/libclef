@@ -13,6 +13,7 @@ public:
     Oscillator,
     Modulator,
     Kill,
+    UserBase,
   };
 
   double timestamp;
