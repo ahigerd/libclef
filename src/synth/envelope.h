@@ -11,14 +11,15 @@ public:
     StartGain = 'strt',
     Attack = 'atk ',
     Hold = 'hold',
-    Sustain = 'sus ',
     Decay = 'decy',
+    Sustain = 'sus ',
     Release = 'rels',
   };
 
-  Envelope(const SynthContext* ctx, double attack, double hold, double sustain, double decay, double release);
+  Envelope(const SynthContext* ctx, double attack, double hold, double decay, double sustain, double release);
 
   virtual bool isActive() const;
+  bool expAttack, expDecay;
 
 protected:
   virtual int16_t filterSample(double time, int channel, int16_t sample);

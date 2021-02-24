@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include "audionode.h"
+#include "audioparam.h"
 #include "envelope.h"
 class SynthContext;
 class ITrack;
@@ -17,7 +18,7 @@ public:
   Channel(const SynthContext* ctx, ITrack* track);
   ~Channel();
 
-  double gain;
+  AudioParam gain;
 
   void seek(double timestamp);
   uint32_t fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples = -1);
@@ -37,6 +38,7 @@ private:
     std::shared_ptr<SequenceEvent> event;
     std::shared_ptr<AudioNode> source;
     double duration;
+    bool kill;
   };
   std::unordered_map<uint64_t, std::unique_ptr<Note>> notes;
 

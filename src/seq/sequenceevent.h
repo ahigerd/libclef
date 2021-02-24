@@ -13,6 +13,7 @@ public:
     Oscillator,
     Modulator,
     Kill,
+    Channel,
     UserBase,
   };
 
@@ -54,11 +55,13 @@ struct BaseNoteEvent {
   double volume;
   double pan;
 
-  bool useEnvelope;
-  double startGain, attack, hold, sustain, decay, release;
-  void setEnvelope(double attack, double sustain, double decay, double release);
-  void setEnvelope(double attack, double hold, double sustain, double decay, double release);
-  void setEnvelope(double start, double attack, double hold, double sustain, double decay, double release);
+  bool useEnvelope : 1;
+  bool expAttack : 1;
+  bool expDecay : 1;
+  double startGain, attack, hold, decay, sustain, release;
+  void setEnvelope(double attack, double decay, double sustain, double release);
+  void setEnvelope(double attack, double hold, double decay, double sustain, double release);
+  void setEnvelope(double start, double attack, double hold, double decay, double sustain, double release);
 };
 
 template <int TYPE_ID>
@@ -93,6 +96,15 @@ public:
   KillEvent(uint64_t playbackID, double timestamp);
 
   uint64_t playbackID;
+  bool immediate;
+};
+
+class ChannelEvent : public BaseEvent<SequenceEvent::Channel> {
+public:
+  ChannelEvent(uint32_t param, double value);
+
+  uint32_t param;
+  double value;
 };
 
 #endif

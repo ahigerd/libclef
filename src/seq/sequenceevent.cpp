@@ -8,41 +8,41 @@ inline uint64_t BaseNoteEvent::nextPlaybackID()
 }
 
 BaseNoteEvent::BaseNoteEvent()
-: playbackID(nextPlaybackID()), duration(-1), volume(1.0), pan(0.5), useEnvelope(false)
+: playbackID(nextPlaybackID()), duration(-1), volume(1.0), pan(0.5), useEnvelope(false), expAttack(false), expDecay(false)
 {
   // initializers only
 }
 
-void BaseNoteEvent::setEnvelope(double attack, double sustain, double decay, double release)
+void BaseNoteEvent::setEnvelope(double attack, double decay, double sustain, double release)
 {
   useEnvelope = true;
   startGain = 0.0;
   hold = 0.0;
   this->attack = attack;
-  this->sustain = sustain;
   this->decay = decay;
+  this->sustain = sustain;
   this->release = release;
 }
 
-void BaseNoteEvent::setEnvelope(double attack, double hold, double sustain, double decay, double release)
+void BaseNoteEvent::setEnvelope(double attack, double hold, double decay, double sustain, double release)
 {
   useEnvelope = true;
   startGain = 0.0;
   this->attack = attack;
   this->hold = hold;
-  this->sustain = sustain;
   this->decay = decay;
+  this->sustain = sustain;
   this->release = release;
 }
 
-void BaseNoteEvent::setEnvelope(double start, double attack, double hold, double sustain, double decay, double release)
+void BaseNoteEvent::setEnvelope(double start, double attack, double hold, double decay, double sustain, double release)
 {
   useEnvelope = true;
   this->startGain = start;
   this->attack = attack;
   this->hold = hold;
-  this->sustain = sustain;
   this->decay = decay;
+  this->sustain = sustain;
   this->release = release;
 }
 
@@ -59,7 +59,13 @@ OscillatorEvent::OscillatorEvent()
 }
 
 KillEvent::KillEvent(uint64_t playbackID, double timestamp)
-: playbackID(playbackID)
+: playbackID(playbackID), immediate(false)
 {
   this->timestamp = timestamp;
+}
+
+ChannelEvent::ChannelEvent(uint32_t param, double value)
+: param(param), value(value)
+{
+  // initializers only
 }
