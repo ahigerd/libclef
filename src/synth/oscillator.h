@@ -76,4 +76,28 @@ private:
   double lastPhase;
 };
 
+class GBNoiseOscillator : public BaseOscillator {
+public:
+  GBNoiseOscillator(const SynthContext* ctx);
+
+protected:
+  virtual double calcSample(double time);
+
+private:
+  uint16_t state;
+  double lastPhase;
+};
+
+class GBNoise127Oscillator : public BaseOscillator {
+public:
+  GBNoise127Oscillator(const SynthContext* ctx);
+
+protected:
+  virtual double calcSample(double time);
+
+private:
+  uint16_t state;
+  double lastPhase;
+};
+
 #endif

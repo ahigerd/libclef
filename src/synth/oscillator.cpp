@@ -138,3 +138,35 @@ double NESNoise93Oscillator::calcSample(double)
   return (state & 0x0001) ? 1 : -1;
 }
 
+GBNoiseOscillator::GBNoiseOscillator(const SynthContext* ctx)
+: BaseOscillator(ctx), state(0x4000), lastPhase(0)
+{
+  // initializers only
+}
+
+double GBNoiseOscillator::calcSample(double)
+{
+  if (lastPhase > phase) {
+    bool bit = state & 0x0001;
+    state = (state >> 1) ^ (state & 0x0001 ? 0x6000 : 0);
+  }
+  lastPhase = phase;
+  return (state & 0x0001) ? 1 : -1;
+}
+
+GBNoise127Oscillator::GBNoise127Oscillator(const SynthContext* ctx)
+: BaseOscillator(ctx), state(0x40), lastPhase(0)
+{
+  // initializers only
+}
+
+double GBNoise127Oscillator::calcSample(double)
+{
+  if (lastPhase > phase) {
+    bool bit = state & 0x0001;
+    state = (state >> 1) ^ (state & 0x0001 ? 0x0060 : 0);
+  }
+  lastPhase = phase;
+  return (state & 0x0001) ? 1 : -1;
+}
+
