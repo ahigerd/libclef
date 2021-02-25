@@ -41,13 +41,16 @@ SampleData* PcmCodec::decodeRange(std::vector<uint8_t>::const_iterator start, st
 void PcmCodec::decodePcm4(SampleData* sampleData, std::vector<uint8_t>::const_iterator start, int length)
 {
   int right = channels - 1;
+  if (channels == 1) {
+    length >>= 1;
+  }
   for (int i = 0; i < length; i++, start++) {
     if (bigEndian) {
-      sampleData->channels[0].push_back((*start & 0xF0) << 8 - 0x8000);
-      sampleData->channels[right].push_back((*start & 0x0F) << 12 - 0x8000);
+      sampleData->channels[0].push_back(((*start & 0xF0) << 8) - 0x8000);
+      sampleData->channels[right].push_back(((*start & 0x0F) << 12) - 0x8000);
     } else {
-      sampleData->channels[0].push_back((*start & 0x0F) << 12 - 0x8000);
-      sampleData->channels[right].push_back((*start & 0xF0) << 8 - 0x8000);
+      sampleData->channels[0].push_back(((*start & 0x0F) << 12) - 0x8000);
+      sampleData->channels[right].push_back(((*start & 0xF0) << 8) - 0x8000);
     }
   }
 }
