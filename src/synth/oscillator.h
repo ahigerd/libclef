@@ -8,6 +8,7 @@ public:
   enum ParamType {
     Frequency = 'freq',
     DutyCycle = 'duty',
+    PitchBend = 'bend',
   };
 
   static BaseOscillator* create(const SynthContext* ctx, uint64_t waveformID, double frequency = 440.0, double amplitude = 1.0, double pan = 0.5);

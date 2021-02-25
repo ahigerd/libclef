@@ -40,6 +40,7 @@ BaseOscillator::BaseOscillator(const SynthContext* ctx)
   addParam(Frequency, 440.0);
   addParam(Gain, 1.0);
   addParam(Pan, 0.5);
+  addParam(PitchBend, 1.0);
 }
 
 bool BaseOscillator::isActive() const
@@ -51,7 +52,7 @@ int16_t BaseOscillator::generateSample(double time, int channel)
 {
   if (time != lastTime) {
     lastSample = std::round(calcSample(time) * 32767);
-    double phaseOffset = (time - lastTime) * paramValue(Frequency, time);
+    double phaseOffset = (time - lastTime) * paramValue(Frequency, time) * paramValue(PitchBend, time);
     phase = std::fmod(phase + phaseOffset, 1.0);
   }
   lastTime = time;

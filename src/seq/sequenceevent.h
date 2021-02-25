@@ -2,7 +2,6 @@
 #define S2W_SEQUENCEEVENT_H
 
 #include <cstdint>
-struct IModulator;
 
 class SequenceEvent {
 public:
@@ -87,8 +86,11 @@ public:
 
 class ModulatorEvent : public BaseEvent<SequenceEvent::Modulator> {
 public:
+  ModulatorEvent(uint64_t playbackID, int32_t param, double value);
+
   uint64_t playbackID;
-  IModulator* modulator;
+  int32_t param;
+  double value;
 };
 
 class KillEvent : public BaseEvent<SequenceEvent::Kill> {

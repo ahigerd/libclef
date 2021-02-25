@@ -66,7 +66,7 @@ int16_t Envelope::filterSample(double time, int channel, int16_t sample)
     }
     case Release: {
       double r = paramValue(Release, time);
-      if (expDecay) {
+      if (expDecay && r > 0) {
         double dt = time - stepAt;
         double level = lastLevel - r * dt * dt;
         if (level <= 0) {

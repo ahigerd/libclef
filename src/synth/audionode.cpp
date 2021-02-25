@@ -50,11 +50,11 @@ FilterNode::FilterNode(const SynthContext* ctx) : AudioNode(ctx)
 void FilterNode::connect(std::shared_ptr<AudioNode> source)
 {
   this->source = source;
-  auto trigger = source->param(Trigger);
-  if (trigger) {
-    addParam(Trigger, trigger);
-  } else {
-    addParam(Trigger, 1.0);
+  bool addTrigger = true;
+  addParam(Trigger, 1.0);
+  for (const auto& iter : source->params) {
+    if (iter.first == Gain || iter.first == Pan) continue;
+    addParam(iter.first, iter.second);
   }
 }
 

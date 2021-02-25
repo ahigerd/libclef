@@ -49,6 +49,14 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
         // TODO: more types
         gain = chEvent->value;
         //std::cout << "ChannelEvent " << gain.valueAt(timestamp) << std::endl;
+      } else if (ModulatorEvent* modEvent = event->cast<ModulatorEvent>()) {
+        auto noteIter = notes.find(modEvent->playbackID);
+        if (noteIter != notes.end()) {
+          auto param = noteIter->second->source->param(modEvent->param);
+          if (param) {
+            param->setConstant(modEvent->value);
+          }
+        }
       } else if (OscillatorEvent* oscEvent = event->cast<OscillatorEvent>()) {
         noteEvent = oscEvent;
         BaseOscillator* osc = BaseOscillator::create(ctx, oscEvent->waveformID, oscEvent->frequency, oscEvent->volume, oscEvent->pan);

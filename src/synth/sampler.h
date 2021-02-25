@@ -9,10 +9,11 @@ class IInterpolator;
 class Sampler : public AudioNode {
 public:
   enum ParamType {
+    Pitch = 'ptch',
     PitchBend = 'bend',
   };
 
-  Sampler(const SynthContext* ctx, const SampleData* sample, double pitchBend = 1.0);
+  Sampler(const SynthContext* ctx, const SampleData* sample, double pitch = 1.0);
 
   IInterpolator* interpolator;
 

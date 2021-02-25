@@ -58,6 +58,12 @@ OscillatorEvent::OscillatorEvent()
   // initializers only
 }
 
+ModulatorEvent::ModulatorEvent(uint64_t playbackID, int32_t param, double value)
+: playbackID(playbackID), param(param), value(value)
+{
+  // initializers only
+}
+
 KillEvent::KillEvent(uint64_t playbackID, double timestamp)
 : playbackID(playbackID), immediate(false)
 {

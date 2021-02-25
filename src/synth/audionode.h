@@ -32,6 +32,7 @@ protected:
   virtual int16_t generateSample(double time, int channel = 0) = 0;
 
 private:
+  friend class FilterNode;
   std::unordered_map<int32_t, std::shared_ptr<AudioParam>> params;
 };
 
