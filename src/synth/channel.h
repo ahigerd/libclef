@@ -18,7 +18,7 @@ public:
   Channel(const SynthContext* ctx, ITrack* track);
   ~Channel();
 
-  AudioParam gain;
+  AudioParam gain, pan;
 
   void seek(double timestamp);
   uint32_t fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples = -1);

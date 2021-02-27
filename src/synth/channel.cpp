@@ -13,7 +13,7 @@ Channel::Note::Note(std::shared_ptr<SequenceEvent> event, std::shared_ptr<AudioN
 }
 
 Channel::Channel(const SynthContext* ctx, ITrack* track)
-: gain(ctx, 0.5), ctx(ctx), track(track), nextEvent(nullptr)
+: gain(ctx, 0.5), pan(ctx, 0.5), ctx(ctx), track(track), nextEvent(nullptr)
 {
   timestamp = 0;
 }
@@ -47,7 +47,11 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
       if (ChannelEvent* chEvent = event->cast<ChannelEvent>()) {
         // TODO: queuing
         // TODO: more types
-        gain = chEvent->value;
+        if (chEvent->param == AudioNode::Gain) {
+          gain = chEvent->value;
+        } else if (chEvent->param == AudioNode::Pan) {
+          pan = chEvent->value;
+        }
         //std::cout << "ChannelEvent " << gain.valueAt(timestamp) << std::endl;
       } else if (ModulatorEvent* modEvent = event->cast<ModulatorEvent>()) {
         auto noteIter = notes.find(modEvent->playbackID);
@@ -96,6 +100,7 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
   } while (event);
   int pos = 0;
   while (pos < buffer.size() && !isFinished()) {
+    double panValue = ctx->outputChannels > 1 ? pan.valueAt(timestamp) : 1;
     for (int ch = 0; ch < ctx->outputChannels; ch++) {
       int32_t sample = 0;
       std::vector<uint64_t> toErase;
@@ -128,7 +133,8 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
       for (uint64_t id : toErase) {
         notes.erase(id);
       }
-      buffer[pos] = sample * gain.valueAt(timestamp);
+      buffer[pos] = sample * gain.valueAt(timestamp) * panValue;
+      panValue = 1 - panValue;
       ++pos;
     }
     timestamp += ctx->sampleTime;
