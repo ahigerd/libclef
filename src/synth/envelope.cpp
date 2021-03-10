@@ -1,5 +1,28 @@
 #include "envelope.h"
 #include "utility.h"
+#include <cmath>
+
+static double nexp(double r, double dt)
+{
+  static double table[1024];
+  static double interp[1024];
+  static bool initialized = false;
+  if (!initialized) {
+    for (int i = 0; i < 1024; i++) {
+      table[i] = std::exp(i * -0.01);
+    }
+    for (int i = 0; i < 1023; i++) {
+      interp[i] = table[i] - table[i + 1];
+    }
+    interp[1023] = table[1023];
+    initialized = true;
+  }
+  double pos = (r * dt * -100);
+  int idx = int(pos);
+  if (idx < 0) return 1;
+  if (idx > 1023) return 0;
+  return table[idx] + interp[idx] * (idx - pos);
+}
 
 Envelope::Envelope(const SynthContext* ctx, double attack, double hold, double decay, double sustain, double release)
 : FilterNode(ctx), expAttack(false), expDecay(false), stepAt(0), lastLevel(0), step(Attack)
@@ -47,9 +70,9 @@ int16_t Envelope::filterSample(double time, int channel, int16_t sample)
     case Decay: {
       double d = paramValue(Decay, time);
       double s = paramValue(Sustain, time);
-      if (expDecay) {
+      if (expDecay && d < 0) {
         double dt = time - stepAt;
-        lastLevel = 1.0 - d * dt * dt;
+        lastLevel = nexp(d, dt);
         if (lastLevel > s) {
           return lastLevel * sample;
         }
@@ -66,9 +89,9 @@ int16_t Envelope::filterSample(double time, int channel, int16_t sample)
     }
     case Release: {
       double r = paramValue(Release, time);
-      if (expDecay && r > 0) {
+      if (expDecay && r < 0) {
         double dt = time - stepAt;
-        double level = lastLevel - r * dt * dt;
+        double level = lastLevel * nexp(r, dt);
         if (level <= 0) {
           step = 0;
           return 0;
