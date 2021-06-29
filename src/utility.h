@@ -53,6 +53,7 @@ T parseIntBE(const Container& buffer, int offset)
 int countBits(uint64_t value);
 
 double noteToFreq(double midiNote);
+double fastExp(double r, double dt);
 
 std::string trim(const std::string& str);
 std::wstring toUtf16(const std::string& str);

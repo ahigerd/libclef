@@ -84,3 +84,36 @@ std::string formatDuration(const std::string& seconds)
   ss >> secondsVal;
   return formatDuration(secondsVal);
 }
+
+double fastExp(double r, double dt)
+{
+  static double table[2048];
+  static double interp[2048];
+  static bool initialized = false;
+  if (!initialized) {
+    // Precompute e^x between -10.24 and +10.23
+    for (int i = -1024; i < 1024; i++) {
+      table[i + 1024] = std::exp(i * 0.01);
+    }
+    // Precompute deltas
+    for (int i = 0; i < 2047; i++) {
+      interp[i] = table[i] - table[i + 1];
+    }
+    interp[2047] = table[2047];
+    initialized = true;
+  }
+  double pos = (r * dt * 100 + 1024);
+  int idx = int(pos);
+
+  // clamp results to appropriate range
+  if (r > 0) {
+    if (idx < 0) return HUGE_VAL;
+    if (idx > 1023) return 1;
+  } else {
+    if (idx < 1024) return 1;
+    if (idx > 2047) return 0;
+  }
+
+  // linear interpolation
+  return table[idx] + interp[idx] * (idx - pos);
+}

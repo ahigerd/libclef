@@ -2,28 +2,6 @@
 #include "utility.h"
 #include <cmath>
 
-static double nexp(double r, double dt)
-{
-  static double table[1024];
-  static double interp[1024];
-  static bool initialized = false;
-  if (!initialized) {
-    for (int i = 0; i < 1024; i++) {
-      table[i] = std::exp(i * -0.01);
-    }
-    for (int i = 0; i < 1023; i++) {
-      interp[i] = table[i] - table[i + 1];
-    }
-    interp[1023] = table[1023];
-    initialized = true;
-  }
-  double pos = (r * dt * -100);
-  int idx = int(pos);
-  if (idx < 0) return 1;
-  if (idx > 1023) return 0;
-  return table[idx] + interp[idx] * (idx - pos);
-}
-
 Envelope::Envelope(const SynthContext* ctx, double attack, double hold, double decay, double sustain, double release)
 : FilterNode(ctx), expAttack(false), expDecay(false), stepAt(0), lastLevel(0), step(Attack)
 {
@@ -38,7 +16,7 @@ Envelope::Envelope(const SynthContext* ctx, double attack, double hold, double d
 
 bool Envelope::isActive() const
 {
-  return step != 0;
+  return step != 0 && FilterNode::isActive();
 }
 
 int16_t Envelope::filterSample(double time, int channel, int16_t sample)
@@ -51,6 +29,11 @@ int16_t Envelope::filterSample(double time, int channel, int16_t sample)
     case Attack: {
       double a = paramValue(Attack, time);
       if (expAttack) {
+        double dt = time - stepAt;
+        lastLevel = paramValue(StartGain, time) + fastExp(a, dt);
+        if (lastLevel < 1.0) {
+          return lastLevel * sample;
+        }
         return (lastLevel = lastLevel - a * time * time) * sample;
       } else if (time < a) {
         return (lastLevel = lerp(paramValue(StartGain, time), 1.0, time, 0.0, a)) * sample;
@@ -72,7 +55,7 @@ int16_t Envelope::filterSample(double time, int channel, int16_t sample)
       double s = paramValue(Sustain, time);
       if (expDecay && d < 0) {
         double dt = time - stepAt;
-        lastLevel = nexp(d, dt);
+        lastLevel = fastExp(-d, dt);
         if (lastLevel > s) {
           return lastLevel * sample;
         }
@@ -91,7 +74,7 @@ int16_t Envelope::filterSample(double time, int channel, int16_t sample)
       double r = paramValue(Release, time);
       if (expDecay && r < 0) {
         double dt = time - stepAt;
-        double level = lastLevel * nexp(r, dt);
+        double level = lastLevel * fastExp(-r, dt);
         if (level <= 0) {
           step = 0;
           return 0;
