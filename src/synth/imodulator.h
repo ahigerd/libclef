@@ -36,7 +36,7 @@ public:
   LFOModulator(std::shared_ptr<AudioNode> source);
 
 protected:
-  virtual void connectParams(std::shared_ptr<AudioNode> dest);
+  //virtual void connectParams(std::shared_ptr<AudioNode> dest);
 
 private:
   void init();
