@@ -22,6 +22,7 @@ protected:
   std::shared_ptr<AudioNode> source;
 };
 
+/*
 class LFOModulator : public IModulator {
 public:
   enum ParamType {
@@ -40,5 +41,6 @@ protected:
 private:
   void init();
 };
+*/
 
 #endif

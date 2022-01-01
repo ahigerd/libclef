@@ -45,6 +45,7 @@ void IModulator::connectParams(std::shared_ptr<AudioNode> dest, uint8_t index)
   // default implementation does nothing
 }
 
+/*
 LFOModulator::LFOModulator(const SynthContext* ctx, uint64_t waveformID)
 : IModulator(std::shared_ptr<AudioNode>(new DelayNode(std::shared_ptr<AudioNode>(BaseOscillator::create(ctx, waveformID, 1.0, 1.0)))))
 {
@@ -63,3 +64,4 @@ void LFOModulator::init()
   addParam(Depth, source->param(BaseOscillator::Gain));
   addParam(Delay, source->param(DelayNode::Delay));
 }
+*/

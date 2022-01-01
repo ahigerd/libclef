@@ -61,6 +61,11 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
             param->setConstant(modEvent->value);
           }
         }
+      } else if (AudioNodeEvent* nodeEvent = event->cast<AudioNodeEvent>()) {
+        noteEvent = nodeEvent;
+        noteNode = nodeEvent->node;
+        note = new Note(event, noteNode, 0);
+        notes.emplace(std::make_pair(nodeEvent->playbackID, note));
       } else if (OscillatorEvent* oscEvent = event->cast<OscillatorEvent>()) {
         noteEvent = oscEvent;
         BaseOscillator* osc = BaseOscillator::create(ctx, oscEvent->waveformID, oscEvent->frequency, oscEvent->volume, oscEvent->pan);

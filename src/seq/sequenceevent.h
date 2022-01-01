@@ -2,6 +2,8 @@
 #define S2W_SEQUENCEEVENT_H
 
 #include <cstdint>
+#include <memory>
+#include "synth/audionode.h"
 
 class SequenceEvent {
 public:
@@ -13,6 +15,7 @@ public:
     Modulator,
     Kill,
     Channel,
+    AudioNode,
     UserBase,
   };
 
@@ -82,6 +85,13 @@ public:
 
   uint64_t waveformID;  // passed to PSG
   double frequency;
+};
+
+class AudioNodeEvent : public NoteEvent<SequenceEvent::AudioNode> {
+public:
+  AudioNodeEvent(std::shared_ptr<::AudioNode> node);
+
+  std::shared_ptr<::AudioNode> node;
 };
 
 class ModulatorEvent : public BaseEvent<SequenceEvent::Modulator> {

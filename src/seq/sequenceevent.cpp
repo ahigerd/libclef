@@ -58,6 +58,12 @@ OscillatorEvent::OscillatorEvent()
   // initializers only
 }
 
+AudioNodeEvent::AudioNodeEvent(std::shared_ptr<::AudioNode> node)
+: node(node)
+{
+  // initializers only
+}
+
 ModulatorEvent::ModulatorEvent(uint64_t playbackID, int32_t param, double value)
 : playbackID(playbackID), param(param), value(value)
 {
