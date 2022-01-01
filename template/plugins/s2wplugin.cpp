@@ -8,10 +8,6 @@
 struct S2WPluginInfo {
   S2WPLUGIN_STATIC_FIELDS
 
-  static std::string version() {
-    return "0.0.1";
-  }
-
   static bool isPlayable(std::istream& file) {
     // Implementations should check to see if the file is supported.
     // Return false or throw an exception to report failure.
@@ -51,6 +47,7 @@ struct S2WPluginInfo {
   }
 };
 
+const std::string S2WPluginInfo::version = "0.0.1";
 const std::string S2WPluginInfo::pluginName = "Template Plugin";
 const std::string S2WPluginInfo::pluginShortName = "template";
 ConstPairList S2WPluginInfo::extensions = { { "dummy", "Dummy files (*.dummy)" } };

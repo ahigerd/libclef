@@ -1,3 +1,4 @@
+ROOTPATH := ../
 include ../config.mak
 
 SOURCES = $(wildcard *.cpp */*.cpp)
