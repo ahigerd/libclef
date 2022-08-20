@@ -6,6 +6,7 @@
 #include <memory>
 #include <functional>
 #include <iostream>
+#include <vector>
 
 using OpenFn = std::function<std::unique_ptr<std::istream>(const std::string&)>;
 std::unique_ptr<std::istream> openFstream(const std::string& path);
