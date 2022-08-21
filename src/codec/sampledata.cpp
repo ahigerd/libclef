@@ -17,6 +17,7 @@ SampleData* SampleData::get(uint64_t sampleID)
 void SampleData::purge()
 {
   sampleCache.clear();
+  lastSampleID = 0;
 }
 
 uint64_t nextSampleID()
