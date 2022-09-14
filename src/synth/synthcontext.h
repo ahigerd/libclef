@@ -8,11 +8,14 @@ class Channel;
 class IInterpolator;
 class ITrack;
 class RiffWriter;
+class S2WContext;
 
 class SynthContext {
 public:
-  SynthContext(double sampleRate, int outputChannels = 2);
+  SynthContext(S2WContext* ctx, double sampleRate, int outputChannels = 2);
   ~SynthContext();
+
+  S2WContext* s2wContext() const;
 
   const double sampleRate;
   const int outputChannels;
@@ -33,6 +36,7 @@ public:
 private:
   std::vector<int16_t> mixBuffer;
   double currentTimestamp, maximumTimestamp;
+  S2WContext* ctx;
 };
 
 #endif

@@ -1,7 +1,18 @@
 #include "icodec.h"
 #include <fstream>
 
+ICodec::ICodec(S2WContext* ctx)
+: ctx(ctx)
+{
+  // initializers only
+}
+
 ICodec::~ICodec() {}
+
+S2WContext* ICodec::context() const
+{
+  return ctx;
+}
 
 SampleData* ICodec::decodeFile(const std::string& filename, uint64_t sampleID)
 {

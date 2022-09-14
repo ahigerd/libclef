@@ -5,7 +5,7 @@
 
 class MsAdpcmCodec : public ICodec {
 public:
-  MsAdpcmCodec(uint16_t blockSize, uint16_t channels);
+  MsAdpcmCodec(S2WContext* ctx, uint16_t blockSize, uint16_t channels);
 
   virtual SampleData* decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID = 0);
 

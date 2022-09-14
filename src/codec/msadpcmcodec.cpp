@@ -14,7 +14,8 @@ static const int16_t msStep[] = {
   768, 614, 512, 409, 307, 230, 230, 230,
 };
 
-MsAdpcmCodec::MsAdpcmCodec(uint16_t blockSize, uint16_t channels) : blockSize(blockSize), channels(channels)
+MsAdpcmCodec::MsAdpcmCodec(S2WContext* ctx, uint16_t blockSize, uint16_t channels)
+: ICodec(ctx), blockSize(blockSize), channels(channels)
 {
   // initializers only
 }
@@ -55,7 +56,7 @@ void MsAdpcmCodec::decodeBlock(std::vector<uint8_t>::const_iterator start, std::
 
 SampleData* MsAdpcmCodec::decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID)
 {
-  SampleData* sampleData = sampleID ? new SampleData(sampleID) : new SampleData();
+  SampleData* sampleData = sampleID ? new SampleData(context(), sampleID) : new SampleData(context());
 
   int samplesPerBlock = (blockSize - 7 * channels) * 2 / channels + 2;
   for (int i = 0; i < channels; i++) {

@@ -9,8 +9,8 @@ static const int16_t procyonFactor[][2] = {
 };
 static const int16_t maxProcyonFactor = (sizeof(procyonFactor) >> 2) - 1;
 
-ProcyonCodec::ProcyonCodec()
-: history(0), predictor(0)
+ProcyonCodec::ProcyonCodec(S2WContext* ctx)
+: ICodec(ctx), history(0), predictor(0)
 {
   // initializers only
 }
@@ -27,7 +27,7 @@ SampleData* ProcyonCodec::decodeRange(std::vector<uint8_t>::const_iterator start
 {
   history = 0;
   predictor = 0;
-  SampleData* sampleData = sampleID ? new SampleData(sampleID) : new SampleData();
+  SampleData* sampleData = sampleID ? new SampleData(context(), sampleID) : new SampleData(context());
   int length = end - start;
   sampleData->channels.push_back(std::vector<int16_t>());
   sampleData->channels[0].reserve(length);

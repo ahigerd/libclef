@@ -2,6 +2,7 @@
 #include "oscillator.h"
 #include "sampler.h"
 #include "synthcontext.h"
+#include "s2wcontext.h"
 #include "seq/itrack.h"
 #include "seq/sequenceevent.h"
 #include <iostream>
@@ -74,7 +75,7 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
         notes.emplace(std::make_pair(oscEvent->playbackID, note));
       } else if (SampleEvent* sampEvent = event->cast<SampleEvent>()) {
         noteEvent = sampEvent;
-        SampleData* sampleData = SampleData::get(sampEvent->sampleID);
+        SampleData* sampleData = ctx->s2wContext()->getSample(sampEvent->sampleID);
         if (!sampleData) {
           std::cerr << "ERROR: sample " << std::hex << sampEvent->sampleID << std::dec << " not found" << std::endl;
           continue;

@@ -107,7 +107,8 @@ class Seq2WavPlugin : public InputPlugin {
     }
   };
 
-  static S2WPlugin<S2WPluginInfo> plugin;
+  S2WContext s2w;
+  S2WPlugin<S2WPluginInfo> plugin;
   static ExtExpand extensions;
 
 public:
@@ -173,16 +174,18 @@ public:
   bool play(const char* filename, VFSFile& file);
 };
 
+static std::unique_ptr<std::istream> s2wAudaciousOpenFile(const std::string& filename)
+{
+  return std::unique_ptr<std::istream>(new vfsfile_istream(filename.c_str()));
+}
+
 template <typename S2WPluginInfo>
 Seq2WavPlugin<S2WPluginInfo>::Seq2WavPlugin()
 : InputPlugin(
     PluginInfo{ N_(plugin.pluginName().c_str()), plugin.pluginName().c_str(), plugin.about().c_str() },
     InputInfo().with_priority(8).with_exts(extensions)
-  )
+  ), plugin(&s2w)
 {
-  plugin.setOpener([](const std::string& filename) {
-    return std::unique_ptr<std::istream>(new vfsfile_istream(filename.c_str()));
-  });
 }
 
 template <typename S2WPluginInfo>
@@ -210,7 +213,6 @@ bool Seq2WavPlugin<S2WPluginInfo>::play(const char* filename, VFSFile& file)
 }
 
 #define SEQ2WAV_PLUGIN(S2WPluginInfo) \
-  template<> S2WPlugin<S2WPluginInfo> Seq2WavPlugin<S2WPluginInfo>::plugin = S2WPlugin<S2WPluginInfo>(); \
   template<> Seq2WavPlugin<S2WPluginInfo>::ExtExpand Seq2WavPlugin<S2WPluginInfo>::extensions = Seq2WavPlugin<S2WPluginInfo>::ExtExpand(); \
   EXPORT Seq2WavPlugin<S2WPluginInfo> aud_plugin_instance;
 #endif

@@ -5,7 +5,7 @@
 
 class ProcyonCodec : public ICodec {
 public:
-  ProcyonCodec();
+  ProcyonCodec(S2WContext* ctx);
 
   virtual SampleData* decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID = 0);
 

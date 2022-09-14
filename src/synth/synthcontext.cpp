@@ -7,15 +7,21 @@
 
 static const int BUFFER_SIZE = 1024;
 
-SynthContext::SynthContext(double sampleRate, int outputChannels)
+SynthContext::SynthContext(S2WContext* ctx, double sampleRate, int outputChannels)
 : sampleRate(sampleRate), sampleTime(1.0 / sampleRate), outputChannels(outputChannels),
-  interpolator(IInterpolator::get(IInterpolator::Zero)), mixBuffer(BUFFER_SIZE >> 1), currentTimestamp(0), maximumTimestamp(0)
+  interpolator(IInterpolator::get(IInterpolator::Zero)), mixBuffer(BUFFER_SIZE >> 1),
+  currentTimestamp(0), maximumTimestamp(0), ctx(ctx)
 {
   // initializers only
 }
 
 SynthContext::~SynthContext()
 {
+}
+
+S2WContext* SynthContext::s2wContext() const
+{
+  return ctx;
 }
 
 void SynthContext::addChannel(Channel* channel)

@@ -1,45 +1,20 @@
 #include "sampledata.h"
+#include "s2wcontext.h"
 #include <unordered_map>
 #include <memory>
 
-static std::unordered_map<uint64_t, std::unique_ptr<SampleData>> sampleCache;
-static uint64_t lastSampleID = 0;
-
-SampleData* SampleData::get(uint64_t sampleID)
-{
-  auto iter = sampleCache.find(sampleID);
-  if (iter == sampleCache.end()) {
-    return nullptr;
-  }
-  return iter->second.get();
-}
-
-void SampleData::purge()
-{
-  sampleCache.clear();
-  lastSampleID = 0;
-}
-
-uint64_t nextSampleID()
-{
-  do {
-    ++lastSampleID;
-  } while (sampleCache.find(lastSampleID) != sampleCache.end());
-  return lastSampleID;
-}
-
-SampleData::SampleData(uint64_t sampleID, double sampleRate, int loopStart, int loopEnd)
+SampleData::SampleData(S2WContext* ctx, uint64_t sampleID, double sampleRate, int loopStart, int loopEnd)
 : sampleID(sampleID), sampleRate(sampleRate), loopStart(loopStart), loopEnd(loopEnd)
 {
-  if (sampleID != Uncached) {
-    sampleCache[sampleID].reset(this);
+  if (sampleID != Uncached && ctx) {
+    ctx->sampleCache[sampleID].reset(this);
   }
   m_numSamples = -1;
   m_duration = -1;
 }
 
-SampleData::SampleData(double sampleRate, int loopStart, int loopEnd)
-: SampleData(nextSampleID(), sampleRate, loopStart, loopEnd)
+SampleData::SampleData(S2WContext* ctx, double sampleRate, int loopStart, int loopEnd)
+: SampleData(ctx, ctx ? ctx->nextSampleID() : 0, sampleRate, loopStart, loopEnd)
 {
   // forwarded constructor only
 }

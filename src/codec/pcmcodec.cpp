@@ -1,15 +1,15 @@
 #include "pcmcodec.h"
 #include "utility.h"
 
-PcmCodec::PcmCodec(int sampleBits, int channels, bool bigEndian)
-: sampleBits(sampleBits), sampleBytes(sampleBits >> 3), channels(channels), bigEndian(bigEndian)
+PcmCodec::PcmCodec(S2WContext* ctx, int sampleBits, int channels, bool bigEndian)
+: ICodec(ctx), sampleBits(sampleBits), sampleBytes(sampleBits >> 3), channels(channels), bigEndian(bigEndian)
 {
   // initializers only
 }
 
 SampleData* PcmCodec::decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID)
 {
-  SampleData* sampleData = sampleID ? new SampleData(sampleID) : new SampleData();
+  SampleData* sampleData = sampleID ? new SampleData(context(), sampleID) : new SampleData(context());
   int length = 8 * (end - start) / channels / sampleBits;
   for (int i = 0; i < channels; i++) {
     sampleData->channels.push_back(std::vector<int16_t>());

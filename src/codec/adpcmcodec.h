@@ -10,7 +10,7 @@ public:
     DSP,
     OKI4s,
   };
-  AdpcmCodec(Format format, int interleave = 0);
+  AdpcmCodec(S2WContext* ctx, Format format, int interleave = 0);
 
   virtual SampleData* decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID = 0);
 

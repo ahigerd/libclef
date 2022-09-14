@@ -8,6 +8,7 @@
 #include <functional>
 #include "utility.h"
 #include "tagmap.h"
+#include "s2wcontext.h"
 #include "synth/synthcontext.h"
 
 using ConstPairList = const std::vector<std::pair<std::string, std::string>>;
@@ -17,8 +18,8 @@ using ConstPairList = const std::vector<std::pair<std::string, std::string>>;
   static ConstPairList extensions;
 
 struct TagsM3UMixin {
-  static TagMap readTags(const OpenFn& openFile, const std::string& filename);
-  static inline TagMap readTags(const OpenFn& openFile, const std::string& filename, std::istream& /* unused */) { return readTags(openFile, filename); }
+  static TagMap readTags(S2WContext* s2w, const std::string& filename);
+  static inline TagMap readTags(S2WContext* s2w, const std::string& filename, std::istream& /* unused */) { return readTags(s2w, filename); }
 };
 
 #ifdef BUILD_DUMMY_PLUGIN
@@ -27,13 +28,13 @@ struct DummyPluginInfo : public TagsM3UMixin {
   static bool isPlayable(std::istream& file) {
     return false;
   }
-  static double length(const OpenFn& openFile, const std::string& filename, std::istream& file) {
+  static double length(S2WContext* s2w, const std::string& filename, std::istream& file) {
     return 0;
   }
-  static double sampleRate(const OpenFn& openFile, const std::string& filename, std::istream& file) {
+  static double sampleRate(S2WContext* s2w, const std::string& filename, std::istream& file) {
     return 44100;
   }
-  SynthContext* prepare(const OpenFn& openFile, const std::string& filename, std::istream& file) {
+  SynthContext* prepare(S2WContext* s2w, const std::string& filename, std::istream& file) {
     // Implementations should retain appropriate pointers
     return nullptr;
   }
@@ -57,7 +58,6 @@ public:
   bool matchExtension(const std::string& filename) const;
   TagMap getTags(const std::string& filename, std::istream& file) const;
 
-  void setOpener(const OpenFn& opener);
   int fillBuffer(uint8_t* buffer, int len);
 
   int channels() const;
@@ -75,14 +75,14 @@ public:
   virtual bool isPlayable(const std::string& filename, std::istream& file) const = 0;
   virtual double length(const std::string& filename, std::istream& file) const = 0;
   virtual int sampleRate(const std::string& filename, std::istream& file) const = 0; // of unloaded track
-  OpenFn openFile;
 
 protected:
-  S2WPluginBase();
+  S2WPluginBase(S2WContext* s2w);
   virtual TagMap getTagsBase(const std::string& filename, std::istream& file) const = 0;
   virtual SynthContext* prepare(const std::string& filename, std::istream& file) = 0;
   virtual void release() = 0;
 
+  S2WContext* s2w;
   SynthContext* ctx;
 };
 
@@ -90,6 +90,8 @@ template <typename PluginInfo>
 class S2WPlugin : public S2WPluginBase, public PluginInfo {
 public:
   using Info = PluginInfo;
+
+  S2WPlugin(S2WContext* ctx) : S2WPluginBase(ctx) {}
 
   const std::string& version() const { return Info::version; }
   const std::string& pluginShortName() const { return Info::pluginShortName; }
@@ -110,13 +112,13 @@ public:
       return false;
     }
   }
-  double length(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::length(openFile, filename, file); }
-  int sampleRate(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::sampleRate(openFile, filename, file); }
+  double length(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::length(s2w, filename, file); }
+  int sampleRate(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::sampleRate(s2w, filename, file); }
   inline int sampleRate() const { return S2WPluginBase::sampleRate(); }
 
 protected:
-  TagMap getTagsBase(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::readTags(openFile, filename, file); }
-  SynthContext* prepare(const std::string& filename, std::istream& file) { file.seekg(0); return Info::prepare(openFile, filename, file); }
+  TagMap getTagsBase(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::readTags(s2w, filename, file); }
+  SynthContext* prepare(const std::string& filename, std::istream& file) { file.seekg(0); return Info::prepare(s2w, filename, file); }
   void release() { Info::release(); }
 };
 

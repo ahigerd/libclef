@@ -29,6 +29,11 @@ WaveFormatEx::WaveFormatEx(std::vector<uint8_t>::const_iterator start, std::vect
   }
 }
 
+RiffCodec::RiffCodec(S2WContext* ctx) : ICodec(ctx)
+{
+  // initializers only
+}
+
 SampleData* RiffCodec::decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID)
 {
   const uint8_t* buffer = &start[0];
@@ -69,9 +74,9 @@ SampleData* RiffCodec::decodeRange(std::vector<uint8_t>::const_iterator start, s
   }
   std::unique_ptr<ICodec> codec;
   if (fmt.format == 1) {
-    codec.reset(new PcmCodec(fmt.sampleBits, fmt.channels, false));
+    codec.reset(new PcmCodec(context(), fmt.sampleBits, fmt.channels, false));
   } else if (fmt.format == 2) {
-    codec.reset(new MsAdpcmCodec(fmt.blockAlign, fmt.channels));
+    codec.reset(new MsAdpcmCodec(context(), fmt.blockAlign, fmt.channels));
   } else {
     throw std::runtime_error("Unsupported RIFF format");
   }

@@ -12,11 +12,11 @@ std::string S2WPluginBase::seq2wavCopyright()
     "under the terms of the MIT license.";
 }
 
-TagMap TagsM3UMixin::readTags(const OpenFn& openFile, const std::string& filename)
+TagMap TagsM3UMixin::readTags(S2WContext* s2w, const std::string& filename)
 {
   std::string m3uPath = TagsM3U::relativeTo(filename);
   try {
-    auto m3uStream(openFile(m3uPath));
+    auto m3uStream(s2w->openFile(m3uPath));
     if (*m3uStream) {
       TagsM3U m3u(*m3uStream);
       TagMap tagMap = m3u.allTags(filename);
@@ -30,9 +30,9 @@ TagMap TagsM3UMixin::readTags(const OpenFn& openFile, const std::string& filenam
   return TagMap();
 }
 
-S2WPluginBase::S2WPluginBase() : ctx(nullptr)
+S2WPluginBase::S2WPluginBase(S2WContext* s2w) : s2w(s2w), ctx(nullptr)
 {
-  openFile = openFstream;
+  // initializers only
 }
 
 bool S2WPluginBase::matchExtension(const std::string& filename) const
@@ -81,11 +81,6 @@ TagMap S2WPluginBase::getTags(const std::string& filename, std::istream& file) c
   } catch (...) {
     return TagMap();
   }
-}
-
-void S2WPluginBase::setOpener(const OpenFn& opener)
-{
-  openFile = opener;
 }
 
 int S2WPluginBase::fillBuffer(uint8_t* buffer, int len)

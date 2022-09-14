@@ -6,7 +6,7 @@
 
 class TestSequence : public BaseSequence<> {
 public:
-  TestSequence();
+  TestSequence(S2WContext* ctx);
 };
 
 #endif

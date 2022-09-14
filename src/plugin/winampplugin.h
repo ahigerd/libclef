@@ -52,6 +52,7 @@ class S2WModule : public In_Module {
     }
   };
 
+  static S2WContext s2w;
   static S2WPlugin<S2WPluginInfo> plugin;
   static ExtExpand extensions;
 public:
@@ -76,7 +77,7 @@ public:
       title = filename = instance()->currentTrack;
       *outMS = instance()->length * 1000;
     }
-    auto file = plugin.openFile(filename);
+    auto file = s2w.openFile(filename);
     TagMap tagMap(plugin.getTags(filename, *file));
     if (!isCurrent) {
       std::string len = tagMap.count("length_seconds_fp") ? tagMap.at("length_seconds_fp") : std::string();
@@ -94,7 +95,7 @@ public:
   }
   static int infoBox(const in_char *inFilename, HWND hwndParent) {
     std::string filename = toUtf8(inFilename);
-    auto file = plugin.openFile(filename);
+    auto file = s2w.openFile(filename);
     TagMap tagMap(plugin.getTags(filename, *file));
     std::ostringstream ss;
     ss << "Filename:" << std::endl << filename << std::endl << std::endl;
@@ -115,7 +116,7 @@ public:
   static int isOurFile(const in_char *fn)
   {
     std::string path = toUtf8(fn);
-    auto file = plugin.openFile(path);
+    auto file = s2w.openFile(path);
     return plugin.isPlayable(path, *file);
   }
   static int play(const in_char* fn) { return instance()->play(toUtf8(fn)); }
@@ -132,13 +133,13 @@ public:
         thread.reset(nullptr);
       }
       try {
-        auto file = plugin.openFile(fn);
+        auto file = s2w.openFile(fn);
         length = plugin.length(fn, *file);
       } catch (std::exception& e) {
         std::cerr << "Error reading length: " << e.what() << std::endl;
         return 1;
       }
-      auto file = plugin.openFile(fn);
+      auto file = s2w.openFile(fn);
       bool ok = plugin.play(fn, *file);
       if (!ok) {
         plugin.unload();
@@ -292,7 +293,8 @@ S2WModule<S2WPluginInfo>::S2WModule()
 }
 
 #define SEQ2WAV_PLUGIN(S2WPluginInfo) \
-  template<> S2WPlugin<S2WPluginInfo> S2WModule<S2WPluginInfo>::plugin = S2WPlugin<S2WPluginInfo>(); \
+  template<> S2WContext S2WModule<S2WPluginInfo>::s2w = S2WContext(); \
+  template<> S2WPlugin<S2WPluginInfo> S2WModule<S2WPluginInfo>::plugin = S2WPlugin<S2WPluginInfo>(&S2WModule<S2WPluginInfo>::s2w); \
   template<> S2WModule<S2WPluginInfo>::ExtExpand S2WModule<S2WPluginInfo>::extensions = S2WModule<S2WPluginInfo>::ExtExpand(); \
   extern "C" EXPORT In_Module* winampGetInModule2() { return S2WModule<S2WPluginInfo>::instance(); }
 

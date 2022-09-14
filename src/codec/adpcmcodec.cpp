@@ -26,8 +26,8 @@ static const int16_t oki4sStep[] = {
 };
 static const int maxOki4sStep = (sizeof(oki4sStep) >> 1) - 1;
 
-AdpcmCodec::AdpcmCodec(AdpcmCodec::Format format, int interleave)
-: format(format), predictor{ 0, 0 }, index{ 0, 0 }, interleave(interleave)
+AdpcmCodec::AdpcmCodec(S2WContext* ctx, AdpcmCodec::Format format, int interleave)
+: ICodec(ctx), format(format), predictor{ 0, 0 }, index{ 0, 0 }, interleave(interleave)
 {
   if (format == OKI4s) {
     stepTable = oki4sStep;
@@ -62,7 +62,7 @@ int16_t AdpcmCodec::getNextSample(uint8_t value, int channel)
 
 SampleData* AdpcmCodec::decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID)
 {
-  SampleData* sampleData = sampleID ? new SampleData(sampleID) : new SampleData();
+  SampleData* sampleData = sampleID ? new SampleData(context(), sampleID) : new SampleData(context());
   int length = end - start;
 
   if (length > 4 && format == DSP) {

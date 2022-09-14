@@ -118,21 +118,24 @@ public:
 
 static abort_callback_impl dummyAbort;
 
+static std::unique_ptr<std::istream> s2wFoobarOpenFile(const std::string& filename)
+{
+  auto stream = std::unique_ptr<std::istream>(new foofile_istream(filename, dummyAbort));
+  stream->seekg(0);
+  return stream;
+}
+
 template <typename S2WPluginInfo>
 class input_seq2wav : public input_stubs {
   using PluginType = S2WPlugin<S2WPluginInfo>;
 public:
-  static PluginType plugin;
+  static PluginType staticPlugin;
+  S2WContext s2w;
+  PluginType plugin;
 
-  input_seq2wav() {
-    plugin.setOpener([](const std::string& filename) {
-      auto stream = std::unique_ptr<std::istream>(new foofile_istream(filename, dummyAbort));
-      stream->seekg(0);
-      return stream;
-    });
-  }
+  input_seq2wav(): s2w(s2wFoobarOpenFile), plugin(&s2w) {}
 
-	void open(service_ptr_t<file> p_filehint, const char* p_path, t_input_open_reason p_reason, abort_callback& p_abort) {
+  void open(service_ptr_t<file> p_filehint, const char* p_path, t_input_open_reason p_reason, abort_callback& p_abort) {
     foofile_istream file(p_filehint, p_path, p_reason, p_abort);
     if (!file) {
       throw std::exception("File does not exist");
@@ -160,16 +163,16 @@ public:
     fileInfo.info_set_bitrate(4 * 2 * 48); // actually kilobitrate
   }
 
-	void get_info(file_info& p_info, abort_callback& p_abort) {
+  void get_info(file_info& p_info, abort_callback& p_abort) {
     p_info.copy(fileInfo);
   }
-	void retag(const file_info& p_info, abort_callback& p_abort) { throw exception_io_unsupported_format(); }
-	t_filestats get_file_stats(abort_callback& p_abort) {
+  void retag(const file_info& p_info, abort_callback& p_abort) { throw exception_io_unsupported_format(); }
+  t_filestats get_file_stats(abort_callback& p_abort) {
     return m_file->get_stats(p_abort);
   }
 
-	void decode_initialize(unsigned p_flags, abort_callback& p_abort) {
-    SampleData::purge();
+  void decode_initialize(unsigned p_flags, abort_callback& p_abort) {
+    s2w.purgeSamples();
     p_abort.check();
     foofile_istream stream(m_file, p_abort);
     bool ok = plugin.play(m_filename, stream);
@@ -179,38 +182,38 @@ public:
       throw exception_io_data("unable to load file");
     }
   }
-	bool decode_run(audio_chunk& p_chunk, abort_callback& p_abort) {
+  bool decode_run(audio_chunk& p_chunk, abort_callback& p_abort) {
     p_abort.check();
     size_t written = plugin.fillBuffer(buffer, sizeof(buffer));
     if (!written) {
       plugin.unload();
       return false;
     }
-		p_chunk.set_data_fixedpoint(reinterpret_cast<char*>(buffer), written, plugin.sampleRate(), 2, 16, audio_chunk::g_guess_channel_config(2));
+    p_chunk.set_data_fixedpoint(reinterpret_cast<char*>(buffer), written, plugin.sampleRate(), 2, 16, audio_chunk::g_guess_channel_config(2));
     return true;
   }
-	void decode_seek(double p_seconds, abort_callback& p_abort) {
+  void decode_seek(double p_seconds, abort_callback& p_abort) {
     plugin.seek(p_seconds);
   }
-	bool decode_can_seek() { return true; }
-	void decode_on_idle(abort_callback& p_abort) {}
+  bool decode_can_seek() { return true; }
+  void decode_on_idle(abort_callback& p_abort) {}
 
-	static bool g_is_our_content_type(const char * p_content_type) { return false; }
-	static bool g_is_our_path(const char * p_path,const char * p_extension) { return plugin.matchExtension(p_path); }
-	static GUID g_get_guid() {
+  static bool g_is_our_content_type(const char * p_content_type) { return false; }
+  static bool g_is_our_path(const char * p_path,const char * p_extension) { return staticPlugin.matchExtension(p_path); }
+  static GUID g_get_guid() {
     GUID guid = { 0xf85ca9fe, 0x228c, 0x4f26, { 0xa1, 0xf4, 0xd0, 0x2b, 0x59, 0x7e, 0xa9, 0x12 } };
     int pos = 0;
     // really simplistic hash
-    for (char ch : plugin.pluginShortName()) {
+    for (char ch : staticPlugin.pluginShortName()) {
       guid.Data4[pos] ^= unsigned char(ch);
       pos = (pos + 1) % 8;
       guid.Data4[pos] ^= unsigned char(ch << 4);
     }
     return guid;
   }
-	static const char * g_get_name() { return plugin.pluginName().c_str(); }
-	//! See: input_entry::get_preferences_guid().
-	// static GUID g_get_preferences_guid();
+  static const char * g_get_name() { return staticPlugin.pluginName().c_str(); }
+  //! See: input_entry::get_preferences_guid().
+  // static GUID g_get_preferences_guid();
 
   uint8_t buffer[1024];
   service_ptr_t<file> m_file;
@@ -237,9 +240,9 @@ bool s2wFoobarMeta(const S2WPluginBase& plugin)
 
 #define SEQ2WAV_PLUGIN(S2WPluginInfo) \
   using S2W = input_seq2wav<S2WPluginInfo>; \
-  template<> S2WPlugin<S2WPluginInfo> S2W::plugin = S2WPlugin<S2WPluginInfo>(); \
-  DECLARE_COMPONENT_VERSION_COPY(S2W::plugin.pluginName().c_str(), S2W::plugin.version().c_str(), S2W::plugin.about().c_str()); \
-  static bool metaOK = s2wFoobarMeta(S2W::plugin); \
+  template<> S2WPlugin<S2WPluginInfo> S2W::staticPlugin = S2WPlugin<S2WPluginInfo>(nullptr); \
+  DECLARE_COMPONENT_VERSION_COPY(S2W::staticPlugin.pluginName().c_str(), S2W::staticPlugin.version().c_str(), S2W::staticPlugin.about().c_str()); \
+  static bool metaOK = s2wFoobarMeta(S2W::staticPlugin); \
   static input_singletrack_factory_t<input_seq2wav<S2WPluginInfo>> g_input_seq2wav_factory; \
   static std::string pluginFilename = "foo_input_" + S2WPluginInfo::pluginShortName + ".dll"; \
   VALIDATE_COMPONENT_FILENAME(pluginFilename.c_str());
