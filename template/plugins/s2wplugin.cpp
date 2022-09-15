@@ -14,30 +14,30 @@ struct S2WPluginInfo {
     return false;
   }
 
-  static int sampleRate(const OpenFn& openFile, const std::string& filename, std::istream& file) {
+  static int sampleRate(S2WContext* ctx, const std::string& filename, std::istream& file) {
     // Implementations should return the sample rate of the file.
     // This can be hard-coded if the plugin always uses the same sample rate.
     return 48000;
   }
 
-  static double length(const OpenFn& openFile, const std::string& filename, std::istream& file) {
+  static double length(S2WContext* ctx, const std::string& filename, std::istream& file) {
     // Implementations should return the length of the file in seconds.
     return 0;
   }
 
-  static TagMap readTags(const OpenFn& openFile, const std::string& filename, std::istream& file) {
+  static TagMap readTags(S2WContext* ctx, const std::string& filename, std::istream& file) {
     // Implementations should read the tags from the file.
     // If the file format does not support embedded tags, consider
     // inheriting from TagsM3UMixin and removing this function.
     return TagMap();
   }
 
-  SynthContext* prepare(const OpenFn& openFile, const std::string& filename, std::istream& file) {
+  SynthContext* prepare(S2WContext* ctx, const std::string& filename, std::istream& file) {
     // Prepare to play the file. Load any necessary data into memory and store any
     // applicable state in members on this plugin object.
 
     // Be sure to call this to clear the sample cache:
-    SampleData::purge();
+    ctx->purgeSamples();
 
     return nullptr;
   }
@@ -52,7 +52,7 @@ const std::string S2WPluginInfo::pluginName = "Template Plugin";
 const std::string S2WPluginInfo::pluginShortName = "template";
 ConstPairList S2WPluginInfo::extensions = { { "dummy", "Dummy files (*.dummy)" } };
 const std::string S2WPluginInfo::about =
-  "Template Plugin copyright (C) 2020 Adam Higerd\n"
+  "Template Plugin copyright (C) 2020-2022 Adam Higerd\n"
   "Distributed under the MIT license.";
 
 SEQ2WAV_PLUGIN(S2WPluginInfo);
