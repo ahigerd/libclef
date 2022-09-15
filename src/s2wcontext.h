@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 #include "utility.h"
-class SampleData;
+#include "codec/sampledata.h"
 
 class S2WContext {
 public:
