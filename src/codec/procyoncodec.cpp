@@ -9,32 +9,35 @@ static const int16_t procyonFactor[][2] = {
 };
 static const int16_t maxProcyonFactor = (sizeof(procyonFactor) >> 2) - 1;
 
-ProcyonCodec::ProcyonCodec(S2WContext* ctx)
-: ICodec(ctx), history(0), predictor(0)
+ProcyonCodec::ProcyonCodec(S2WContext* ctx, bool stereo)
+: ICodec(ctx), stereo(stereo)
 {
   // initializers only
 }
 
-int16_t ProcyonCodec::getNextSample(int8_t value)
+int16_t ProcyonCodec::getNextSample(int8_t value, int channel)
 {
-  int32_t sample = int32_t(value << scale) + ((predictor * factor0 + history * factor1 + 32) >> 6);
-  history = predictor;
-  predictor = sample;
+  int32_t sample = int32_t(value << scale) + ((predictor[channel] * factor0 + history[channel] * factor1 + 32) >> 6);
+  history[channel] = predictor[channel];
+  predictor[channel] = sample;
   return clamp<int16_t>((sample + 32) >> 6, -0x7FFF, 0x7FFF);
 }
 
 SampleData* ProcyonCodec::decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID)
 {
-  history = 0;
-  predictor = 0;
   SampleData* sampleData = sampleID ? new SampleData(context(), sampleID) : new SampleData(context());
-  int length = end - start;
-  sampleData->channels.push_back(std::vector<int16_t>());
-  sampleData->channels[0].reserve(length);
-  std::vector<int16_t>& sample = sampleData->channels[0];
-  sample.reserve((length * 30) >> 4);
+  int channels = stereo ? 2 : 1;
+  int length = (end - start) / channels;
+  for (int i = 0; i < channels; i++) {
+    history[i] = 0;
+    predictor[i] = 0;
+    sampleData->channels.push_back(std::vector<int16_t>());
+    sampleData->channels[i].reserve((length * 30) >> 4);
+  }
+  int channel = 0;
   uint8_t buffer[16];
   while (start != end) {
+    std::vector<int16_t>& sample = sampleData->channels[channel];
     for (int i = 0; i < 16; i++) {
       buffer[i] = *start++;
     }
@@ -47,8 +50,12 @@ SampleData* ProcyonCodec::decodeRange(std::vector<uint8_t>::const_iterator start
       // Shift left and then right in order to get sign extension
       int8_t low = int8_t(uint8_t(buffer[i]) << 4) >> 4;
       int8_t high = int8_t(buffer[i] ^ 0x80) >> 4;
-      sample.push_back(getNextSample(low));
-      sample.push_back(getNextSample(high));
+      sample.push_back(getNextSample(low, channel));
+      sample.push_back(getNextSample(high, channel));
+    }
+
+    if (stereo) {
+      channel = (channel + 1) % 2;
     }
   }
   return sampleData;
