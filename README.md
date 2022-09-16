@@ -5,7 +5,7 @@ seq2wav is a generic library for building decoders and media player plugins for 
 
 Currently, there is support for the following targets:
 
-* Command-line (Windows, POSIX platforms
+* Command-line (Windows, POSIX platforms)
 * Audacious plugin (Windows, macOS, X11 platforms)
 * Winamp plugin (Windows)
 * Foobar2000 plugin (Windows)
@@ -19,9 +19,9 @@ On POSIX systems or when building under MinGW, seq2wav itself has no dependencie
 C++14-compliant compiler and GNU Make. To build seq2wav using Microsoft Visual Studio, ATL support
 and the Visual Studio command-line tools must be installed.
 
-To build an Audacity plugin, the Audacity development headers must be present. These may be found in
+To build an Audacious plugin, the Audacious development headers must be present. These may be found in
 the `audacious-dev` package on Debian-based distros.) The seq2wav build system uses `pkg-config` to
-locate the required files. Audacity plugins cannot currently be built using Microsoft Visual C++.
+locate the required files. Audacious plugins cannot currently be built using Microsoft Visual C++.
 
 To build a Foobar2000 plugin, the [Foobar2000 SDK](https://www.foobar2000.org/SDK) is required.
 seq2wav has been tested with the 2020-07-28 version of the Foobar2000 SDK. The SDK should be
@@ -42,13 +42,13 @@ Template project
 ----------------
 A template project for creating tools or plugins basd on seq2wav may be found in the `template/`
 folder. Copy all of the files in `template/` to a new folder and place the seq2wav source tree
-in a `seq2wav/` folder inside it. (If using `git`, the template project is configured to reference
-seq2wav as a git submodule. Initialize your git repository and run
-`git submodules update --init --recursive` to automatically clone seq2wav into the appropriate
-location.)
+in a `seq2wav/` folder inside it. (If using `git`, you may use
+`git submodule add https://bitbucket.org/ahigerd/seq2wav` to clone seq2wav into the appropriate
+location and track it as a submodule.)
 
 Modify `config.mak` in the new project to set `PLUGIN_NAME` appropriately, and change the filenames
-in `buildvs.cmd` to refer to the same plugin name instead of `template`.
+in `buildvs.cmd` to refer to the same plugin name instead of `template`. Additionally, fill in
+`plugins/s2wplugin.cpp` with the necessary metadata and code for the player plugins.
 
 Avoid nesting subdirectories more than one level inside `src/`, as the build scripts will not find
 source files in any deeper levels.
@@ -57,5 +57,5 @@ Further information can be found in the [template project documentation](templat
 
 License
 -------
-seq2wav is copyright (c) 2020 Adam Higerd and distributed
+seq2wav is copyright (c) 2020-2022 Adam Higerd and distributed
 under the terms of the [MIT license](LICENSE.md).

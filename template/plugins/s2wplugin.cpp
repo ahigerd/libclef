@@ -1,8 +1,8 @@
 #include "plugin/baseplugin.h"
 #include "codec/sampledata.h"
 
-// In the functions below, openFile() is provided by the plugin interface. Use this
-// instead of standard library functions to open additional files in order to use
+// In the functions below, ctx->openFile() is provided by the plugin interface. Use
+// this instead of standard library functions to open additional files in order to use
 // the host's virtual filesystem.
 
 struct S2WPluginInfo {
