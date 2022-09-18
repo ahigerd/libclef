@@ -22,6 +22,8 @@ protected:
   int16_t lastSample;
   double lastTime;
   double phase;
+  AudioParam* frequency;
+  AudioParam* pitchBend;
 
   virtual double calcSample(double time) = 0;
 };
@@ -40,6 +42,9 @@ public:
 
 protected:
   virtual double calcSample(double time);
+
+private:
+  AudioParam* dutyCycle;
 };
 
 class TriangleOscillator : public BaseOscillator {

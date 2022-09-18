@@ -30,7 +30,7 @@ endif
 endif
 
 CXXFLAGS_R := $(CXXFLAGS) -O3
-CXXFLAGS_D := $(CXXFLAGS) -ggdb -fsanitize=address
+CXXFLAGS_D := $(CXXFLAGS) -ggdb
 LDFLAGS := $(LDFLAGS) -L../seq2wav/$(BUILDPATH) -L../$(BUILDPATH)
 LDFLAGS_R := $(LDFLAGS) -lseq2wav
-LDFLAGS_D := $(LDFLAGS) -lasan -lseq2wav_d
+LDFLAGS_D := $(LDFLAGS) -lseq2wav_d

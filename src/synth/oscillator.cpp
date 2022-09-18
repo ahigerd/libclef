@@ -1,4 +1,5 @@
 #include "oscillator.h"
+#include "utility.h"
 #include <cmath>
 #include <iostream>
 
@@ -37,10 +38,10 @@ BaseOscillator* BaseOscillator::create(const SynthContext* ctx, uint64_t wavefor
 BaseOscillator::BaseOscillator(const SynthContext* ctx)
 : AudioNode(ctx), lastSample(0), lastTime(0), phase(0)
 {
-  addParam(Frequency, 440.0);
+  frequency = addParam(Frequency, 440.0).get();
   addParam(Gain, 1.0);
   addParam(Pan, 0.5);
-  addParam(PitchBend, 1.0);
+  pitchBend = addParam(PitchBend, 1.0).get();
 }
 
 bool BaseOscillator::isActive() const
@@ -52,7 +53,7 @@ int16_t BaseOscillator::generateSample(double time, int channel)
 {
   if (time != lastTime) {
     lastSample = std::round(calcSample(time) * 32767);
-    double phaseOffset = (time - lastTime) * paramValue(Frequency, time) * paramValue(PitchBend, time);
+    double phaseOffset = (time - lastTime) * frequency->valueAt(time) * pitchBend->valueAt(time);
     phase = std::fmod(phase + phaseOffset, 1.0);
   }
   lastTime = time;
@@ -61,23 +62,22 @@ int16_t BaseOscillator::generateSample(double time, int channel)
 
 SineOscillator::SineOscillator(const SynthContext* ctx) : BaseOscillator(ctx)
 {
-  // initializers only
 }
 
 double SineOscillator::calcSample(double)
 {
-  return std::sin(phase * M_PI * 2);
+  return fastSin(phase * M_PI * 2);
 }
 
 SquareOscillator::SquareOscillator(const SynthContext* ctx, double duty)
 : BaseOscillator(ctx)
 {
-  addParam(DutyCycle, duty);
+  dutyCycle = addParam(DutyCycle, duty).get();
 }
 
 double SquareOscillator::calcSample(double time)
 {
-  return phase < paramValue(DutyCycle, time) ? 1.0 : -1.0;
+  return phase < dutyCycle->valueAt(time) ? 1.0 : -1.0;
 }
 
 TriangleOscillator::TriangleOscillator(const SynthContext* ctx, int quantize, bool skew)

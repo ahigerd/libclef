@@ -66,9 +66,11 @@ std::shared_ptr<AudioParam> AudioParamContainer::param(int32_t param) const
   return nullptr;
 }
 
-void AudioParamContainer::addParam(int32_t key, double initialValue)
+std::shared_ptr<AudioParam> AudioParamContainer::addParam(int32_t key, double initialValue)
 {
-  params[key].reset(new AudioParam(ctx, initialValue));
+  std::shared_ptr<AudioParam> p(new AudioParam(ctx, initialValue));
+  params[key] = p;
+  return p;
 }
 
 void AudioParamContainer::addParam(int32_t key, std::shared_ptr<AudioParam> param)

@@ -55,6 +55,7 @@ int countBits(uint64_t value);
 
 double noteToFreq(double midiNote);
 double fastExp(double r, double dt);
+double fastSin(double theta);
 
 std::string trim(const std::string& str);
 std::wstring toUtf16(const std::string& str);

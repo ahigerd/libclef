@@ -39,7 +39,7 @@ private:
 class AudioParamContainer {
 public:
   std::shared_ptr<AudioParam> param(int32_t key) const;
-  void addParam(int32_t key, double initialValue);
+  std::shared_ptr<AudioParam> addParam(int32_t key, double initialValue);
   void addParam(int32_t key, std::shared_ptr<AudioParam> param);
   double paramValue(int32_t key, double time, double defaultValue = 0) const;
 

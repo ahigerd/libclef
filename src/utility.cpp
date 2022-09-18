@@ -117,3 +117,21 @@ double fastExp(double r, double dt)
   // linear interpolation
   return table[idx] + interp[idx] * (idx - pos);
 }
+
+double fastSin(double theta)
+{
+  constexpr int tableSize = M_PI * 2 * 1000;
+  static bool init = false;
+  static double table[tableSize + 1];
+  if (!tableSize) {
+    for (int i = 0; i < tableSize; i++) {
+      table[i] = std::sin(i * 0.001);
+    }
+    table[tableSize] = 0;
+  }
+  theta *= 1000;
+  int pos = theta;
+  int frac = theta - pos;
+  pos = pos % tableSize;
+  return lerp(table[pos], table[pos + 1], frac);
+}

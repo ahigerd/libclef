@@ -6,14 +6,16 @@ SOURCES = $(filter-out main.cpp, $(wildcard *.cpp */*.cpp))
 	$(CXX) -o $@ $^
 
 ../seq2wav_d$(EXE): ../$(BUILDPATH)/main_d.o ../$(BUILDPATH)/libseq2wav_d.$(DLL)
-	$(CXX) -o $@ $^ -lasan
+	$(CXX) -o $@ $^
 
 ../$(BUILDPATH)/libseq2wav.a: $(patsubst %.cpp, ../$(BUILDPATH)/%.o, $(SOURCES)) ../$(BUILDPATH)/Makefile.d
 	rm -f $@
 	gcc-ar -rc $@ $^
 
-../$(BUILDPATH)/libseq2wav_d.$(DLL): $(patsubst %.cpp, ../$(BUILDPATH)/%_d.o, $(SOURCES)) ../$(BUILDPATH)/Makefile.d
-	$(CXX) -shared -o $@ $(CXXFLAGS) $(patsubst %.cpp, ../$(BUILDPATH)/%_d.o, $(SOURCES))
+../$(BUILDPATH)/libseq2wav_d.a: $(patsubst %.cpp, ../$(BUILDPATH)/%_d.o, $(SOURCES)) ../$(BUILDPATH)/Makefile.d
+	rm -f $@
+	gcc-ar -rc $@ $^
+	#$(CXX) -o $@ $(CXXFLAGS) $(patsubst %.cpp, ../$(BUILDPATH)/%_d.o, $(SOURCES))
 
 ../$(BUILDPATH)/%.o: %.cpp Makefile
 	@mkdir -p $(dir $@)

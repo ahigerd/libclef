@@ -16,7 +16,7 @@ build/Makefile.d: $(wildcard src/*.cpp src/*/*.cpp src/*.h src/*/*.h) Makefile s
 seq2wav$(EXE) seq2wav_d$(EXE): src/Makefile build/Makefile.d
 	$(MAKE) -C src ../$@
 
-$(BUILDPATH)/libseq2wav.a $(BUILDPATH)/libseq2wav_d.$(DLL): src/Makefile build/Makefile.d $(INCLUDES)
+$(BUILDPATH)/libseq2wav.a $(BUILDPATH)/libseq2wav_d.a: src/Makefile build/Makefile.d $(INCLUDES)
 	$(MAKE) -C src ../$@
 
 include/%.h: src/%.h
@@ -25,7 +25,7 @@ include/%.h: src/%.h
 
 clean: FORCE
 	-rm -f build/*.o build/*.d build/*/*.o build/Makefile.d
-	-rm -f seq2wav seq2wav_d $(BUILDPATH)/libseq2wav.a $(BUILDPATH)/libseq2wav_d.$(DLL)
+	-rm -f seq2wav seq2wav_d $(BUILDPATH)/libseq2wav.a $(BUILDPATH)/libseq2wav_d.a
 	-rm -f include/*.h include/*/*.h
 	-rmdir include/*
 	-rmdir include

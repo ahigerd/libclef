@@ -5,7 +5,7 @@
 #include "riffwriter.h"
 #include "utility.h"
 
-static const int BUFFER_SIZE = 1024;
+static const int BUFFER_SIZE = 10240;
 
 SynthContext::SynthContext(S2WContext* ctx, double sampleRate, int outputChannels)
 : sampleRate(sampleRate), sampleTime(1.0 / sampleRate), outputChannels(outputChannels),
