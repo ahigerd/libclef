@@ -47,7 +47,7 @@ int16_t AdpcmCodec::getNextSample(uint8_t value, int channel)
   if (value & 0x02) delta += step >> 1;
   if (value & 0x01) delta += step >> 2;
   if (value & 0x08) delta = -delta;
-  if (format == DSP) {
+  if (format == DSP || format == NDS) {
     if (predictor[channel] + delta == -0x8000) {
       predictor[channel] = -0x8000;
     } else {
@@ -91,11 +91,24 @@ SampleData* AdpcmCodec::decodeRange(std::vector<uint8_t>::const_iterator start, 
     std::swap(lowChannel, highChannel);
     std::swap(lowShift, highShift);
   }
-  while (start != end) {
-    uint8_t low = *start >> lowShift;
-    uint8_t high = *start++ >> highShift;
-    sampleData->channels[lowChannel].push_back(getNextSample(low, lowChannel));
-    sampleData->channels[highChannel].push_back(getNextSample(high, highChannel));
+  if (interleave < 1) {
+    while (start != end) {
+      uint8_t low = *start >> lowShift;
+      uint8_t high = *start++ >> highShift;
+      sampleData->channels[lowChannel].push_back(getNextSample(low, lowChannel));
+      sampleData->channels[highChannel].push_back(getNextSample(high, highChannel));
+    }
+  } else {
+    int channel = lowChannel;
+    while (start != end) {
+      for (int i = 0; i < interleave && start != end; i++) {
+        uint8_t low = *start >> lowShift;
+        uint8_t high = *start++ >> highShift;
+        sampleData->channels[channel].push_back(getNextSample(low, channel));
+        sampleData->channels[channel].push_back(getNextSample(high, channel));
+      }
+      channel = 1 - channel;
+    }
   }
   return sampleData;
 }

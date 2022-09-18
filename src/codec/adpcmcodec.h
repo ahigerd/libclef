@@ -9,6 +9,7 @@ public:
     IMA,
     DSP,
     OKI4s,
+    NDS,
   };
   AdpcmCodec(S2WContext* ctx, Format format, int interleave = 0);
 
