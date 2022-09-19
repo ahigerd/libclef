@@ -1,7 +1,7 @@
 #include "audioparam.h"
 #include "audionode.h"
 
-AudioParam::AudioParam(const SynthContext* ctx, double initialValue) : ctx(ctx)
+AudioParam::AudioParam(const SynthContext* ctx, double initialValue) : ctx(ctx), scale(1.0)
 {
   setConstant(initialValue);
 }

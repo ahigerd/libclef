@@ -28,7 +28,6 @@ void ITrack::seek(double timestamp)
     reset();
   }
   std::shared_ptr<SequenceEvent> event = readNextEvent();
-  int i = 0;
   while (event && event->timestamp < timestamp) {
     BaseNoteEvent* note = dynamic_cast<BaseNoteEvent*>(event.get());
     if (note) {
@@ -68,15 +67,16 @@ BasicTrack::BasicTrack() : position(0), maximumTimestamp(0)
 
 void BasicTrack::addEvent(SequenceEvent* event)
 {
-  events.push_back(std::shared_ptr<SequenceEvent>(event));
+  std::shared_ptr<SequenceEvent> shared(event);
+  events.push_back(shared);
   if (BaseNoteEvent* note = dynamic_cast<BaseNoteEvent*>(event)) {
-    if (event->timestamp + note->duration > maximumTimestamp) {
-      maximumTimestamp = event->timestamp + note->duration;
+    if (shared->timestamp + note->duration > maximumTimestamp) {
+      maximumTimestamp = shared->timestamp + note->duration;
       return;
     }
   }
-  if (event->timestamp > maximumTimestamp) {
-    maximumTimestamp = event->timestamp;
+  if (shared->timestamp > maximumTimestamp) {
+    maximumTimestamp = shared->timestamp;
   }
 }
 

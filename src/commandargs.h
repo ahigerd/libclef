@@ -14,7 +14,7 @@ public:
     std::string description;
   };
 
-  CommandArgs(std::initializer_list<FlagDef> defs);
+  explicit CommandArgs(std::initializer_list<FlagDef> defs);
 
   // returns error message, or empty for OK
   std::string parse(int argc, char** argv);

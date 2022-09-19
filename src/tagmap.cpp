@@ -90,13 +90,15 @@ void TagsM3U::parseLine(const std::string& _line)
     if (tag == "INF") {
       tag = "TITLE";
       size_t lengthEnd = std::string::npos;
-      bool quoted = false;
-      for (size_t i = 0; i < value.size(); i++) {
-        if (value[i] == '"') {
-          quoted = !quoted;
-        } else if (!quoted && value[i] == ',') {
-          lengthEnd = i;
-          break;
+      {
+        bool quoted = false;
+        for (size_t i = 0; i < value.size(); i++) {
+          if (value[i] == '"') {
+            quoted = !quoted;
+          } else if (!quoted && value[i] == ',') {
+            lengthEnd = i;
+            break;
+          }
         }
       }
       if (lengthEnd != std::string::npos) {
@@ -143,7 +145,6 @@ void TagsM3U::parseLine(const std::string& _line)
             // fell off the end, capture the last value
             subvalue = attr.substr(start, pos - start);
             populateTag(false, subtag, subvalue);
-            needValue = false;
           }
         }
         if (!length.empty() && length[0] != '-') {

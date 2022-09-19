@@ -149,7 +149,7 @@ double GBNoiseOscillator::calcSample(double)
 {
   if (lastPhase > phase) {
     bool bit = state & 0x0001;
-    state = (state >> 1) ^ (state & 0x0001 ? 0x6000 : 0);
+    state = (state >> 1) ^ (bit ? 0x6000 : 0);
   }
   lastPhase = phase;
   return (state & 0x0001) ? 1 : -1;
@@ -165,7 +165,7 @@ double GBNoise127Oscillator::calcSample(double)
 {
   if (lastPhase > phase) {
     bool bit = state & 0x0001;
-    state = (state >> 1) ^ (state & 0x0001 ? 0x0060 : 0);
+    state = (state >> 1) ^ (bit ? 0x0060 : 0);
   }
   lastPhase = phase;
   return (state & 0x0001) ? 1 : -1;

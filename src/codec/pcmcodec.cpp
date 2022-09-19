@@ -44,7 +44,7 @@ void PcmCodec::decodePcm4(SampleData* sampleData, std::vector<uint8_t>::const_it
   if (channels == 1) {
     length >>= 1;
   }
-  for (int i = 0; i < length; i++, start++) {
+  for (int i = 0; i < length; ++i, ++start) {
     if (bigEndian) {
       sampleData->channels[0].push_back(((*start & 0xF0) << 8) - 0x8000);
       sampleData->channels[right].push_back(((*start & 0x0F) << 12) - 0x8000);

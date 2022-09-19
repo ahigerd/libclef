@@ -47,13 +47,13 @@ void BaseNoteEvent::setEnvelope(double start, double attack, double hold, double
 }
 
 SampleEvent::SampleEvent()
-: pitchBend(1.0)
+: sampleID(0xFFFFFFFFFFFFFFFFULL), pitchBend(1.0)
 {
   // initializers only
 }
 
 OscillatorEvent::OscillatorEvent()
-: frequency(440.0)
+: waveformID(0), frequency(440.0)
 {
   // initializers only
 }

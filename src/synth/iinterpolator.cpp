@@ -80,11 +80,11 @@ int16_t SharpInterpolator::interpolate(const SampleData* data, double time, int 
   double linear = lerp(left, right, 1.0 + subsample);
   // Projection approaching from the left
   double mLeft = sample - left;
-  double pLeft = sample + mLeft * subsample;
+  //double pLeft = sample + mLeft * subsample;
   // Projection approaching from the right
   double negSubsample = 1 - subsample;
   double mRight = right - sample;
-  double pRight = right - mRight * negSubsample;
+  //double pRight = right - mRight * negSubsample;
   int16_t result = (mLeft * negSubsample + mRight * subsample + linear) / 3;
   if ((left <= result) != (result <= right)) {
     // If the result isn't monotonic, fall back to linear

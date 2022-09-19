@@ -7,7 +7,7 @@ class S2WContext;
 
 struct SampleData {
   enum {
-    Uncached = 0xFFFFFFFFFFFFFFFF,
+    Uncached = 0xFFFFFFFFFFFFFFFFULL,
   };
 
   SampleData(S2WContext* ctx, uint64_t sampleID, double sampleRate = 44100.0, int loopStart = -1, int loopEnd = -1);

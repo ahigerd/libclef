@@ -11,7 +11,7 @@ int16_t AudioNode::getSample(double time, int channel)
   double scale = paramValue(Gain, time, 1.0);
   if (ctx->outputChannels > 1) {
     double pan = paramValue(Pan, time, 0.5);
-    scale *= (channel % 2 ? pan : (1 - pan));
+    scale *= ((channel % 2) ? pan : (1 - pan));
   }
   return scale ? generateSample(time, channel) * scale : 0;
 }
