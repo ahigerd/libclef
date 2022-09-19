@@ -47,7 +47,7 @@ int16_t AdpcmCodec::getNextSample(uint8_t value, int channel)
   if (value & 0x02) delta += step >> 1;
   if (value & 0x01) delta += step >> 2;
   if (value & 0x08) delta = -delta;
-  if (format == DSP || format == NDS) {
+  if (format == NDS) {
     if (predictor[channel] + delta == -0x8000) {
       predictor[channel] = -0x8000;
     } else {

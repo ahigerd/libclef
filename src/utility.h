@@ -56,6 +56,9 @@ int countBits(uint64_t value);
 double noteToFreq(double midiNote);
 double fastExp(double r, double dt);
 double fastSin(double theta);
+inline double combinePan(double a, double b) {
+  return clamp(a + b - 0.5, 0.0, 1.0);
+}
 
 std::string trim(const std::string& str);
 std::wstring toUtf16(const std::string& str);
