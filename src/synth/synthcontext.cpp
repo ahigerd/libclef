@@ -4,6 +4,7 @@
 #include "iinterpolator.h"
 #include "riffwriter.h"
 #include "utility.h"
+#include "iinstrument.h"
 
 static const int BUFFER_SIZE = 10240;
 
@@ -12,7 +13,7 @@ SynthContext::SynthContext(S2WContext* ctx, double sampleRate, int outputChannel
   interpolator(IInterpolator::get(IInterpolator::Zero)), mixBuffer(BUFFER_SIZE >> 1),
   currentTimestamp(0), maximumTimestamp(0), ctx(ctx)
 {
-  // initializers only
+  defaultInst.reset(new DefaultInstrument);
 }
 
 SynthContext::~SynthContext()
@@ -98,3 +99,21 @@ void SynthContext::save(RiffWriter* riff)
   } while (written > 0);
 }
 
+void SynthContext::registerInstrument(uint64_t id, std::unique_ptr<IInstrument>&& inst)
+{
+  instruments[id] = std::move(inst);
+}
+
+IInstrument* SynthContext::getInstrument(uint64_t id) const
+{
+  auto iter = instruments.find(id);
+  if (iter == instruments.end()) {
+    return nullptr;
+  }
+  return iter->second.get();
+}
+
+IInstrument* SynthContext::defaultInstrument() const
+{
+  return defaultInst.get();
+}

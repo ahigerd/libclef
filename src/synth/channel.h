@@ -11,36 +11,40 @@
 class SynthContext;
 class ITrack;
 class SequenceEvent;
+class BaseNoteEvent;
+class IInstrument;
 
-class Channel {
+class Channel : public AudioParamContainer {
   friend class SynthContext;
 public:
   Channel(const SynthContext* ctx, ITrack* track);
   ~Channel();
 
-  AudioParam gain, pan;
+  AudioParam* gain;
+  AudioParam* pan;
 
   void seek(double timestamp);
   uint32_t fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples = -1);
   bool isFinished() const;
 
-private:
-  const SynthContext* const ctx;
-  ITrack* track;
-  std::shared_ptr<SequenceEvent> nextEvent;
-
   struct Note {
-    Note(std::shared_ptr<SequenceEvent> event, std::shared_ptr<AudioNode> source, double duration);
+    Note();
+    Note(std::shared_ptr<BaseNoteEvent> event, std::shared_ptr<AudioNode> source, double duration);
     Note(const Note& other) = default;
     Note(Note&& other) = default;
     Note& operator=(const Note& other) = default;
 
-    std::shared_ptr<SequenceEvent> event;
+    std::shared_ptr<BaseNoteEvent> event;
     std::shared_ptr<AudioNode> source;
     double duration;
     bool kill;
   };
   std::unordered_map<uint64_t, std::unique_ptr<Note>> notes;
+
+private:
+  ITrack* track;
+  IInstrument* instrument;
+  std::shared_ptr<SequenceEvent> nextEvent;
 
   double timestamp;
 };

@@ -4,10 +4,12 @@
 #include <cstdint>
 #include <vector>
 #include <memory>
+#include <unordered_map>
 class Channel;
 class IInterpolator;
 class ITrack;
 class RiffWriter;
+class IInstrument;
 class S2WContext;
 
 class SynthContext {
@@ -33,7 +35,13 @@ public:
   void stream(std::ostream& output);
   void save(RiffWriter* riff);
 
+  void registerInstrument(uint64_t id, std::unique_ptr<IInstrument>&& inst);
+  IInstrument* getInstrument(uint64_t id) const;
+  IInstrument* defaultInstrument() const;
+
 private:
+  std::unordered_map<uint64_t, std::unique_ptr<IInstrument>> instruments;
+  std::unique_ptr<IInstrument> defaultInst;
   std::vector<int16_t> mixBuffer;
   double currentTimestamp, maximumTimestamp;
   S2WContext* ctx;

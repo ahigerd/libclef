@@ -13,10 +13,12 @@ public:
     Hold = 'hold',
     Decay = 'decy',
     Sustain = 'sus ',
+    Fade = 'fade',
     Release = 'rels',
   };
 
   Envelope(const SynthContext* ctx, double attack, double hold, double decay, double sustain, double release);
+  Envelope(const SynthContext* ctx, double attack, double hold, double decay, double sustain, double fade, double release);
 
   virtual bool isActive() const;
   bool expAttack, expDecay;

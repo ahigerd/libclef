@@ -3,6 +3,12 @@
 #include <cmath>
 
 Envelope::Envelope(const SynthContext* ctx, double attack, double hold, double decay, double sustain, double release)
+: Envelope(ctx, attack, hold, decay, sustain, HUGE_VAL, release)
+{
+  // forwarded constructor only
+}
+
+Envelope::Envelope(const SynthContext* ctx, double attack, double hold, double decay, double sustain, double fade, double release)
 : FilterNode(ctx), expAttack(false), expDecay(false), stepAt(0), lastLevel(0), step(Attack)
 {
   addParam(StartGain, 0.0);
@@ -10,6 +16,7 @@ Envelope::Envelope(const SynthContext* ctx, double attack, double hold, double d
   addParam(Hold, hold);
   addParam(Decay, decay);
   addParam(Sustain, sustain);
+  addParam(Fade, fade);
   addParam(Release, release);
   addParam(Trigger, 1.0);
 }
@@ -67,7 +74,20 @@ int16_t Envelope::filterSample(double time, int channel, int16_t sample)
       stepAt = time;
     }
     case Sustain: {
-      lastLevel = paramValue(Sustain, time);
+      double f = paramValue(Fade, time);
+      if (std::isfinite(f)) {
+        if (expDecay && f < 0) {
+          double dt = time - stepAt;
+          lastLevel = fastExp(-f, dt);
+          if (lastLevel < 1.0 / 32767.0) {
+            lastLevel = 0;
+          }
+        } else if (time < f + stepAt) {
+          lastLevel = lerp(paramValue(Sustain, time), 0.0, time, stepAt, f + stepAt);
+        }
+      } else {
+        lastLevel = paramValue(Sustain, time);
+      }
       return lastLevel * sample;
     }
     case Release: {

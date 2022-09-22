@@ -1,21 +1,29 @@
 #include "channel.h"
-#include "oscillator.h"
-#include "sampler.h"
 #include "synthcontext.h"
 #include "s2wcontext.h"
+#include "iinstrument.h"
 #include "seq/itrack.h"
 #include "seq/sequenceevent.h"
 #include <iostream>
 
-Channel::Note::Note(std::shared_ptr<SequenceEvent> event, std::shared_ptr<AudioNode> source, double duration)
+Channel::Note::Note()
+: event(nullptr), source(nullptr), duration(0), kill(true)
+{
+  // initializers only
+}
+
+Channel::Note::Note(std::shared_ptr<BaseNoteEvent> event, std::shared_ptr<AudioNode> source, double duration)
 : event(event), source(source), duration(duration), kill(false)
 {
   // initializers only
 }
 
 Channel::Channel(const SynthContext* ctx, ITrack* track)
-: gain(ctx, 0.5), pan(ctx, 0.5), ctx(ctx), track(track), nextEvent(nullptr)
+: AudioParamContainer(ctx), track(track), nextEvent(nullptr)
 {
+  instrument = ctx->defaultInstrument();
+  gain = addParam(AudioNode::Gain, 0.5).get();
+  pan = addParam(AudioNode::Pan, 0.5).get();
   timestamp = 0;
 }
 
@@ -42,50 +50,22 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
         nextEvent = event;
         break;
       }
-      std::shared_ptr<AudioNode> noteNode = nullptr;
-      BaseNoteEvent* noteEvent = nullptr;
-      Note* note = nullptr;
-      if (ChannelEvent* chEvent = event->cast<ChannelEvent>()) {
-        // TODO: queuing
-        // TODO: more types
-        if (chEvent->param == AudioNode::Gain) {
-          gain = chEvent->value;
-        } else if (chEvent->param == AudioNode::Pan) {
-          pan = chEvent->value;
+      if (auto chEvent = ChannelEvent::castShared(event)) {
+        instrument->channelEvent(this, chEvent);
+      } else if (auto modEvent = ModulatorEvent::castShared(event)) {
+        instrument->modulatorEvent(this, modEvent);
+      } else if (auto noteEvent = BaseNoteEvent::castShared(event)) {
+        Note* note = instrument->noteEvent(this, noteEvent);
+        if (note && !note->kill) {
+          notes.emplace(std::make_pair(note->event->playbackID, note));
         }
-        //std::cout << "ChannelEvent " << gain.valueAt(timestamp) << std::endl;
-      } else if (ModulatorEvent* modEvent = event->cast<ModulatorEvent>()) {
-        auto noteIter = notes.find(modEvent->playbackID);
-        if (noteIter != notes.end()) {
-          auto param = noteIter->second->source->param(modEvent->param);
-          if (param) {
-            param->setConstant(modEvent->value);
-          }
+      } else if (event->eventType() >= SequenceEvent::UserBase) {
+        // This must go after the BaseNoteEvent case because user-defined
+        // note events should be sent there.
+        Note* note = instrument->userEvent(this, event);
+        if (note && !note->kill) {
+          notes.emplace(std::make_pair(note->event->playbackID, note));
         }
-      } else if (AudioNodeEvent* nodeEvent = event->cast<AudioNodeEvent>()) {
-        noteEvent = nodeEvent;
-        noteNode = nodeEvent->node;
-        note = new Note(event, noteNode, 0);
-        notes.emplace(std::make_pair(nodeEvent->playbackID, note));
-      } else if (OscillatorEvent* oscEvent = event->cast<OscillatorEvent>()) {
-        noteEvent = oscEvent;
-        BaseOscillator* osc = BaseOscillator::create(ctx, oscEvent->waveformID, oscEvent->frequency, oscEvent->volume, oscEvent->pan);
-        noteNode.reset(osc);
-        note = new Note(event, noteNode, oscEvent->duration);
-        notes.emplace(std::make_pair(oscEvent->playbackID, note));
-      } else if (SampleEvent* sampEvent = event->cast<SampleEvent>()) {
-        noteEvent = sampEvent;
-        SampleData* sampleData = ctx->s2wContext()->getSample(sampEvent->sampleID);
-        if (!sampleData) {
-          std::cerr << "ERROR: sample " << std::hex << sampEvent->sampleID << std::dec << " not found" << std::endl;
-          continue;
-        }
-        Sampler* samp = new Sampler(ctx, sampleData, sampEvent->pitchBend);
-        noteNode.reset(samp);
-        samp->param(AudioNode::Gain)->setConstant(sampEvent->volume);
-        samp->param(AudioNode::Pan)->setConstant(sampEvent->pan);
-        note = new Note(event, noteNode, sampEvent->duration != 0 ? sampEvent->duration : sampleData->duration());
-        notes.emplace(std::make_pair(sampEvent->playbackID, note));
       } else if (KillEvent* killEvent = event->cast<KillEvent>()) {
         auto noteIter = notes.find(killEvent->playbackID);
         if (noteIter != notes.end()) {
@@ -93,20 +73,11 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
           noteIter->second->kill = noteIter->second->kill || killEvent->immediate;
         }
       }
-      if (noteEvent && noteEvent->useEnvelope) {
-        Envelope* env = new Envelope(ctx, noteEvent->attack, noteEvent->hold, noteEvent->decay, noteEvent->sustain, noteEvent->release);
-        env->expAttack = noteEvent->expAttack;
-        env->expDecay = noteEvent->expDecay;
-        env->param(Envelope::StartGain)->setConstant(noteEvent->startGain);
-        env->connect(noteNode);
-        noteNode.reset(env);
-        note->source = noteNode;
-      }
     }
   } while (event);
   int pos = 0;
   while (pos < buffer.size() && !isFinished()) {
-    double panValue = ctx->outputChannels > 1 ? pan.valueAt(timestamp) : 1;
+    double panValue = ctx->outputChannels > 1 ? pan->valueAt(timestamp) : 1;
     for (int ch = 0; ch < ctx->outputChannels; ch++) {
       int32_t sample = 0;
       std::vector<uint64_t> toErase;
@@ -139,7 +110,7 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
       for (uint64_t id : toErase) {
         notes.erase(id);
       }
-      buffer[pos] = sample * gain.valueAt(timestamp) * panValue;
+      buffer[pos] = sample * gain->valueAt(timestamp) * panValue;
       panValue = 1 - panValue;
       ++pos;
     }

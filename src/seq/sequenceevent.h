@@ -22,9 +22,10 @@ public:
   double timestamp;
 
   virtual int eventType() const = 0;
+  virtual bool isNoteEvent() const;
 
   template<typename T>
-  const T* cast() const {
+  inline const T* cast() const {
     if (eventType() == T::TypeID) {
       return static_cast<const T*>(this);
     }
@@ -32,25 +33,40 @@ public:
   }
 
   template<typename T>
-  T* cast() {
+  inline T* cast() {
     if (eventType() == T::TypeID) {
       return static_cast<T*>(this);
     }
     return nullptr;
   }
+
+  template<typename T, typename SE>
+  static inline std::shared_ptr<T> castShared(std::shared_ptr<SE>& event) {
+    if (event->eventType() == T::TypeID) {
+      return std::static_pointer_cast<T>(event);
+    }
+    return nullptr;
+  }
 };
 
-template <int TYPE_ID>
+template <class THIS, int TYPE_ID>
 class BaseEvent : public SequenceEvent {
 public:
   enum { TypeID = TYPE_ID };
 
   virtual int eventType() const { return TypeID; }
+
+  template <typename SE>
+  static inline std::shared_ptr<THIS> castShared(std::shared_ptr<SE>& event) {
+    return SequenceEvent::castShared<THIS>(event);
+  }
 };
 
-struct BaseNoteEvent {
+struct BaseNoteEvent : public SequenceEvent {
   static uint64_t nextPlaybackID();
   BaseNoteEvent();
+
+  virtual bool isNoteEvent() const;
 
   uint64_t playbackID;  // for modulation
   double duration;
@@ -60,18 +76,53 @@ struct BaseNoteEvent {
   bool useEnvelope : 1;
   bool expAttack : 1;
   bool expDecay : 1;
-  double startGain, attack, hold, decay, sustain, release;
+  double startGain, attack, hold, decay, sustain, fade, release;
   void setEnvelope(double attack, double decay, double sustain, double release);
   void setEnvelope(double attack, double hold, double decay, double sustain, double release);
   void setEnvelope(double start, double attack, double hold, double decay, double sustain, double release);
+  void setEnvelope(double start, double attack, double hold, double decay, double sustain, double fade, double release);
+
+  template <typename SE>
+  static inline std::shared_ptr<BaseNoteEvent> castShared(std::shared_ptr<SE>& event) {
+    if (event->isNoteEvent()) {
+      return std::static_pointer_cast<BaseNoteEvent>(event);
+    }
+    return nullptr;
+  }
 };
 
-template <int TYPE_ID>
-class NoteEvent : public BaseEvent<TYPE_ID>, public BaseNoteEvent {
+template <>
+inline const BaseNoteEvent* SequenceEvent::cast<BaseNoteEvent>() const
+{
+  if (isNoteEvent()) {
+    return static_cast<const BaseNoteEvent*>(this);
+  }
+  return nullptr;
+}
+
+template <>
+inline BaseNoteEvent* SequenceEvent::cast<BaseNoteEvent>()
+{
+  if (isNoteEvent()) {
+    return static_cast<BaseNoteEvent*>(this);
+  }
+  return nullptr;
+}
+
+template <class THIS, int TYPE_ID>
+class NoteEvent : public BaseNoteEvent {
 public:
+  enum { TypeID = TYPE_ID };
+
+  virtual int eventType() const { return TypeID; }
+
+  template <typename SE>
+  static inline std::shared_ptr<THIS> castShared(std::shared_ptr<SE>& event) {
+    return SequenceEvent::castShared<THIS>(event);
+  }
 };
 
-class SampleEvent : public NoteEvent<SequenceEvent::Sample> {
+class SampleEvent : public NoteEvent<SampleEvent, SequenceEvent::Sample> {
 public:
   SampleEvent();
 
@@ -79,7 +130,7 @@ public:
   double pitchBend;
 };
 
-class OscillatorEvent : public NoteEvent<SequenceEvent::Oscillator> {
+class OscillatorEvent : public NoteEvent<OscillatorEvent, SequenceEvent::Oscillator> {
 public:
   OscillatorEvent();
 
@@ -87,14 +138,14 @@ public:
   double frequency;
 };
 
-class AudioNodeEvent : public NoteEvent<SequenceEvent::AudioNode> {
+class AudioNodeEvent : public NoteEvent<AudioNodeEvent, SequenceEvent::AudioNode> {
 public:
   AudioNodeEvent(std::shared_ptr<::AudioNode> node);
 
   std::shared_ptr<::AudioNode> node;
 };
 
-class ModulatorEvent : public BaseEvent<SequenceEvent::Modulator> {
+class ModulatorEvent : public BaseEvent<ModulatorEvent, SequenceEvent::Modulator> {
 public:
   ModulatorEvent(uint64_t playbackID, int32_t param, double value);
 
@@ -103,7 +154,7 @@ public:
   double value;
 };
 
-class KillEvent : public BaseEvent<SequenceEvent::Kill> {
+class KillEvent : public BaseEvent<KillEvent, SequenceEvent::Kill> {
 public:
   KillEvent(uint64_t playbackID, double timestamp);
 
@@ -111,7 +162,7 @@ public:
   bool immediate;
 };
 
-class ChannelEvent : public BaseEvent<SequenceEvent::Channel> {
+class ChannelEvent : public BaseEvent<ChannelEvent, SequenceEvent::Channel> {
 public:
   ChannelEvent(uint32_t param, double value);
 

@@ -1,10 +1,23 @@
 #include "sequenceevent.h"
+#include <iostream>
+#include <cmath>
+#include <atomic>
 
-static uint64_t _nextPlaybackID = 1;
+static std::atomic_uint64_t _nextPlaybackID = 1;
+
+bool SequenceEvent::isNoteEvent() const
+{
+  return false;
+}
+
+bool BaseNoteEvent::isNoteEvent() const
+{
+  return true;
+}
 
 inline uint64_t BaseNoteEvent::nextPlaybackID()
 {
-  return _nextPlaybackID++;
+  return _nextPlaybackID.fetch_add(1, std::memory_order_relaxed);
 }
 
 BaseNoteEvent::BaseNoteEvent()
@@ -21,6 +34,7 @@ void BaseNoteEvent::setEnvelope(double attack, double decay, double sustain, dou
   this->attack = attack;
   this->decay = decay;
   this->sustain = sustain;
+  this->fade = HUGE_VAL;
   this->release = release;
 }
 
@@ -32,6 +46,7 @@ void BaseNoteEvent::setEnvelope(double attack, double hold, double decay, double
   this->hold = hold;
   this->decay = decay;
   this->sustain = sustain;
+  this->fade = HUGE_VAL;
   this->release = release;
 }
 
@@ -43,6 +58,19 @@ void BaseNoteEvent::setEnvelope(double start, double attack, double hold, double
   this->hold = hold;
   this->decay = decay;
   this->sustain = sustain;
+  this->fade = HUGE_VAL;
+  this->release = release;
+}
+
+void BaseNoteEvent::setEnvelope(double start, double attack, double hold, double decay, double sustain, double fade, double release)
+{
+  useEnvelope = true;
+  this->startGain = start;
+  this->attack = attack;
+  this->hold = hold;
+  this->decay = decay;
+  this->sustain = sustain;
+  this->fade = fade;
   this->release = release;
 }
 
