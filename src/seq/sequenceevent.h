@@ -2,6 +2,7 @@
 #define S2W_SEQUENCEEVENT_H
 
 #include <cstdint>
+#include <vector>
 #include <memory>
 #include "synth/audionode.h"
 
@@ -12,10 +13,11 @@ public:
   enum EventTypes {
     Sample,
     Oscillator,
+    InstrumentNote,
+    AudioNode,
+    Channel,
     Modulator,
     Kill,
-    Channel,
-    AudioNode,
     UserBase,
   };
 
@@ -138,6 +140,15 @@ public:
   double frequency;
 };
 
+class InstrumentNoteEvent : public NoteEvent<InstrumentNoteEvent, SequenceEvent::InstrumentNote> {
+public:
+  InstrumentNoteEvent();
+
+  double pitch;
+  std::vector<double> floatParams;
+  std::vector<uint64_t> intParams;
+};
+
 class AudioNodeEvent : public NoteEvent<AudioNodeEvent, SequenceEvent::AudioNode> {
 public:
   AudioNodeEvent(std::shared_ptr<::AudioNode> node);
@@ -165,9 +176,13 @@ public:
 class ChannelEvent : public BaseEvent<ChannelEvent, SequenceEvent::Channel> {
 public:
   ChannelEvent(uint32_t param, double value);
+  ChannelEvent(uint32_t param, uint64_t intValue);
 
   uint32_t param;
-  double value;
+  union {
+    double value;
+    uint64_t intValue;
+  };
 };
 
 #endif

@@ -7,6 +7,8 @@
 #include <functional>
 #include <iostream>
 #include <vector>
+#include <cmath>
+#include <cctype>
 
 using OpenFn = std::function<std::unique_ptr<std::istream>(const std::string&)>;
 std::unique_ptr<std::istream> openFstream(const std::string& path);
@@ -56,6 +58,7 @@ int countBits(uint64_t value);
 double noteToFreq(double midiNote);
 double fastExp(double r, double dt);
 double fastSin(double theta);
+inline double fastCos(double theta) { return fastSin(M_PI_2 - theta); }
 inline double combinePan(double a, double b) {
   return clamp(a + b - 0.5, 0.0, 1.0);
 }

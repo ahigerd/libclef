@@ -5,13 +5,33 @@
 
 class BaseOscillator : public AudioNode {
 public:
+  enum WaveformPreset {
+    Sine,
+    Triangle,
+    NESTriangle,
+    Sawtooth,
+    Square50,
+    Square75,
+    Square25,
+    Square125,
+    Noise,
+    LinearNoise,
+    CosineNoise,
+    NESNoise,
+    NESNoise93,
+    GBNoise,
+    GBNoise127,
+    NumPresets,
+  };
+
   enum ParamType {
     Frequency = 'freq',
     DutyCycle = 'duty',
     PitchBend = 'bend',
+    DCOffset = 'dc  ',
   };
 
-  static BaseOscillator* create(const SynthContext* ctx, uint64_t waveformID, double frequency = 440.0, double amplitude = 1.0, double pan = 0.5);
+  static BaseOscillator* create(const SynthContext* ctx, WaveformPreset waveform, double frequency = 440.0, double amplitude = 1.0, double pan = 0.5);
 
   virtual bool isActive() const;
   virtual int16_t generateSample(double time, int channel = 0);
@@ -47,6 +67,14 @@ private:
   AudioParam* dutyCycle;
 };
 
+class SawtoothOscillator : public BaseOscillator {
+public:
+  SawtoothOscillator(const SynthContext* ctx);
+
+protected:
+  virtual double calcSample(double time);
+};
+
 class TriangleOscillator : public BaseOscillator {
 public:
   TriangleOscillator(const SynthContext* ctx, int quantize = 0, bool skew = false);
@@ -56,6 +84,26 @@ public:
 
 protected:
   virtual double calcSample(double time);
+};
+
+class NoiseOscillator : public BaseOscillator {
+public:
+  enum Smoothing {
+    None,
+    Linear,
+    Cosine,
+  };
+  NoiseOscillator(const SynthContext* ctx, Smoothing smoothing = None);
+
+  Smoothing smoothing;
+
+protected:
+  virtual double calcSample(double time);
+
+private:
+  double lastPhase;
+  double lastLevel;
+  double nextLevel;
 };
 
 class NESNoiseOscillator : public BaseOscillator {

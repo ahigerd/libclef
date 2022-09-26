@@ -61,16 +61,17 @@ SampleData* RiffCodec::decodeRange(std::vector<uint8_t>::const_iterator start, s
     if (offset + 8 + chunkSize > size) {
       throw std::runtime_error("RIFF chunk data is invalid");
     }
+    offset += 8;
     if (magic == 'fmt ') {
-      fmt = WaveFormatEx(start + offset + 8, start + offset + chunkSize);
+      fmt = WaveFormatEx(start + offset, start + offset + chunkSize);
     } else if (magic == 'data') {
       data.insert(
         data.end(),
-        buffer + (offset + 8),
+        buffer + offset,
         buffer + (offset + chunkSize)
       );
     }
-    offset += 8 + chunkSize;
+    offset += chunkSize;
   }
   std::unique_ptr<ICodec> codec;
   if (fmt.format == 1) {

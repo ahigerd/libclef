@@ -1,8 +1,8 @@
 include config.mak
 
-all: seq2wav$(EXE)
+all: seq2wav_test$(EXE)
 
-debug: seq2wav_d$(EXE)
+debug: seq2wav_test_d$(EXE)
 
 static: $(BUILDPATH)/libseq2wav.a
 
@@ -13,7 +13,7 @@ includes: $(INCLUDES)
 build/Makefile.d: $(wildcard src/*.cpp src/*/*.cpp src/*.h src/*/*.h) Makefile src/Makefile
 	$(MAKE) -C src ../build/Makefile.d
 
-seq2wav$(EXE) seq2wav_d$(EXE): src/Makefile build/Makefile.d
+seq2wav_test$(EXE) seq2wav_test_d$(EXE): src/Makefile build/Makefile.d
 	$(MAKE) -C src ../$@
 
 $(BUILDPATH)/libseq2wav.a $(BUILDPATH)/libseq2wav_d.a: src/Makefile build/Makefile.d $(INCLUDES)

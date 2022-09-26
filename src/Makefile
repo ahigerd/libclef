@@ -2,10 +2,10 @@ include ../config.mak
 
 SOURCES = $(filter-out main.cpp, $(wildcard *.cpp */*.cpp))
 
-../seq2wav$(EXE): ../$(BUILDPATH)/main.o ../$(BUILDPATH)/libseq2wav.a
+../seq2wav_test$(EXE): ../$(BUILDPATH)/main.o ../$(BUILDPATH)/libseq2wav.a
 	$(CXX) -o $@ $^
 
-../seq2wav_d$(EXE): ../$(BUILDPATH)/main_d.o ../$(BUILDPATH)/libseq2wav_d.$(DLL)
+../seq2wav_test_d$(EXE): ../$(BUILDPATH)/main_d.o ../$(BUILDPATH)/libseq2wav_d.$(DLL)
 	$(CXX) -o $@ $^
 
 ../$(BUILDPATH)/libseq2wav.a: $(patsubst %.cpp, ../$(BUILDPATH)/%.o, $(SOURCES)) ../$(BUILDPATH)/Makefile.d

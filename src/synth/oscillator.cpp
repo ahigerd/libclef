@@ -3,27 +3,51 @@
 #include <cmath>
 #include <iostream>
 
-BaseOscillator* BaseOscillator::create(const SynthContext* ctx, uint64_t waveformID, double frequency, double amplitude, double pan)
+BaseOscillator* BaseOscillator::create(const SynthContext* ctx, BaseOscillator::WaveformPreset waveform, double frequency, double amplitude, double pan)
 {
   BaseOscillator* osc;
-  switch(waveformID) {
-    case 0:
-      osc = new SquareOscillator(ctx, 0.5);
-      break;
-    case 1:
-      osc = new SquareOscillator(ctx, 0.75);
-      break;
-    case 2:
-      osc = new SquareOscillator(ctx, 0.25);
-      break;
-    case 3:
-      osc = new SquareOscillator(ctx, 0.125);
-      break;
-    case 4:
+  switch (waveform) {
+    case Triangle:
       osc = new TriangleOscillator(ctx);
       break;
-    case 5:
+    case NESTriangle:
+      osc = new TriangleOscillator(ctx, 16, true);
+      break;
+    case Sawtooth:
+      osc = new SawtoothOscillator(ctx);
+      break;
+    case Square50:
+      osc = new SquareOscillator(ctx, 0.5);
+      break;
+    case Square75:
+      osc = new SquareOscillator(ctx, 0.75);
+      break;
+    case Square25:
+      osc = new SquareOscillator(ctx, 0.25);
+      break;
+    case Square125:
+      osc = new SquareOscillator(ctx, 0.125);
+      break;
+    case Noise:
+      osc = new NoiseOscillator(ctx);
+      break;
+    case LinearNoise:
+      osc = new NoiseOscillator(ctx, NoiseOscillator::Linear);
+      break;
+    case CosineNoise:
+      osc = new NoiseOscillator(ctx, NoiseOscillator::Cosine);
+      break;
+    case NESNoise:
       osc = new NESNoiseOscillator(ctx);
+      break;
+    case NESNoise93:
+      osc = new NESNoise93Oscillator(ctx);
+      break;
+    case GBNoise:
+      osc = new GBNoiseOscillator(ctx);
+      break;
+    case GBNoise127:
+      osc = new GBNoise127Oscillator(ctx);
       break;
     default:
       osc = new SineOscillator(ctx);
@@ -62,6 +86,7 @@ int16_t BaseOscillator::generateSample(double time, int channel)
 
 SineOscillator::SineOscillator(const SynthContext* ctx) : BaseOscillator(ctx)
 {
+  // initializers only
 }
 
 double SineOscillator::calcSample(double)
@@ -78,6 +103,17 @@ SquareOscillator::SquareOscillator(const SynthContext* ctx, double duty)
 double SquareOscillator::calcSample(double time)
 {
   return phase < dutyCycle->valueAt(time) ? 1.0 : -1.0;
+}
+
+SawtoothOscillator::SawtoothOscillator(const SynthContext* ctx)
+: BaseOscillator(ctx)
+{
+  // initializers only
+}
+
+double SawtoothOscillator::calcSample(double time)
+{
+  return 2.0 * (phase - int64_t(phase) - 0.5);
 }
 
 TriangleOscillator::TriangleOscillator(const SynthContext* ctx, int quantize, bool skew)
@@ -105,6 +141,28 @@ double TriangleOscillator::calcSample(double)
     }
   }
   return level * 2.0 - 1.0;
+}
+
+NoiseOscillator::NoiseOscillator(const SynthContext* ctx, Smoothing smoothing)
+: BaseOscillator(ctx), smoothing(smoothing), lastPhase(0), lastLevel(0), nextLevel(0)
+{
+  // initializers only
+}
+
+double NoiseOscillator::calcSample(double)
+{
+  if (lastPhase > phase) {
+    lastLevel = nextLevel;
+    nextLevel = std::rand() / (RAND_MAX / 2.0) - 1.0;
+  }
+  lastPhase = phase;
+  if (smoothing == None) {
+    return nextLevel;
+  } else if (smoothing == Linear) {
+    return lerp(lastLevel, nextLevel, phase);
+  } else {
+    return lerp(nextLevel, lastLevel, fastCos(phase * M_PI) * 0.5 + 0.5);
+  }
 }
 
 NESNoiseOscillator::NESNoiseOscillator(const SynthContext* ctx)

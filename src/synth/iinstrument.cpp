@@ -41,7 +41,7 @@ Channel::Note* DefaultInstrument::noteEvent(Channel* channel, std::shared_ptr<Ba
   if (AudioNodeEvent* nodeEvent = event->cast<AudioNodeEvent>()) {
     node = nodeEvent->node;
   } else if (OscillatorEvent* oscEvent = event->cast<OscillatorEvent>()) {
-    BaseOscillator* osc = BaseOscillator::create(channel->ctx, oscEvent->waveformID, oscEvent->frequency, oscEvent->volume, oscEvent->pan);
+    BaseOscillator* osc = BaseOscillator::create(channel->ctx, BaseOscillator::WaveformPreset(oscEvent->waveformID), oscEvent->frequency, oscEvent->volume, oscEvent->pan);
     duration = oscEvent->duration;
     node.reset(osc);
   } else if (SampleEvent* sampEvent = event->cast<SampleEvent>()) {
@@ -58,18 +58,19 @@ Channel::Note* DefaultInstrument::noteEvent(Channel* channel, std::shared_ptr<Ba
       duration = sampleData->duration();
     }
   } else {
-    std::cerr << "ERROR: unhandled user event" << std::endl;
+    std::cerr << "ERROR: unhandled instrument or user event" << std::endl;
     return nullptr;
   }
-  Channel::Note* note = new Channel::Note(std::shared_ptr<BaseNoteEvent>(event), node, duration);
+  Channel::Note* note = new Channel::Note(event, node, duration);
   if (event->useEnvelope) {
-    applyEnvelope(channel, note, event);
+    applyEnvelope(channel, note);
   }
   return note;
 }
 
-void DefaultInstrument::applyEnvelope(Channel* channel, Channel::Note* note, std::shared_ptr<BaseNoteEvent> event)
+void DefaultInstrument::applyEnvelope(Channel* channel, Channel::Note* note)
 {
+  const auto& event = note->event;
   Envelope* env = new Envelope(channel->ctx, event->attack, event->hold, event->decay, event->sustain, event->fade, event->release);
   env->expAttack = event->expAttack;
   env->expDecay = event->expDecay;

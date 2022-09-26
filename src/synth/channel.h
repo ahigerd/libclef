@@ -29,6 +29,7 @@ public:
 
   struct Note {
     Note();
+    Note(std::shared_ptr<BaseNoteEvent> event, AudioNode* source, double duration);
     Note(std::shared_ptr<BaseNoteEvent> event, std::shared_ptr<AudioNode> source, double duration);
     Note(const Note& other) = default;
     Note(Note&& other) = default;

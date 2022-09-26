@@ -86,6 +86,12 @@ OscillatorEvent::OscillatorEvent()
   // initializers only
 }
 
+InstrumentNoteEvent::InstrumentNoteEvent()
+: pitch(69)
+{
+  // initializers only
+}
+
 AudioNodeEvent::AudioNodeEvent(std::shared_ptr<::AudioNode> node)
 : node(node)
 {
@@ -106,6 +112,12 @@ KillEvent::KillEvent(uint64_t playbackID, double timestamp)
 
 ChannelEvent::ChannelEvent(uint32_t param, double value)
 : param(param), value(value)
+{
+  // initializers only
+}
+
+ChannelEvent::ChannelEvent(uint32_t param, uint64_t intValue)
+: param(param), intValue(intValue)
 {
   // initializers only
 }

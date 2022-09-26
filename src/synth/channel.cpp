@@ -12,6 +12,12 @@ Channel::Note::Note()
   // initializers only
 }
 
+Channel::Note::Note(std::shared_ptr<BaseNoteEvent> event, AudioNode* source, double duration)
+: Note(event, std::shared_ptr<AudioNode>(source), duration)
+{
+  // forwarded constructor only
+}
+
 Channel::Note::Note(std::shared_ptr<BaseNoteEvent> event, std::shared_ptr<AudioNode> source, double duration)
 : event(event), source(source), duration(duration), kill(false)
 {
@@ -51,7 +57,11 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
         break;
       }
       if (auto chEvent = ChannelEvent::castShared(event)) {
-        instrument->channelEvent(this, chEvent);
+        if (chEvent->param == 'inst') {
+          instrument = ctx->getInstrument(chEvent->intValue);
+        } else {
+          instrument->channelEvent(this, chEvent);
+        }
       } else if (auto modEvent = ModulatorEvent::castShared(event)) {
         instrument->modulatorEvent(this, modEvent);
       } else if (auto noteEvent = BaseNoteEvent::castShared(event)) {

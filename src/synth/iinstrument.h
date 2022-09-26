@@ -22,7 +22,7 @@ class DefaultInstrument : public IInstrument {
 public:
   virtual Channel::Note* noteEvent(Channel* channel, std::shared_ptr<BaseNoteEvent> event);
 
-  void applyEnvelope(Channel* channel, Channel::Note* note, std::shared_ptr<BaseNoteEvent> event);
+  void applyEnvelope(Channel* channel, Channel::Note* note);
 };
 
 #endif
