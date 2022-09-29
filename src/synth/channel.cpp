@@ -59,6 +59,9 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
       if (auto chEvent = ChannelEvent::castShared(event)) {
         if (chEvent->param == 'inst') {
           instrument = ctx->getInstrument(chEvent->intValue);
+          if (!instrument) {
+            instrument = ctx->defaultInstrument();
+          }
         } else {
           instrument->channelEvent(this, chEvent);
         }

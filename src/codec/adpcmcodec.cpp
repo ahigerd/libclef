@@ -65,9 +65,10 @@ SampleData* AdpcmCodec::decodeRange(std::vector<uint8_t>::const_iterator start, 
   SampleData* sampleData = sampleID ? new SampleData(context(), sampleID) : new SampleData(context());
   int length = end - start;
 
-  if (length > 4 && format == DSP) {
-    predictor[0] = (*start++ << 8) | *start++;
-    index[0] = clamp<int8_t>(int16_t((*start++ << 8) | *start++), 0, maxStep);
+  if (length > 4 && format == NDS) {
+    predictor[0] = *start++ | (*start++ << 8);
+    int16_t step = *start++ | (*start++ << 8);
+    index[0] = clamp<int8_t>(step, 0, maxStep);
     length -= 4;
   } else {
     predictor[0] = 0;
