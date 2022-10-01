@@ -56,7 +56,7 @@ T parseIntBE(const Container& buffer, int offset)
 int countBits(uint64_t value);
 
 double noteToFreq(double midiNote);
-double fastExp(double r, double dt);
+double fastExp(double r, double dt = 1.0);
 double fastSin(double theta);
 inline double fastCos(double theta) { return fastSin(M_PI_2 - theta); }
 inline double combinePan(double a, double b) {

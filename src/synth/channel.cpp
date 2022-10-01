@@ -28,7 +28,7 @@ Channel::Channel(const SynthContext* ctx, ITrack* track)
 : AudioParamContainer(ctx), track(track), nextEvent(nullptr)
 {
   instrument = ctx->defaultInstrument();
-  gain = addParam(AudioNode::Gain, 0.5).get();
+  gain = addParam(AudioNode::Gain, 1.0).get();
   pan = addParam(AudioNode::Pan, 0.5).get();
   timestamp = 0;
 }

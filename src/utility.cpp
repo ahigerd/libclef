@@ -104,7 +104,7 @@ double fastExp(double r, double dt)
   int idx = int(pos);
 
   // clamp results to appropriate range
-  if (r > 0) {
+  if (r < 0) {
     if (idx < 0) return HUGE_VAL;
     if (idx > 1023) return 1;
   } else {
@@ -128,9 +128,12 @@ double fastSin(double theta)
     table[tableSize] = 0;
     init = true;
   }
+  if (theta < 0) {
+    return -fastSin(-theta);
+  }
   theta *= 1000;
   int pos = theta;
-  int frac = theta - pos;
+  double frac = theta - pos;
   pos = pos % tableSize;
   return lerp(table[pos], table[pos + 1], frac);
 }
