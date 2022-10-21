@@ -20,8 +20,8 @@ public:
   S2WContext* s2wContext() const;
 
   const double sampleRate;
-  const int outputChannels;
   const double sampleTime;
+  const int outputChannels;
   std::vector<std::unique_ptr<Channel>> channels;
   IInterpolator* interpolator;
 

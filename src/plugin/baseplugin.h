@@ -55,6 +55,8 @@ class S2WPluginBase {
 public:
   static std::string seq2wavCopyright();
 
+  inline S2WContext* context() const { return s2w; }
+
   bool matchExtension(const std::string& filename) const;
   TagMap getTags(const std::string& filename, std::istream& file) const;
 
@@ -76,11 +78,12 @@ public:
   virtual double length(const std::string& filename, std::istream& file) const = 0;
   virtual int sampleRate(const std::string& filename, std::istream& file) const = 0; // of unloaded track
 
+  virtual SynthContext* prepare(const std::string& filename, std::istream& file) = 0;
+  virtual void release() = 0;
+
 protected:
   S2WPluginBase(S2WContext* s2w);
   virtual TagMap getTagsBase(const std::string& filename, std::istream& file) const = 0;
-  virtual SynthContext* prepare(const std::string& filename, std::istream& file) = 0;
-  virtual void release() = 0;
 
   S2WContext* s2w;
   SynthContext* ctx;
@@ -116,13 +119,12 @@ public:
   int sampleRate(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::sampleRate(s2w, filename, file); }
   inline int sampleRate() const { return S2WPluginBase::sampleRate(); }
 
-protected:
-  TagMap getTagsBase(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::readTags(s2w, filename, file); }
   SynthContext* prepare(const std::string& filename, std::istream& file) { file.seekg(0); return Info::prepare(s2w, filename, file); }
   void release() { Info::release(); }
-};
 
-#define DEFINE_SEQ2WAV_PLUGIN(PluginInfo) static S2WPlugin<PluginInfo> staticPlugin;
+protected:
+  TagMap getTagsBase(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::readTags(s2w, filename, file); }
+};
 
 #if defined(BUILD_AUDACIOUS)
 #include "plugin/audaciousplugin.h"
@@ -131,7 +133,13 @@ protected:
 #elif defined(BUILD_FOOBAR)
 #include "plugin/foobarplugin.h"
 #else
-#define SEQ2WAV_PLUGIN(PluginInfo) DEFINE_SEQ2WAV_PLUGIN(PluginInfo)
+namespace S2W {
+  S2WPluginBase* makePlugin(S2WContext* ctx);
+}
+
+#define SEQ2WAV_PLUGIN(PluginInfo) namespace S2W { S2WPluginBase* makePlugin(S2WContext* ctx) { \
+  return new S2WPlugin<PluginInfo>(ctx); \
+}}
 #endif
 
 #endif

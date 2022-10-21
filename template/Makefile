@@ -4,7 +4,9 @@ cli: $(PLUGIN_NAME)$(EXE)
 
 debug: $(PLUGIN_NAME)_d$(EXE)
 
-all: cli plugins
+gui: $(PLUGIN_NAME)_gui$(EXE)
+
+all: cli plugins gui
 
 plugins: audacious
 
@@ -39,6 +41,12 @@ $(PLUGIN_NAME)$(EXE): includes src/Makefile $(BUILDPATH)/Makefile.d config.mak s
 $(PLUGIN_NAME)_d$(EXE): includes src/Makefile $(BUILDPATH)/Makefile.d config.mak seq2wav/$(BUILDPATH)/libseq2wav_d.a
 	$(MAKE) -C src ../$(PLUGIN_NAME)_d$(EXE)
 
+gui/Makefile: includes gui/gui.pro Makefile config.mak
+	cd gui && qmake BUILDPATH=../$(BUILDPATH) PLUGIN_NAME=$(PLUGIN_NAME)
+
+$(PLUGIN_NAME)_gui$(EXE): includes src/Makefile $(BUILDPATH)/Makefile.d config.mak seq2wav/$(BUILDPATH)/libseq2wav.a gui/Makefile
+	$(MAKE) -C gui
+
 aud_$(PLUGIN_NAME).$(DLL): includes $(PLUGIN_NAME)$(EXE) seq2wav/$(BUILDPATH)/libseq2wav.a plugins/Makefile config.mak plugins/s2wplugin.cpp
 	$(MAKE) -C plugins ../$@
 
@@ -58,8 +66,9 @@ endif
 
 clean: FORCE
 	-rm -f $(BUILDPATH)/*.o $(BUILDPATH)/*/*.o $(BUILDPATH)/Makefile.d
-	-rm -f $(PLUGIN_NAME)$(EXE) $(PLUGIN_NAME)_d$(EXE) *.$(DLL)
+	-rm -f $(PLUGIN_NAME)$(EXE) $(PLUGIN_NAME)_d$(EXE) $(PLUGIN_NAME)_gui$(EXE) *.$(DLL)
 	-$(MAKE) -C seq2wav clean
+	-[ -f gui/Makefile ] && $(MAKE) -C gui distclean
 endif
 
 FORCE:
