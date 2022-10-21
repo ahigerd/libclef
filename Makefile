@@ -1,6 +1,6 @@
 include config.mak
 
-all: seq2wav_test$(EXE)
+test: seq2wav_test$(EXE)
 
 debug: seq2wav_test_d$(EXE)
 
@@ -25,7 +25,7 @@ include/%.h: src/%.h
 
 clean: FORCE
 	-rm -f build/*.o build/*.d build/*/*.o build/Makefile.d
-	-rm -f seq2wav seq2wav_d $(BUILDPATH)/libseq2wav.a $(BUILDPATH)/libseq2wav_d.a
+	-rm -f seq2wav_test$(EXE) seq2wav_test_d$(EXE) $(BUILDPATH)/libseq2wav.a $(BUILDPATH)/libseq2wav_d.a
 	-rm -f include/*.h include/*/*.h
 	-rmdir include/*
 	-rmdir include

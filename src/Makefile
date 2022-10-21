@@ -1,5 +1,9 @@
 include ../config.mak
 
+CXXFLAGS := $(patsubst -I../seq2wav/include,-I../include,$(CXXFLAGS))
+CXXFLAGS_R := $(patsubst -I../seq2wav/include,-I../include,$(CXXFLAGS_R))
+CXXFLAGS_D := $(patsubst -I../seq2wav/include,-I../include,$(CXXFLAGS_D))
+
 SOURCES = $(filter-out main.cpp, $(wildcard *.cpp */*.cpp))
 
 ../seq2wav_test$(EXE): ../$(BUILDPATH)/main.o ../$(BUILDPATH)/libseq2wav.a
