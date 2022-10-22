@@ -29,10 +29,14 @@ signals:
 private slots:
   void createPluginWidget();
   void openFile();
+  void exportFile();
   void about();
   void unlockWork();
   void onLoadError(const QString& filename, const QString& msg);
   void openSubsong(const QString& filename);
+
+signals:
+  void exportStarted();
 
 private:
   bool lockWork();
@@ -46,6 +50,7 @@ protected:
 private:
   TagView* tagView;
   QAtomicInteger<bool> busy;
+  QString currentFile;
   bool m_autoPlay;
 
   QList<QPointer<QWidget>> lockWidgets;

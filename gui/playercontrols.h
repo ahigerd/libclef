@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QAudio>
-class QTimer;
+#include <QTimer>
 class QLabel;
 class QSlider;
 class QToolButton;
@@ -30,6 +30,8 @@ public slots:
   void pause();
   void stop();
   void setLoading(bool loading);
+  void exportStarted();
+  void exportFinished();
 
 private slots:
   void updateState();
@@ -47,6 +49,7 @@ private:
   QAudioOutput* output;
   QIODevice* stream;
   QByteArray buffer;
+  QTimer exportTimer;
 };
 
 #endif

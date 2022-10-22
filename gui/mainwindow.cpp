@@ -2,6 +2,7 @@
 #include "tagview.h"
 #include "playercontrols.h"
 #include "plugin/baseplugin.h"
+#include "riffwriter.h"
 #include <QApplication>
 #include <QVBoxLayout>
 #include <QFileDialog>
@@ -38,6 +39,7 @@ MainWindow::MainWindow(S2WPluginBase* plugin)
 
   QMenu* fileMenu = new QMenu(tr("&File"), mb);
   lockWhileWorking(fileMenu->addAction(tr("&Open..."), this, SLOT(openFile()), QKeySequence("Ctrl+O")));
+  lockWhileWorking(fileMenu->addAction(tr("&Export..."), this, SLOT(exportFile())));
   fileMenu->addSeparator();
   fileMenu->addAction(tr("E&xit"), qApp, SLOT(quit()));
   mb->addMenu(fileMenu);
@@ -56,6 +58,7 @@ MainWindow::MainWindow(S2WPluginBase* plugin)
 
   controls = new PlayerControls(central);
   controls->setEnabled(false);
+  QObject::connect(this, SIGNAL(exportStarted()), controls, SLOT(exportStarted()));
   layout->addWidget(controls);
   lockWhileWorking(controls);
 
@@ -88,7 +91,8 @@ void MainWindow::openFile()
 
 void MainWindow::openFile(const QString& path, bool autoPlay)
 {
-  openFile(path, true, autoPlay);
+  QDir qtPath(path);
+  openFile(qtPath.absolutePath(), true, autoPlay);
 }
 
 void MainWindow::openFile(const QString& path, bool doAcquire, bool autoPlay)
@@ -113,6 +117,7 @@ void MainWindow::openFile(const QString& path, bool doAcquire, bool autoPlay)
       return;
     }
   }
+  currentFile = path;
   QThread* thread = qThreadCreate([this, stdPath, stdFilename]{
     try {
       auto stream = m_plugin->context()->openFile(stdFilename);
@@ -202,4 +207,49 @@ void MainWindow::createPluginWidget()
 void MainWindow::openSubsong(const QString& filename)
 {
   openFile(filename, controls->isPlaying());
+}
+
+void MainWindow::exportFile()
+{
+  if (!lockWork()) {
+    return;
+  }
+  if (!ctx) {
+    unlockWork();
+    return;
+  }
+  QString filename = currentFile;
+  int dotPos = filename.lastIndexOf('.');
+  int slashPos = filename.lastIndexOf('/');
+  if (dotPos > slashPos) {
+    filename = filename.left(dotPos);
+  }
+  filename += ".wav";
+  filename = QFileDialog::getSaveFileName(this, tr("Export File"), filename, "WAVE Files (*.wav)");
+  if (filename.isEmpty()) {
+    unlockWork();
+    return;
+  }
+  RiffWriter* riff = new RiffWriter(ctx->sampleRate, ctx->outputChannels > 1);
+  if (!riff->open(filename.toStdString())) {
+    unlockWork();
+    // TODO: error
+    return;
+  }
+  controls->stop();
+  emit exportStarted();
+  QThread* thread = QThread::create([this, riff]{
+    try {
+      ctx->save(riff);
+    } catch (...) {
+      // TODO: error
+    }
+    riff->close();
+    delete riff;
+  });
+  QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+  QObject::connect(thread, SIGNAL(destroyed()), this, SLOT(unlockWork()));
+  QObject::connect(thread, SIGNAL(destroyed()), controls, SLOT(exportFinished()));
+  thread->start();
+  // TODO: finished
 }

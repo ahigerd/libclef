@@ -50,7 +50,6 @@ void TagView::loadTags(S2WPluginBase* plugin, const QString& filename, const std
     QObject::connect(subsong, SIGNAL(currentIndexChanged(int)), this, SLOT(subsongSelected(int)), Qt::QueuedConnection);
   }
 
-  int channels = plugin->channels();
   int minutes = duration / 60;
   int seconds = duration - (minutes * 60);
   int ms = (duration - (minutes * 60 + seconds)) * 1000;
@@ -60,11 +59,6 @@ void TagView::loadTags(S2WPluginBase* plugin, const QString& filename, const std
     layout->addRow(tr("Duration:"), new QLabel(QString("%1:%2").arg(minutes).arg(seconds, 2, 10, QChar('0'))));
   }
   layout->addRow(tr("Sample Rate:"), new QLabel(QString::number(sampleRate)));
-  if (channels) {
-    layout->addRow(tr("Channels:"), new QLabel(QString::number(channels)));
-  } else {
-    layout->addRow(tr("Channels:"), new QLabel(tr("(unknown)")));
-  }
   for (const std::string& tag : tagOrder) {
     auto iter = tags.find(tag);
     if (iter != tags.end()) {

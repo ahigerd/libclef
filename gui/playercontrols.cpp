@@ -49,6 +49,7 @@ PlayerControls::PlayerControls(QWidget* parent)
   layout->setContentsMargins(0, 0, 0, 0);
 
   resizeEvent(nullptr);
+  QObject::connect(&exportTimer, SIGNAL(timeout()), this, SLOT(updateState()));
 }
 
 #include <QtDebug>
@@ -80,6 +81,7 @@ void PlayerControls::updateState()
     ms = seekBar->sliderPosition();
   } else {
     seekBar->setValue(ms);
+    loadingBar->setValue(ms);
   }
   int minutes = ms / 60000;
   int seconds = (ms / 1000) % 60;
@@ -172,6 +174,7 @@ void PlayerControls::setLoading(bool loading)
 {
   loadingBar->setVisible(loading);
   seekBar->setVisible(!loading);
+  loadingBar->setRange(0, 0);
 }
 
 void PlayerControls::showEvent(QShowEvent*)
@@ -233,4 +236,18 @@ void PlayerControls::copyBuffer()
     }
   }
   updateState();
+}
+
+void PlayerControls::exportStarted()
+{
+  loadingBar->setRange(0, ctx->maximumTime() * 1000);
+  exportTimer.start(100);
+  seekTo(0);
+}
+
+void PlayerControls::exportFinished()
+{
+  loadingBar->setRange(0, 0);
+  exportTimer.stop();
+  seekTo(0);
 }
