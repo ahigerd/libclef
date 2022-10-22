@@ -3,6 +3,7 @@
 #include "s2wcontext.h"
 #include "synth/synthcontext.h"
 #include "plugin/baseplugin.h"
+#include <QtDebug>
 
 int main(int argc, char** argv)
 {
@@ -17,6 +18,9 @@ int main(int argc, char** argv)
 
   MainWindow mw(plugin);
   mw.show();
+  if (app.arguments().length() > 1) {
+    mw.openFile(app.arguments()[1], true);
+  }
 
   return app.exec();
 }

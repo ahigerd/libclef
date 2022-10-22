@@ -26,7 +26,8 @@ include
 *.so
 *.exe
 *_gui
-gui/Makefile
+*_gui_d
+gui/Makefile*
 
 # external dependencies
 plugins/foobar2000

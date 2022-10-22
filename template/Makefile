@@ -6,6 +6,8 @@ debug: $(PLUGIN_NAME)_d$(EXE)
 
 gui: $(PLUGIN_NAME)_gui$(EXE)
 
+guidebug: $(PLUGIN_NAME)_gui_d$(EXE)
+
 all: cli plugins gui
 
 plugins: audacious
@@ -36,16 +38,28 @@ $(BUILDPATH)/Makefile.d: $(wildcard src/*.cpp src/*/*.cpp src/*.h src/*/*.h) Mak
 	$(MAKE) -C src ../$@
 
 $(PLUGIN_NAME)$(EXE): includes src/Makefile $(BUILDPATH)/Makefile.d config.mak seq2wav/$(BUILDPATH)/libseq2wav.a
-	$(MAKE) -C src ../$(PLUGIN_NAME)$(EXE)
+	$(MAKE) -C src ../$@
 
 $(PLUGIN_NAME)_d$(EXE): includes src/Makefile $(BUILDPATH)/Makefile.d config.mak seq2wav/$(BUILDPATH)/libseq2wav_d.a
-	$(MAKE) -C src ../$(PLUGIN_NAME)_d$(EXE)
+	$(MAKE) -C src ../$@
+
+$(BUILDPATH)/lib$(PLUGIN_NAME).a: includes src/Makefile $(BUILDPATH)/Makefile.d config.mak seq2wav/$(BUILDPATH)/libseq2wav.a
+	$(MAKE) -C src ../$@
+
+$(BUILDPATH)/lib$(PLUGIN_NAME)_d.a: includes src/Makefile $(BUILDPATH)/Makefile.d config.mak seq2wav/$(BUILDPATH)/libseq2wav_d.a
+	$(MAKE) -C src ../$@
 
 gui/Makefile: includes gui/gui.pro Makefile config.mak
-	cd gui && qmake BUILDPATH=../$(BUILDPATH) PLUGIN_NAME=$(PLUGIN_NAME)
+	cd gui && qmake BUILDPATH=../$(BUILDPATH) PLUGIN_NAME=$(PLUGIN_NAME) S2W_LDFLAGS="$(LDFLAGS_R)"
 
-$(PLUGIN_NAME)_gui$(EXE): includes src/Makefile $(BUILDPATH)/Makefile.d config.mak seq2wav/$(BUILDPATH)/libseq2wav.a gui/Makefile
+gui/Makefile.debug: includes gui/gui.pro Makefile config.mak
+	cd gui && qmake -o Makefile.debug BUILD_DEBUG=1 BUILDPATH=../$(BUILDPATH) PLUGIN_NAME=$(PLUGIN_NAME) S2W_LDFLAGS="$(LDFLAGS_D)"
+
+$(PLUGIN_NAME)_gui$(EXE): includes src/Makefile $(BUILDPATH)/Makefile.d config.mak seq2wav/$(BUILDPATH)/libseq2wav.a gui/Makefile $(BUILDPATH)/lib$(PLUGIN_NAME).a
 	$(MAKE) -C gui
+
+$(PLUGIN_NAME)_gui_d$(EXE): includes src/Makefile $(BUILDPATH)/Makefile.d config.mak seq2wav/$(BUILDPATH)/libseq2wav_d.a gui/Makefile.debug $(BUILDPATH)/lib$(PLUGIN_NAME)_d.a
+	$(MAKE) -C gui -f Makefile.debug
 
 aud_$(PLUGIN_NAME).$(DLL): includes $(PLUGIN_NAME)$(EXE) seq2wav/$(BUILDPATH)/libseq2wav.a plugins/Makefile config.mak plugins/s2wplugin.cpp
 	$(MAKE) -C plugins ../$@
@@ -64,11 +78,14 @@ in_$(PLUGIN_NAME).dll in_$(PLUGIN_NAME)_d.dll: FORCE
 	$(MAKE) CROSS=mingw $@
 endif
 
-clean: FORCE
-	-rm -f $(BUILDPATH)/*.o $(BUILDPATH)/*/*.o $(BUILDPATH)/Makefile.d
-	-rm -f $(PLUGIN_NAME)$(EXE) $(PLUGIN_NAME)_d$(EXE) $(PLUGIN_NAME)_gui$(EXE) *.$(DLL)
-	-$(MAKE) -C seq2wav clean
+guiclean: FORCE
 	-[ -f gui/Makefile ] && $(MAKE) -C gui distclean
+	-[ -f gui/Makefile.debug ] && $(MAKE) -C gui -f Makefile.debug distclean
+
+clean: guiclean FORCE
+	-rm -f $(BUILDPATH)/*.o $(BUILDPATH)/*/*.o $(BUILDPATH)/Makefile.d
+	-rm -f $(PLUGIN_NAME)$(EXE) $(PLUGIN_NAME)_d$(EXE) $(PLUGIN_NAME)_gui$(EXE) $(PLUGIN_NAME)_gui_d$(EXE) *.$(DLL)
+	-$(MAKE) -C seq2wav clean
 endif
 
 FORCE:
