@@ -60,14 +60,19 @@ TagMap S2WPluginBase::getTags(const std::string& filename, std::istream& file) c
   try {
     auto pos = file.tellg();
     TagMap tagMap = getTagsBase(filename, file);
-    if (!tagMap.count("length_seconds_fp")) {
-      std::ostringstream ss;
-      file.seekg(pos);
-      double len = length(filename, file);
-      if (len > 0) {
-        ss << len;
-        tagMap["length_seconds_fp"] = ss.str();
+    try {
+      if (!tagMap.count("length_seconds_fp")) {
+        std::ostringstream ss;
+        file.clear();
+        file.seekg(pos);
+        double len = length(filename, file);
+        if (len > 0) {
+          ss << len;
+          tagMap["length_seconds_fp"] = ss.str();
+        }
       }
+    } catch (...) {
+      // ignore error getting length instead of breaking all of the tags
     }
     if (!tagMap.count("display_title") && tagMap.count("title")) {
       std::string displayTitle = tagMap["title"];

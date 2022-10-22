@@ -17,10 +17,20 @@ void TagView::loadTags(S2WPluginBase* plugin, const std::string& fullPath, const
 {
   clearTags();
   setTitle(filename);
+
   auto stream = plugin->context()->openFile(fullPath);
-  TagMap tags = plugin->getTags(fullPath, *stream);
+  stream->clear();
+  stream->seekg(0, std::ios::beg);
   int sampleRate = plugin->sampleRate(fullPath, *stream);
+
+  stream->clear();
+  stream->seekg(0, std::ios::beg);
   double duration = plugin->length(fullPath, *stream);
+
+  stream->clear();
+  stream->seekg(0, std::ios::beg);
+  TagMap tags = plugin->getTags(fullPath, *stream);
+
   int channels = plugin->channels();
   int minutes = duration / 60;
   int seconds = duration - (minutes * 60);
