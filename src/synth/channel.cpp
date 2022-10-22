@@ -89,7 +89,7 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
     }
   } while (event);
   int pos = 0;
-  while (pos < buffer.size() && !isFinished()) {
+  while (pos < numSamples && !isFinished()) {
     double panValue = ctx->outputChannels > 1 ? pan->valueAt(timestamp) : 1;
     for (int ch = 0; ch < ctx->outputChannels; ch++) {
       int32_t sample = 0;

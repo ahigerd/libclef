@@ -75,7 +75,7 @@ size_t SynthContext::fillBuffer(uint8_t* buffer, size_t length)
       written = chWritten;
     }
   }
-  currentTimestamp += written * sampleTime / (2 * channels.size());
+  currentTimestamp += written * sampleTime / (2 * outputChannels);
   return written;
 }
 
