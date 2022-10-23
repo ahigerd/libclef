@@ -11,7 +11,7 @@ void ITrack::reset()
 void ITrack::seek(double timestamp)
 {
   double eventTime = 0;
-  if (lastEvent) {
+  if (timestamp > 0 && lastEvent) {
     if (BaseNoteEvent* note = dynamic_cast<BaseNoteEvent*>(lastEvent.get())) {
       if (lastEvent->timestamp < timestamp && lastEvent->timestamp + note->duration > timestamp) {
         // No seeking necessary, it's just going to keep playing this event

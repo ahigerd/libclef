@@ -5,6 +5,8 @@
 #include <QComboBox>
 #include <QtDebug>
 
+static QList<std::string> skipTags{ "display_title", "length_seconds_fp" };
+
 TagView::TagView(QWidget* parent)
 : QGroupBox(parent), subsong(nullptr)
 {
@@ -66,6 +68,9 @@ void TagView::loadTags(S2WPluginBase* plugin, const QString& filename, const std
     }
   }
   for (const auto& iter : tags) {
+    if (skipTags.contains(iter.first)) {
+      continue;
+    }
     if (!tagOrder.contains(iter.first)) {
       layout->addRow(QString::fromStdString(iter.first) + ":", new QLabel(QString::fromStdString(iter.second), this));
       tagOrder << iter.first;

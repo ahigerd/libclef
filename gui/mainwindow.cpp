@@ -54,7 +54,7 @@ MainWindow::MainWindow(S2WPluginBase* plugin)
 
   tagView = new TagView(central);
   QObject::connect(tagView, SIGNAL(loadSubsong(QString)), this, SLOT(openSubsong(QString)));
-  layout->addWidget(tagView);
+  layout->addWidget(tagView, 1);
 
   controls = new PlayerControls(central);
   controls->setEnabled(false);
@@ -118,6 +118,17 @@ void MainWindow::openFile(const QString& path, bool doAcquire, bool autoPlay)
     }
   }
   currentFile = path;
+  if (ctx) {
+    m_plugin->unload();
+  }
+  {
+    auto stream = m_plugin->context()->openFile(stdFilename);
+    if (!m_plugin->isPlayable(stdFilename, *stream)) {
+      // TODO: error
+      unlockWork();
+      return;
+    }
+  }
   QThread* thread = qThreadCreate([this, stdPath, stdFilename]{
     try {
       auto stream = m_plugin->context()->openFile(stdFilename);
@@ -251,5 +262,4 @@ void MainWindow::exportFile()
   QObject::connect(thread, SIGNAL(destroyed()), this, SLOT(unlockWork()));
   QObject::connect(thread, SIGNAL(destroyed()), controls, SLOT(exportFinished()));
   thread->start();
-  // TODO: finished
 }

@@ -10,6 +10,7 @@ class QToolButton;
 class QProgressBar;
 class QAudioOutput;
 class SynthContext;
+class VUMeter;
 
 class PlayerControls : public QWidget
 {
@@ -38,6 +39,7 @@ private slots:
   void togglePlay();
   void stateChanged(QAudio::State state);
   void copyBuffer();
+  int fillBuffer();
 
 private:
   SynthContext* ctx;
@@ -50,6 +52,8 @@ private:
   QIODevice* stream;
   QByteArray buffer;
   QTimer exportTimer;
+  VUMeter* vuMeter;
+  bool starting;
 };
 
 #endif

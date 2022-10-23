@@ -1,4 +1,5 @@
 #include "playercontrols.h"
+#include "vumeter.h"
 #include "synth/synthcontext.h"
 #include <QFontMetrics>
 #include <QProgressBar>
@@ -44,7 +45,11 @@ PlayerControls::PlayerControls(QWidget* parent)
   currentTime->setMinimumWidth(QFontMetrics(currentTime->font(), currentTime).boundingRect("000:00").width());
   layout->addWidget(currentTime, 0, 3);
 
+  vuMeter = new VUMeter(this);
+  layout->addWidget(vuMeter, 1, 0, 1, 4);
+
   layout->setColumnStretch(2, 1);
+  layout->setRowStretch(1, 1);
   layout->setSpacing(2);
   layout->setContentsMargins(0, 0, 0, 0);
 
@@ -103,6 +108,7 @@ void PlayerControls::seekTo(int ms)
 {
   if (ctx) {
     ctx->seek(ms / 1000.0);
+    starting = true;
   }
   updateState();
 }
@@ -121,6 +127,7 @@ void PlayerControls::play()
   } else {
     seekTo(seekBar->value());
   }
+  starting = true;
   if (!output) {
     QAudioFormat format;
     format.setCodec("audio/pcm");
@@ -140,6 +147,8 @@ void PlayerControls::play()
   } else {
     output->resume();
   }
+  fillBuffer();
+  QTimer::singleShot(0, this, SLOT(copyBuffer()));
 }
 
 void PlayerControls::pause()
@@ -186,16 +195,11 @@ void PlayerControls::resizeEvent(QResizeEvent*)
 {
   int h1 = seekBar->sizeHint().height();
   int h2 = loadingBar->sizeHint().height();
-  int h3 = playButton->sizeHint().height();
   if (h1 > h2) {
     h1 = h2;
   }
   seekBar->setFixedHeight(h1);
   loadingBar->setFixedHeight(h1);
-  if (h1 < h3) {
-    h1 = h3;
-  }
-  setFixedHeight(h1);
 }
 
 void PlayerControls::stateChanged(QAudio::State)
@@ -207,27 +211,38 @@ void PlayerControls::copyBuffer()
 {
   int needed = output->bytesFree();
   bool done = false;
+  if (needed == 0) needed += output->periodSize();
   while (needed > 0) {
     int available = buffer.size();
     int toCopy = needed < available ? needed : available;
     int written = 0;
     if (toCopy > 0) {
+      int chans = ctx->outputChannels;
+      int samples = toCopy / chans;
+      int step = chans * 2;
+      for (int ch = 0; ch < chans; ch++) {
+        int min = 0x7FFF;
+        int max = -0x7FFF;
+        for (int i = ch * 2; i < samples; i += step) {
+          qint16 sample = buffer[i] | (buffer[i + 1] << 8);
+          if (sample < min) min = sample;
+          if (sample > max) max = sample;
+        }
+        vuMeter->setLevel(ch, (max - min) / 65536.0);
+      }
       written = stream->write(buffer.data(), toCopy);
       buffer.remove(0, written);
       available -= written;
       needed -= written;
     }
     if (available < output->periodSize()) {
-      QByteArray readBuffer(output->periodSize(), '\0');
-      int read = ctx->fillBuffer(reinterpret_cast<uint8_t*>(readBuffer.data()), readBuffer.size());
+      int read = fillBuffer();
       if (read <= 0) {
         done = true;
         if (needed > 0 && written <= 0) {
           output->stop();
-          break;
         }
-      } else {
-        buffer += readBuffer.left(read);
+        break;
       }
     }
     if (!available && done) {
@@ -236,6 +251,17 @@ void PlayerControls::copyBuffer()
     }
   }
   updateState();
+  starting = false;
+}
+
+int PlayerControls::fillBuffer()
+{
+  QByteArray readBuffer(output->periodSize(), '\0');
+  int read = ctx->fillBuffer(reinterpret_cast<uint8_t*>(readBuffer.data()), readBuffer.size());
+  if (read > 0) {
+    buffer += readBuffer.left(read);
+  }
+  return read;
 }
 
 void PlayerControls::exportStarted()

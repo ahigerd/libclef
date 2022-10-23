@@ -125,6 +125,7 @@ public:
       if (!matchExtension(filename)) {
         return false;
       }
+      file.clear();
       file.seekg(0);
       return Info::isPlayable(file);
     } catch (...) {

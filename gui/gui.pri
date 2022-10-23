@@ -42,5 +42,8 @@ DEFINES += QT_NO_DEPRECATED_WARNINGS
 INCLUDEPATH += $$S2WPATH/include $$S2WPATH/gui $$PROJPATH/src
 LIBS += $$S2W_LDFLAGS
 
-HEADERS += $$S2WPATH/gui/mainwindow.h   $$S2WPATH/gui/tagview.h   $$S2WPATH/gui/playercontrols.h
-SOURCES += $$S2WPATH/gui/mainwindow.cpp $$S2WPATH/gui/tagview.cpp $$S2WPATH/gui/playercontrols.cpp
+S2W_CLASSES = mainwindow tagview playercontrols vumeter
+for (CLS,S2W_CLASSES) {
+  exists($$S2WPATH/gui/$${CLS}.h):HEADERS += $$S2WPATH/gui/$${CLS}.h
+  exists($$S2WPATH/gui/$${CLS}.cpp):SOURCES += $$S2WPATH/gui/$${CLS}.cpp
+}
