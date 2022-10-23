@@ -1,4 +1,5 @@
 #include "vumeter.h"
+#include <QAudio>
 #include <QPalette>
 #include <QPainter>
 #include <QLinearGradient>
@@ -23,6 +24,7 @@ void VUMeter::setChannels(int channels)
 void VUMeter::setLevel(int channel, double level)
 {
   if (channel < levels.size()) {
+    level = QAudio::convertVolume(level, QAudio::LinearVolumeScale, QAudio::LogarithmicVolumeScale);
     if (level != levels[channel]) {
       levels[channel] = level;
       update();
@@ -48,7 +50,8 @@ void VUMeter::resizeEvent(QResizeEvent*)
 {
   QLinearGradient lg(0, 0, width() - 8, 0);
   lg.setColorAt(0, QColor(0, 255, 0));
-  lg.setColorAt(0.5, QColor(255, 255, 0));
+  lg.setColorAt(0.25, QColor(0, 255, 0));
+  lg.setColorAt(0.75, QColor(255, 255, 0));
   lg.setColorAt(1.0, QColor(255, 0, 0));
   gradient = lg;
 }
