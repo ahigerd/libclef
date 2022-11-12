@@ -132,7 +132,7 @@ public:
     }
     std::string title = tagMap.count("title") ? tagMap.at("title") : std::string();
     tuple.set_int(Tuple::Bitrate, 48 * 2 * 4); // actually kilobitrate: 48kHz * 2 channels * 4 bits/sample
-    tuple.set_str(Tuple::Codec, "Konami ADPCM");
+    tuple.set_str(Tuple::Codec, "Sequenced");
     tuple.set_str(Tuple::Quality, "Stereo, 48 kHz");
     if (title.empty()) {
       tuple.set_str(Tuple::Title, filename);

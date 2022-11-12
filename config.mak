@@ -1,5 +1,5 @@
 # Note: Don't use -march=native for code intended for distribution. -msse2 is probably good.
-CXXFLAGS := -fPIC -std=gnu++17 -Wno-multichar -I../src -I../seq2wav/include -msse2 -I. -Isrc/
+CXXFLAGS := -fPIC -std=gnu++17 -Wno-multichar -I../src -I../seq2wav/include -msse2 -I. -Isrc/ $(PLUGIN_CXXFLAGS)
 
 DLL := so
 EXE :=
@@ -31,6 +31,6 @@ endif
 
 CXXFLAGS_R := $(CXXFLAGS) -O3
 CXXFLAGS_D := $(CXXFLAGS) -ggdb
-LDFLAGS := $(LDFLAGS) -L../seq2wav/$(BUILDPATH) -L../$(BUILDPATH)
+LDFLAGS := $(LDFLAGS) -L../seq2wav/$(BUILDPATH) -L../$(BUILDPATH) $(PLUGIN_LDFLAGS)
 LDFLAGS_R := $(LDFLAGS) -lseq2wav
 LDFLAGS_D := $(LDFLAGS) -lseq2wav_d

@@ -61,5 +61,5 @@ void AutomationNode::addTransition(Transition transition, double time, double va
   while (phases.size() > 0 && time < phases.back().time) {
     phases.pop_back();
   }
-  phases.push_back((Endpoint){ time, value * 8192, transition });
+  phases.push_back(Endpoint{ time, value * 8192, transition });
 }

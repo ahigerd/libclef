@@ -1,6 +1,8 @@
 #ifndef S2W_UTILITY_H
 #define S2W_UTILITY_H
 
+#include "s2wconfig.h"
+#include <math.h>
 #include <cstdint>
 #include <string>
 #include <memory>
