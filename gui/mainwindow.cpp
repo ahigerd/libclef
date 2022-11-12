@@ -11,6 +11,22 @@
 #include <QThread>
 #include <QtDebug>
 
+#if QT_CONFIG(cxx11_future)
+#define qThreadCreate QThread::create
+#else
+template <typename FN>
+class QThreadRunner : public QThread
+{
+public:
+  QThreadRunner(FN fn) : QThread(nullptr), fn(fn) {}
+
+  void run() { fn(); }
+
+  FN fn;
+};
+#define qThreadCreate new QThreadRunner
+#endif
+
 MainWindow::MainWindow(S2WPluginBase* plugin)
 : QMainWindow(nullptr), m_plugin(plugin), m_autoPlay(false)
 {
@@ -82,7 +98,7 @@ void MainWindow::openFile(const QString& path, bool doAcquire, bool autoPlay)
     stdFilename,
     QDir(path).dirName()
   );
-  QThread* thread = QThread::create([this, stdFilename]{
+  QThread* thread = qThreadCreate([this, stdFilename]{
     auto stream = m_plugin->context()->openFile(stdFilename);
     ctx = m_plugin->prepare(stdFilename, *stream);
   });

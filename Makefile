@@ -10,13 +10,13 @@ INCLUDES = $(patsubst src/%.h, include/%.h, $(wildcard src/*.h src/*/*.h))
 
 includes: $(INCLUDES)
 
-build/Makefile.d: $(wildcard src/*.cpp src/*/*.cpp src/*.h src/*/*.h) Makefile src/Makefile
-	$(MAKE) -C src ../build/Makefile.d
+$(BUILDPATH)/Makefile.d: $(wildcard src/*.cpp src/*/*.cpp src/*.h src/*/*.h) Makefile src/Makefile
+	$(MAKE) -C src ../$(BUILDPATH)/Makefile.d
 
-seq2wav_test$(EXE) seq2wav_test_d$(EXE): src/Makefile build/Makefile.d
+seq2wav_test$(EXE) seq2wav_test_d$(EXE): src/Makefile $(BUILDPATH)/Makefile.d
 	$(MAKE) -C src ../$@
 
-$(BUILDPATH)/libseq2wav.a $(BUILDPATH)/libseq2wav_d.a: src/Makefile build/Makefile.d $(INCLUDES)
+$(BUILDPATH)/libseq2wav.a $(BUILDPATH)/libseq2wav_d.a: src/Makefile $(BUILDPATH)/Makefile.d $(INCLUDES)
 	$(MAKE) -C src ../$@
 
 include/%.h: src/%.h
@@ -24,7 +24,7 @@ include/%.h: src/%.h
 	cp $< $@
 
 clean: FORCE
-	-rm -f build/*.o build/*.d build/*/*.o build/Makefile.d
+	-rm -f $(BUILDPATH)/*.o $(BUILDPATH)/*.d $(BUILDPATH)/*/*.o $(BUILDPATH)/Makefile.d
 	-rm -f seq2wav_test$(EXE) seq2wav_test_d$(EXE) $(BUILDPATH)/libseq2wav.a $(BUILDPATH)/libseq2wav_d.a
 	-rm -f include/*.h include/*/*.h
 	-rmdir include/*

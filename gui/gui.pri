@@ -12,6 +12,7 @@ isEmpty(PLUGIN_NAME) {
 
 PROJPATH = $$absolute_path($$BUILDPATH/..)
 S2WPATH = $$absolute_path($$BUILDPATH/../seq2wav)
+S2WBUILDPATH = $$absolute_path($$S2WPATH/$$relative_path($$BUILDPATH,$$PROJPATH))
 
 TEMPLATE = app
 
@@ -22,8 +23,8 @@ isEmpty(BUILD_DEBUG) {
   RCC_DIR = $$BUILDPATH/gui
   CONFIG -= debug debug_and_release
   CONFIG += release
-  LIBS += -L../build -l$$PLUGIN_NAME
-  PRE_TARGETDEPS += $$BUILDPATH/lib$${PLUGIN_NAME}.a $$S2WPATH/build/libseq2wav.a
+  LIBS += -L$$BUILDPATH -l$$PLUGIN_NAME
+  PRE_TARGETDEPS += $$BUILDPATH/lib$${PLUGIN_NAME}.a $$S2WBUILDPATH/libseq2wav.a
 } else {
   TARGET = ../$${PLUGIN_NAME}_gui_d
   OBJECTS_DIR = $$BUILDPATH/gui_d
@@ -31,8 +32,8 @@ isEmpty(BUILD_DEBUG) {
   RCC_DIR = $$BUILDPATH/gui_d
   CONFIG -= release debug_and_release
   CONFIG += debug
-  LIBS += -L../build -l$${PLUGIN_NAME}_d
-  PRE_TARGETDEPS += $$BUILDPATH/lib$${PLUGIN_NAME}_d.a $$S2WPATH/build/libseq2wav_d.a
+  LIBS += -L$$BUILDPATH -l$${PLUGIN_NAME}_d
+  PRE_TARGETDEPS += $$BUILDPATH/lib$${PLUGIN_NAME}_d.a $$S2WBUILDPATH/libseq2wav_d.a
 }
 QT = core gui widgets multimedia
 QMAKE_CXXFLAGS += -std=c++17 -Wno-multichar
