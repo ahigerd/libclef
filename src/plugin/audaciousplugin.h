@@ -2,6 +2,7 @@
 #define S2W_AUDACITYPLUGIN_H
 
 #define WANT_VFS_STDIO_COMPAT
+#include <iomanip>
 #include "plugin/baseplugin.h"
 #include <libaudcore/plugin.h>
 #include <libaudcore/i18n.h>

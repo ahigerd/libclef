@@ -1,5 +1,7 @@
-#include "plugin/baseplugin.h"
 #include "codec/sampledata.h"
+
+// This include should come last to avoid namespace collisions.
+#include "plugin/baseplugin.h"
 
 // In the functions below, ctx->openFile() is provided by the plugin interface. Use
 // this instead of standard library functions to open additional files in order to use
