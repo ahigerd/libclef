@@ -2,7 +2,7 @@
 #include "codec/sampledata.h"
 
 S2WContext::S2WContext(const OpenFn& openFile)
-: openFn(openFile), lastSampleID(0)
+: pluginData(nullptr), openFn(openFile), lastSampleID(0)
 {
   // initializers only
 }

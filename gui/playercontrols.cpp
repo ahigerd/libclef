@@ -102,6 +102,9 @@ void PlayerControls::seekTo(int ms)
 
 void PlayerControls::play()
 {
+  if (!ctx) {
+    return;
+  }
   if (output && output->state() == QAudio::StoppedState) {
     output->deleteLater();
     output = nullptr;
@@ -195,6 +198,7 @@ void PlayerControls::stateChanged(QAudio::State)
 void PlayerControls::copyBuffer()
 {
   int needed = output->bytesFree();
+  bool done = false;
   while (needed > 0) {
     int available = buffer.size();
     int toCopy = needed < available ? needed : available;
@@ -209,6 +213,7 @@ void PlayerControls::copyBuffer()
       QByteArray readBuffer(output->periodSize(), '\0');
       int read = ctx->fillBuffer(reinterpret_cast<uint8_t*>(readBuffer.data()), readBuffer.size());
       if (read <= 0) {
+        done = true;
         if (needed > 0 && written <= 0) {
           output->stop();
           break;
@@ -216,6 +221,10 @@ void PlayerControls::copyBuffer()
       } else {
         buffer += readBuffer.left(read);
       }
+    }
+    if (!available && done) {
+      output->stop();
+      break;
     }
   }
   updateState();

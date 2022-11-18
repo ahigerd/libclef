@@ -14,6 +14,8 @@ public:
   SampleData* getSample(uint64_t sampleID) const;
   void purgeSamples();
 
+  void* pluginData;
+
 private:
   OpenFn openFn;
 

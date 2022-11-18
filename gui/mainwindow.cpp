@@ -9,6 +9,7 @@
 #include <QMenuBar>
 #include <QMenu>
 #include <QThread>
+#include <QTimer>
 #include <QtDebug>
 
 #if QT_CONFIG(cxx11_future)
@@ -36,7 +37,7 @@ MainWindow::MainWindow(S2WPluginBase* plugin)
   setMenuBar(mb);
 
   QMenu* fileMenu = new QMenu(tr("&File"), mb);
-  lockActions << fileMenu->addAction(tr("&Open..."), this, SLOT(openFile()), QKeySequence("Ctrl+O"));
+  lockWhileWorking(fileMenu->addAction(tr("&Open..."), this, SLOT(openFile()), QKeySequence("Ctrl+O")));
   fileMenu->addSeparator();
   fileMenu->addAction(tr("E&xit"), qApp, SLOT(quit()));
   mb->addMenu(fileMenu);
@@ -55,9 +56,12 @@ MainWindow::MainWindow(S2WPluginBase* plugin)
   controls = new PlayerControls(central);
   controls->setEnabled(false);
   layout->addWidget(controls);
-  lockWidgets << controls;
+  lockWhileWorking(controls);
 
   setCentralWidget(central);
+
+  QObject::connect(this, SIGNAL(loadError(QString,QString)), this, SLOT(onLoadError(QString,QString)), Qt::QueuedConnection);
+  QTimer::singleShot(0, this, SLOT(createPluginWidget()));
 }
 
 void MainWindow::openFile()
@@ -92,15 +96,23 @@ void MainWindow::openFile(const QString& path, bool doAcquire, bool autoPlay)
     return;
   }
   m_autoPlay = autoPlay;
-  std::string stdFilename = path.toStdString();
+  QStringList parts = path.split('?');
+  std::string stdPath = path.toStdString();
+  std::string stdFilename = parts[0].toStdString();
   tagView->loadTags(
     m_plugin,
     stdFilename,
     QDir(path).dirName()
   );
-  QThread* thread = qThreadCreate([this, stdFilename]{
-    auto stream = m_plugin->context()->openFile(stdFilename);
-    ctx = m_plugin->prepare(stdFilename, *stream);
+  QThread* thread = qThreadCreate([this, stdPath, stdFilename]{
+    try {
+      auto stream = m_plugin->context()->openFile(stdFilename);
+      ctx = m_plugin->prepare(stdPath, *stream);
+    } catch (std::exception& e) {
+      emit loadError(QString::fromStdString(stdPath), QString::fromStdString(e.what()));
+    } catch (...) {
+      emit loadError(QString::fromStdString(stdFilename), QString());
+    }
   });
   QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
   QObject::connect(thread, SIGNAL(destroyed()), this, SLOT(unlockWork()));
@@ -108,6 +120,15 @@ void MainWindow::openFile(const QString& path, bool doAcquire, bool autoPlay)
     QObject::connect(thread, SIGNAL(destroyed()), controls, SLOT(play()));
   }
   thread->start();
+}
+
+void MainWindow::onLoadError(const QString& filename, const QString& msg)
+{
+  QString fullMessage = tr("An error occurred while loading %1").arg(filename);
+  if (!msg.isEmpty()) {
+    fullMessage += "\n\n" + msg;
+  }
+  QMessageBox::critical(this, QString::fromStdString(m_plugin->pluginName()), fullMessage);
 }
 
 void MainWindow::about()
@@ -140,5 +161,31 @@ void MainWindow::unlockWork()
   }
   controls->setContext(ctx);
   controls->setLoading(false);
+  emit contextUpdated(ctx);
   busy.storeRelease(false);
+}
+
+void MainWindow::lockWhileWorking(QWidget* widget)
+{
+  lockWidgets << widget;
+}
+
+void MainWindow::lockWhileWorking(QAction* action)
+{
+  lockActions << action;
+}
+
+QWidget* MainWindow::createPluginWidget(QWidget*)
+{
+  return nullptr;
+}
+
+void MainWindow::createPluginWidget()
+{
+  pluginWidget = createPluginWidget(centralWidget());
+  if (pluginWidget) {
+    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(centralWidget()->layout());
+    layout->addWidget(pluginWidget);
+    QObject::connect(this, SIGNAL(contextUpdated(SynthContext*)), pluginWidget, SLOT(contextUpdated(SynthContext*)));
+  }
 }
