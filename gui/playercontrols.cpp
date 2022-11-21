@@ -85,11 +85,16 @@ void PlayerControls::updateState()
   int seconds = (ms / 1000) % 60;
   currentTime->setText(QString("%1:%2").arg(minutes).arg(seconds, 2, 10, QChar('0')));
   seekBar->blockSignals(false);
-  if (output && output->state() == QAudio::ActiveState) {
+  if (isPlaying()) {
     playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
   } else {
     playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
   }
+}
+
+bool PlayerControls::isPlaying() const
+{
+  return output && output->state() == QAudio::ActiveState;
 }
 
 void PlayerControls::seekTo(int ms)

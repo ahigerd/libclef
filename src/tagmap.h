@@ -43,6 +43,7 @@ public:
   int numTracks() const;
   std::string trackName(int trackIndex) const;
   int findTrack(const std::string& trackName) const;
+  std::vector<int> findTracksByPrefix(const std::string& prefix) const;
   void addTrack(const std::string& trackName);
 
 private:

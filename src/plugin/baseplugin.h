@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <memory>
 #include <functional>
+#include <type_traits>
 #include "utility.h"
 #include "tagmap.h"
 #include "s2wcontext.h"
@@ -20,6 +21,7 @@ using ConstPairList = const std::vector<std::pair<std::string, std::string>>;
 struct TagsM3UMixin {
   static TagMap readTags(S2WContext* s2w, const std::string& filename);
   static inline TagMap readTags(S2WContext* s2w, const std::string& filename, std::istream& /* unused */) { return readTags(s2w, filename); }
+  static std::vector<std::string> getSubsongs(S2WContext* s2w, const std::string& filename, std::istream& file);
 };
 
 #ifdef BUILD_DUMMY_PLUGIN
@@ -59,6 +61,7 @@ public:
 
   bool matchExtension(const std::string& filename) const;
   TagMap getTags(const std::string& filename, std::istream& file) const;
+  virtual std::vector<std::string> getSubsongs(const std::string& filename, std::istream& file) const = 0;
 
   int fillBuffer(uint8_t* buffer, int len);
 
@@ -87,6 +90,19 @@ protected:
 
   S2WContext* s2w;
   SynthContext* ctx;
+};
+
+template <typename Info, typename U = int> struct GetSubsongs {
+static std::vector<std::string> getSubsongsImpl(S2WContext* s2w, const std::string& filename, std::istream& file) {
+  return std::vector<std::string>();
+}
+};
+
+template <typename Info> struct GetSubsongs<Info, decltype((void) Info::getSubsongs, 0)> {
+static std::vector<std::string> getSubsongsImpl(S2WContext* s2w, const std::string& filename, std::istream& file) {
+  file.seekg(0);
+  return Info::getSubsongs(s2w, filename, file);
+}
 };
 
 template <typename PluginInfo>
@@ -121,6 +137,8 @@ public:
 
   SynthContext* prepare(const std::string& filename, std::istream& file) { file.seekg(0); return Info::prepare(s2w, filename, file); }
   void release() { Info::release(); }
+
+  std::vector<std::string> getSubsongs(const std::string& filename, std::istream& file) const { return GetSubsongs<Info>::getSubsongsImpl(s2w, filename, file); }
 
 protected:
   TagMap getTagsBase(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::readTags(s2w, filename, file); }

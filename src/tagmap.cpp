@@ -1,5 +1,6 @@
 #include "tagmap.h"
 #include "utility.h"
+#include <string_view>
 #include <sstream>
 #include <cctype>
 
@@ -242,6 +243,22 @@ int TagsM3U::findTrack(const std::string& trackName) const
     }
   }
   return -1;
+}
+
+std::vector<int> TagsM3U::findTracksByPrefix(const std::string& prefix) const
+{
+  std::vector<int> result;
+  int prefixLength = prefix.size();
+  for (int i = 0; i < tracks.size(); i++) {
+    const std::string& name = tracks[i];
+    if (name.size() < prefixLength) {
+      continue;
+    }
+    if (std::string_view(name.c_str(), prefixLength) == prefix) {
+      result.push_back(i);
+    }
+  }
+  return result;
 }
 
 const TagMap& TagsM3U::allTags(int trackIndex) const

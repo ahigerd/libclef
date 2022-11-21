@@ -32,6 +32,7 @@ private slots:
   void about();
   void unlockWork();
   void onLoadError(const QString& filename, const QString& msg);
+  void openSubsong(const QString& filename);
 
 private:
   bool lockWork();

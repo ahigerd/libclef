@@ -17,6 +17,8 @@ Q_OBJECT
 public:
   PlayerControls(QWidget* parent = nullptr);
 
+  bool isPlaying() const;
+
 protected:
   void showEvent(QShowEvent*);
   void resizeEvent(QResizeEvent*);

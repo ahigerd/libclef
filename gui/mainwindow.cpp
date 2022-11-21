@@ -51,6 +51,7 @@ MainWindow::MainWindow(S2WPluginBase* plugin)
   QVBoxLayout* layout = new QVBoxLayout(central);
 
   tagView = new TagView(central);
+  QObject::connect(tagView, SIGNAL(loadSubsong(QString)), this, SLOT(openSubsong(QString)));
   layout->addWidget(tagView);
 
   controls = new PlayerControls(central);
@@ -101,9 +102,17 @@ void MainWindow::openFile(const QString& path, bool doAcquire, bool autoPlay)
   std::string stdFilename = parts[0].toStdString();
   tagView->loadTags(
     m_plugin,
+    QDir(path).dirName(),
     stdFilename,
-    QDir(path).dirName()
+    stdPath
   );
+  if (parts.size() == 1) {
+    QString subsong = tagView->autoSubsong();
+    if (!subsong.isEmpty() && subsong != path) {
+      openFile(subsong, false, autoPlay);
+      return;
+    }
+  }
   QThread* thread = qThreadCreate([this, stdPath, stdFilename]{
     try {
       auto stream = m_plugin->context()->openFile(stdFilename);
@@ -188,4 +197,9 @@ void MainWindow::createPluginWidget()
     layout->addWidget(pluginWidget);
     QObject::connect(this, SIGNAL(contextUpdated(SynthContext*)), pluginWidget, SLOT(contextUpdated(SynthContext*)));
   }
+}
+
+void MainWindow::openSubsong(const QString& filename)
+{
+  openFile(filename, controls->isPlaying());
 }

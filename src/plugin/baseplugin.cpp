@@ -30,6 +30,37 @@ TagMap TagsM3UMixin::readTags(S2WContext* s2w, const std::string& filename)
   return TagMap();
 }
 
+std::vector<std::string> TagsM3UMixin::getSubsongs(S2WContext* s2w, const std::string& filename, std::istream& file)
+{
+  std::string m3uPath = TagsM3U::relativeTo(filename);
+  int slashPos = filename.find_last_of(PATH_CHARS);
+  int qPos = filename.find('?');
+  std::string baseName = filename.substr(slashPos + 1, qPos - slashPos - 1);
+  std::vector<std::string> result;
+  try {
+    auto m3uStream(s2w->openFile(m3uPath));
+    if (*m3uStream) {
+      TagsM3U m3u(*m3uStream);
+      std::vector<int> trackIds = m3u.findTracksByPrefix(baseName);
+      if (trackIds.size() < 2) {
+        return result;
+      }
+      int slashPos = m3uPath.find_last_of(PATH_CHARS);
+      std::string relative;
+      if (slashPos != std::string::npos) {
+        relative = m3uPath.substr(0, slashPos + 1);
+      }
+      for (int trackId : trackIds) {
+        result.push_back(relative + m3u.trackName(trackId));
+      }
+    }
+  } catch (...) {
+    // no entry for filename in !tags.m3u or title tag does not exist
+    std::cerr << "error" << std::endl;
+  }
+  return result;
+}
+
 S2WPluginBase::S2WPluginBase(S2WContext* s2w) : s2w(s2w), ctx(nullptr)
 {
   // initializers only

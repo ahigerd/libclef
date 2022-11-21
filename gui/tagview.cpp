@@ -2,10 +2,11 @@
 #include "plugin/baseplugin.h"
 #include <QFormLayout>
 #include <QLabel>
+#include <QComboBox>
 #include <QtDebug>
 
 TagView::TagView(QWidget* parent)
-: QGroupBox(parent)
+: QGroupBox(parent), subsong(nullptr)
 {
   tagOrder << "title" << "artist" << "album" << "albumartist";
 
@@ -13,23 +14,41 @@ TagView::TagView(QWidget* parent)
   clearTags();
 }
 
-void TagView::loadTags(S2WPluginBase* plugin, const std::string& fullPath, const QString& filename)
+void TagView::loadTags(S2WPluginBase* plugin, const QString& filename, const std::string& stdFilename, const std::string& stdPath)
 {
   clearTags();
   setTitle(filename);
 
-  auto stream = plugin->context()->openFile(fullPath);
+  auto stream = plugin->context()->openFile(stdFilename);
   stream->clear();
-  stream->seekg(0, std::ios::beg);
-  int sampleRate = plugin->sampleRate(fullPath, *stream);
+  int sampleRate = plugin->sampleRate(stdPath, *stream);
 
   stream->clear();
-  stream->seekg(0, std::ios::beg);
-  double duration = plugin->length(fullPath, *stream);
+  double duration = plugin->length(stdPath, *stream);
 
   stream->clear();
-  stream->seekg(0, std::ios::beg);
-  TagMap tags = plugin->getTags(fullPath, *stream);
+  TagMap tags = plugin->getTags(stdPath, *stream);
+
+  stream->clear();
+  std::vector<std::string> subsongs = plugin->getSubsongs(stdPath, *stream);
+  if (subsongs.size() > 0) {
+    subsong = new QComboBox(this);
+    layout->addRow(tr("&Subsong:"), subsong);
+    int target = -1;
+    for (const std::string& s : subsongs) {
+      auto subFile = plugin->context()->openFile(s);
+      if (!subFile) {
+        continue;
+      }
+      TagMap subTags = plugin->getTags(s, *subFile.get());
+      if (s == stdPath) {
+        target = subsong->count();
+      }
+      subsong->addItem(QString::fromStdString(subTags["title"]), QString::fromStdString(s));
+    }
+    subsong->setCurrentIndex(target);
+    QObject::connect(subsong, SIGNAL(currentIndexChanged(int)), this, SLOT(subsongSelected(int)), Qt::QueuedConnection);
+  }
 
   int channels = plugin->channels();
   int minutes = duration / 60;
@@ -62,8 +81,25 @@ void TagView::loadTags(S2WPluginBase* plugin, const std::string& fullPath, const
 
 void TagView::clearTags()
 {
+  if (subsong) {
+    subsong->deleteLater();
+    subsong = nullptr;
+  }
   while (layout->rowCount()) {
     layout->removeRow(layout->rowCount() - 1);
   }
   setTitle(tr("(No File Loaded)"));
+}
+
+void TagView::subsongSelected(int index)
+{
+  emit loadSubsong(subsong->itemData(index).toString());
+}
+
+QString TagView::autoSubsong() const
+{
+  if (!subsong || subsong->currentIndex() >= 0) {
+    return QString();
+  }
+  return subsong->itemData(0).toString();
 }
