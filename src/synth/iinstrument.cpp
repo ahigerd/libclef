@@ -9,11 +9,10 @@
 
 void IInstrument::channelEvent(Channel* channel, std::shared_ptr<ChannelEvent> event)
 {
-  // TODO: queuing
   // TODO: more types
   auto target = channel->param(event->param);
   if (target) {
-    target->setConstant(event->value);
+    target->setValueAt(event->timestamp, event->value);
   }
 }
 

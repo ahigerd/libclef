@@ -15,6 +15,7 @@ public:
 
   double valueAt(double time) const;
   void setConstant(double value);
+  void setValueAt(double time, double value);
   void connect(std::shared_ptr<AudioNode> source, double scale = 1/8192.0, double offset = 0);
   void connect(std::shared_ptr<AudioParam> source, double scale = 1.0, double offset = 0);
 

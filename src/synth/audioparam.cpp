@@ -1,5 +1,6 @@
 #include "audioparam.h"
 #include "audionode.h"
+#include "automationnode.h"
 
 AudioParam::AudioParam(const SynthContext* ctx, double initialValue) : ctx(ctx), scale(1.0)
 {
@@ -34,6 +35,16 @@ void AudioParam::setConstant(double value)
   sourceNode = nullptr;
   sourceParam = nullptr;
   constant = value;
+}
+
+void AudioParam::setValueAt(double time, double value)
+{
+  auto automation = std::dynamic_pointer_cast<AutomationNode>(sourceNode);
+  if (!automation) {
+    sourceNode = std::shared_ptr<AudioNode>(new AutomationNode(ctx, valueAt(time)));
+    automation = std::dynamic_pointer_cast<AutomationNode>(sourceNode);
+  }
+  automation->setValueAt(time, value);
 }
 
 void AudioParam::connect(std::shared_ptr<AudioNode> source, double scale, double offset)
