@@ -66,20 +66,26 @@ S2WPluginBase::S2WPluginBase(S2WContext* s2w) : s2w(s2w), ctx(nullptr)
   // initializers only
 }
 
+std::string toLower(const std::string& str)
+{
+  std::string result(str);
+  for (char& ch : result) {
+    if (ch >= 'A' && ch <= 'Z') {
+      ch += ('a' - 'A');
+    }
+  }
+  return str;
+}
+
 bool S2WPluginBase::matchExtension(const std::string& filename) const
 {
   int dotPos = filename.rfind('.');
   if (dotPos == std::string::npos) {
     return false;
   }
-  std::string ext = filename.substr(dotPos + 1);
-  for (char& ch : ext) {
-    if (ch >= 'A' && ch <= 'Z') {
-      ch += ('a' - 'A');
-    }
-  }
+  std::string ext = toLower(filename.substr(dotPos + 1));
   for (const auto& iter : extensions()) {
-    if (ext == iter.first) {
+    if (ext == toLower(iter.first)) {
       return true;
     }
   }

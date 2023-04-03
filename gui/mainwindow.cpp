@@ -120,11 +120,14 @@ void MainWindow::openFile(const QString& path, bool doAcquire, bool autoPlay)
   currentFile = path;
   if (ctx) {
     m_plugin->unload();
+    ctx = nullptr;
   }
   {
     auto stream = m_plugin->context()->openFile(stdFilename);
     if (!m_plugin->isPlayable(stdFilename, *stream)) {
       // TODO: error
+      m_plugin->unload();
+      ctx = nullptr;
       unlockWork();
       return;
     }

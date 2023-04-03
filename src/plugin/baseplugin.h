@@ -120,7 +120,7 @@ public:
     static std::string message = Info::about + seq2wavCopyright();
     return message;
   }
-  bool isPlayable(const std::string& filename, std::istream& file) const {
+  virtual bool isPlayable(const std::string& filename, std::istream& file) const {
     try {
       if (!matchExtension(filename)) {
         return false;
