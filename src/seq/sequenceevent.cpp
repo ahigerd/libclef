@@ -5,6 +5,12 @@
 
 static std::atomic_uint64_t _nextPlaybackID = 1;
 
+SequenceEvent::SequenceEvent()
+: timestamp(0)
+{
+  // initializers only
+}
+
 bool SequenceEvent::isNoteEvent() const
 {
   return false;

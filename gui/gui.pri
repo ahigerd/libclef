@@ -36,6 +36,7 @@ isEmpty(BUILD_DEBUG) {
   PRE_TARGETDEPS += $$BUILDPATH/lib$${PLUGIN_NAME}_d.a $$S2WBUILDPATH/libseq2wav_d.a
 }
 QT = core gui widgets multimedia
+CONFIG += c++17
 QMAKE_CXXFLAGS += -std=c++17 -Wno-multichar
 DEFINES -= QT_DEPRECATED_WARNINGS
 DEFINES += QT_NO_DEPRECATED_WARNINGS

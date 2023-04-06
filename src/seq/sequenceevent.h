@@ -8,6 +8,7 @@
 
 class SequenceEvent {
 public:
+  SequenceEvent();
   virtual ~SequenceEvent() {}
 
   enum EventTypes {

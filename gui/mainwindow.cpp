@@ -252,7 +252,7 @@ void MainWindow::exportFile()
   }
   controls->stop();
   emit exportStarted();
-  QThread* thread = QThread::create([this, riff]{
+  QThread* thread = qThreadCreate([this, riff]{
     try {
       ctx->save(riff);
     } catch (...) {
