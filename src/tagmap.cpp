@@ -1,8 +1,12 @@
 #include "tagmap.h"
 #include "utility.h"
-#include <string_view>
 #include <sstream>
 #include <cctype>
+#if __cplusplus >= 201703L
+#include <string_view>
+#else
+#define string_view string
+#endif
 
 static TagMap m3uKeys = {
   { "ALB", "ALBUM" },
