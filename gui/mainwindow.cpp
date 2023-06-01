@@ -34,6 +34,12 @@ MainWindow::MainWindow(S2WPluginBase* plugin)
 {
   setWindowTitle(QString::fromStdString(plugin->pluginName()));
 
+  QObject::connect(this, SIGNAL(loadError(QString,QString)), this, SLOT(onLoadError(QString,QString)), Qt::QueuedConnection);
+  QTimer::singleShot(0, this, SLOT(initUI()));
+}
+
+void MainWindow::initUI()
+{
   QMenuBar* mb = new QMenuBar(this);
   setMenuBar(mb);
 
@@ -41,10 +47,19 @@ MainWindow::MainWindow(S2WPluginBase* plugin)
   lockWhileWorking(fileMenu->addAction(tr("&Open..."), this, SLOT(openFile()), QKeySequence("Ctrl+O")));
   lockWhileWorking(fileMenu->addAction(tr("&Export..."), this, SLOT(exportFile())));
   fileMenu->addSeparator();
+  int before = fileMenu->actions().length();
+  populateFileMenu(fileMenu);
+  if (fileMenu->actions().length() != before) {
+    fileMenu->addSeparator();
+  }
   fileMenu->addAction(tr("E&xit"), qApp, SLOT(quit()));
   mb->addMenu(fileMenu);
 
   QMenu* helpMenu = new QMenu(tr("&Help"), mb);
+  populateHelpMenu(helpMenu);
+  if (helpMenu->actions().length()) {
+    helpMenu->addSeparator();
+  }
   helpMenu->addAction(tr("&About..."), this, SLOT(about()));
   helpMenu->addAction(tr("About &Qt..."), qApp, SLOT(aboutQt()));
   mb->addMenu(helpMenu);
@@ -63,8 +78,6 @@ MainWindow::MainWindow(S2WPluginBase* plugin)
   lockWhileWorking(controls);
 
   setCentralWidget(central);
-
-  QObject::connect(this, SIGNAL(loadError(QString,QString)), this, SLOT(onLoadError(QString,QString)), Qt::QueuedConnection);
   QTimer::singleShot(0, this, SLOT(createPluginWidget()));
 }
 
@@ -201,6 +214,16 @@ void MainWindow::lockWhileWorking(QWidget* widget)
 void MainWindow::lockWhileWorking(QAction* action)
 {
   lockActions << action;
+}
+
+void MainWindow::populateFileMenu(QMenu*)
+{
+  // no-op
+}
+
+void MainWindow::populateHelpMenu(QMenu*)
+{
+  // no-op
 }
 
 QWidget* MainWindow::createPluginWidget(QWidget*)

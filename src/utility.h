@@ -36,20 +36,20 @@ inline T lerp(T left, T right, double time, double t0, double t1)
 }
 
 template <typename T, typename Container>
-T parseInt(const Container& buffer, int offset)
+T parseInt(const Container& buffer, size_t offset)
 {
   uint64_t result = 0;
-  for (int i = sizeof(T) - 1; i >= 0; --i) {
+  for (ssize_t i = sizeof(T) - 1; i >= 0; --i) {
     result = (result << 8) | uint8_t(buffer[offset + i]);
   }
   return T(result);
 }
 
 template <typename T, typename Container>
-T parseIntBE(const Container& buffer, int offset)
+T parseIntBE(const Container& buffer, size_t offset)
 {
   uint64_t result = 0;
-  for (int i = 0; i < sizeof(T); i++) {
+  for (ssize_t i = 0; i < ssize_t(sizeof(T)); i++) {
     result = (result << 8) | uint8_t(buffer[offset + i]);
   }
   return T(result);

@@ -19,6 +19,8 @@ public:
 
 protected:
   virtual QWidget* createPluginWidget(QWidget* parent);
+  virtual void populateFileMenu(QMenu* fileMenu);
+  virtual void populateHelpMenu(QMenu* helpMenu);
   void lockWhileWorking(QWidget* widget);
   void lockWhileWorking(QAction* action);
 
@@ -27,6 +29,7 @@ signals:
   void loadError(const QString& filename, const QString& msg);
 
 private slots:
+  void initUI();
   void createPluginWidget();
   void openFile();
   void exportFile();
