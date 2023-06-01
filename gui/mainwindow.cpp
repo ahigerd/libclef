@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "guiutils.h"
 #include "tagview.h"
 #include "playercontrols.h"
 #include "plugin/baseplugin.h"
@@ -11,23 +12,6 @@
 #include <QMenu>
 #include <QThread>
 #include <QTimer>
-#include <QtDebug>
-
-#if QT_CONFIG(cxx11_future)
-#define qThreadCreate QThread::create
-#else
-template <typename FN>
-class QThreadRunner : public QThread
-{
-public:
-  QThreadRunner(FN fn) : QThread(nullptr), fn(fn) {}
-
-  void run() { fn(); }
-
-  FN fn;
-};
-#define qThreadCreate new QThreadRunner
-#endif
 
 MainWindow::MainWindow(S2WPluginBase* plugin)
 : QMainWindow(nullptr), m_plugin(plugin), m_autoPlay(false)
