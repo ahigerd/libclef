@@ -19,7 +19,7 @@ public:
 private:
   OpenFn openFn;
 
-  friend class SampleData;
+  friend struct SampleData;
   std::unordered_map<uint64_t, std::unique_ptr<SampleData>> sampleCache;
   uint64_t lastSampleID;
   uint64_t nextSampleID();

@@ -4,7 +4,7 @@
 #include "s2wconfig.h"
 #include <vector>
 #include <cstdint>
-class SampleData;
+struct SampleData;
 
 class IInterpolator
 {

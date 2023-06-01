@@ -4,7 +4,7 @@
 #include <memory>
 #include "channel.h"
 class SequenceEvent;
-class BaseNoteEvent;
+struct BaseNoteEvent;
 class ChannelEvent;
 class ModulatorEvent;
 class AudioNode;

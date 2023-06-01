@@ -11,7 +11,7 @@
 class SynthContext;
 class ITrack;
 class SequenceEvent;
-class BaseNoteEvent;
+struct BaseNoteEvent;
 class IInstrument;
 
 class Channel : public AudioParamContainer {
@@ -27,7 +27,8 @@ public:
   uint32_t fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples = -1);
   bool isFinished() const;
 
-  struct Note {
+  class Note {
+  public:
     Note();
     Note(std::shared_ptr<BaseNoteEvent> event, AudioNode* source, double duration);
     Note(std::shared_ptr<BaseNoteEvent> event, std::shared_ptr<AudioNode> source, double duration);
