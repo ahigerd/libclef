@@ -14,7 +14,7 @@
 #include <QTimer>
 
 MainWindow::MainWindow(S2WPluginBase* plugin)
-: QMainWindow(nullptr), m_plugin(plugin), m_autoPlay(false)
+: QMainWindow(nullptr), m_plugin(plugin), ctx(nullptr), controls(nullptr), m_autoPlay(false)
 {
   setWindowTitle(QString::fromStdString(plugin->pluginName()));
 
@@ -88,8 +88,13 @@ void MainWindow::openFile()
 
 void MainWindow::openFile(const QString& path, bool autoPlay)
 {
-  QDir qtPath(path);
-  openFile(qtPath.absolutePath(), true, autoPlay);
+  if (!controls) {
+    // UI hasn't loaded yet
+    queuedLoad = path;
+  } else {
+    QDir qtPath(path);
+    openFile(qtPath.absolutePath(), true, autoPlay);
+  }
 }
 
 void MainWindow::openFile(const QString& path, bool doAcquire, bool autoPlay)
@@ -222,6 +227,10 @@ void MainWindow::createPluginWidget()
     QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(centralWidget()->layout());
     layout->addWidget(pluginWidget);
     QObject::connect(this, SIGNAL(contextUpdated(SynthContext*)), pluginWidget, SLOT(contextUpdated(SynthContext*)));
+  }
+  if (!queuedLoad.isEmpty()) {
+    openFile(queuedLoad, true);
+    queuedLoad.clear();
   }
 }
 

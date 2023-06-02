@@ -54,6 +54,7 @@ private:
   TagView* tagView;
   QAtomicInteger<bool> busy;
   QString currentFile;
+  QString queuedLoad;
   bool m_autoPlay;
 
   QList<QPointer<QWidget>> lockWidgets;
