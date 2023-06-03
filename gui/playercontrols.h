@@ -20,6 +20,9 @@ public:
 
   bool isPlaying() const;
 
+signals:
+  void bufferUpdated();
+
 protected:
   void showEvent(QShowEvent*);
   void resizeEvent(QResizeEvent*);

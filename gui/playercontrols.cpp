@@ -57,7 +57,6 @@ PlayerControls::PlayerControls(QWidget* parent)
   QObject::connect(&exportTimer, SIGNAL(timeout()), this, SLOT(updateState()));
 }
 
-#include <QtDebug>
 void PlayerControls::setContext(SynthContext* context)
 {
   ctx = context;
@@ -252,6 +251,7 @@ void PlayerControls::copyBuffer()
   }
   updateState();
   starting = false;
+  emit bufferUpdated();
 }
 
 int PlayerControls::fillBuffer()

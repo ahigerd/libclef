@@ -22,6 +22,7 @@ public:
 
   AudioParam* gain;
   AudioParam* pan;
+  bool mute;
 
   void seek(double timestamp);
   uint32_t fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples = -1);

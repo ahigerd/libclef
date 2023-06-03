@@ -25,7 +25,7 @@ Channel::Note::Note(std::shared_ptr<BaseNoteEvent> event, std::shared_ptr<AudioN
 }
 
 Channel::Channel(const SynthContext* ctx, ITrack* track)
-: AudioParamContainer(ctx), track(track), nextEvent(nullptr)
+: AudioParamContainer(ctx), mute(false), track(track), nextEvent(nullptr)
 {
   instrument = ctx->defaultInstrument();
   gain = addParam(AudioNode::Gain, 1.0).get();
@@ -123,7 +123,9 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
       for (uint64_t id : toErase) {
         notes.erase(id);
       }
-      buffer[pos] = sample * gain->valueAt(timestamp) * panValue;
+      if (!mute) {
+        buffer[pos] = sample * gain->valueAt(timestamp) * panValue;
+      }
       panValue = 1 - panValue;
       ++pos;
     }

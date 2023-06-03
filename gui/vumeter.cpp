@@ -5,7 +5,7 @@
 #include <QLinearGradient>
 
 VUMeter::VUMeter(QWidget* parent)
-: QWidget(parent)
+: QWidget(parent), scale(QAudio::LogarithmicVolumeScale)
 {
   QPalette p = palette();
   p.setBrush(QPalette::Window, Qt::black);
@@ -21,10 +21,15 @@ void VUMeter::setChannels(int channels)
   levels.resize(channels);
 }
 
+void VUMeter::setScaleMode(QAudio::VolumeScale scale)
+{
+  this->scale = scale;
+}
+
 void VUMeter::setLevel(int channel, double level)
 {
   if (channel < levels.size()) {
-    level = QAudio::convertVolume(level, QAudio::LinearVolumeScale, QAudio::LogarithmicVolumeScale);
+    level = QAudio::convertVolume(level, QAudio::LinearVolumeScale, scale);
     if (level != levels[channel]) {
       levels[channel] = level;
       update();

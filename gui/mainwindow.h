@@ -27,6 +27,7 @@ protected:
 signals:
   void contextUpdated(SynthContext* ctx);
   void loadError(const QString& filename, const QString& msg);
+  void exportStarted();
 
 private slots:
   void initUI();
@@ -37,9 +38,6 @@ private slots:
   void unlockWork();
   void onLoadError(const QString& filename, const QString& msg);
   void openSubsong(const QString& filename);
-
-signals:
-  void exportStarted();
 
 private:
   bool lockWork();

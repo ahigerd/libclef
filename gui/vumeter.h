@@ -4,12 +4,15 @@
 #include <QWidget>
 #include <QVector>
 #include <QBrush>
+#include <QAudio>
 
 class VUMeter : public QWidget
 {
 Q_OBJECT
 public:
   VUMeter(QWidget* parent = nullptr);
+
+  void setScaleMode(QAudio::VolumeScale scale);
 
 public slots:
   void setChannels(int channels);
@@ -22,6 +25,7 @@ protected:
 private:
   QVector<double> levels;
   QBrush gradient;
+  QAudio::VolumeScale scale;
 };
 
 #endif
