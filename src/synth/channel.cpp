@@ -123,9 +123,7 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
       for (uint64_t id : toErase) {
         notes.erase(id);
       }
-      if (!mute) {
-        buffer[pos] = sample * gain->valueAt(timestamp) * panValue;
-      }
+      buffer[pos] = mute ? 0 : (sample * gain->valueAt(timestamp) * panValue);
       panValue = 1 - panValue;
       ++pos;
     }
