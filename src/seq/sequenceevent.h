@@ -160,6 +160,7 @@ public:
 class ModulatorEvent : public BaseEvent<ModulatorEvent, SequenceEvent::Modulator> {
 public:
   ModulatorEvent(uint64_t playbackID, int32_t param, double value);
+  ModulatorEvent(int32_t param, double value);
 
   uint64_t playbackID;
   int32_t param;

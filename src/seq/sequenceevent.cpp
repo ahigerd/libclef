@@ -110,6 +110,12 @@ ModulatorEvent::ModulatorEvent(uint64_t playbackID, int32_t param, double value)
   // initializers only
 }
 
+ModulatorEvent::ModulatorEvent(int32_t param, double value)
+: playbackID(0), param(param), value(value)
+{
+  // initializers only
+}
+
 KillEvent::KillEvent(uint64_t playbackID, double timestamp)
 : playbackID(playbackID), immediate(false)
 {

@@ -39,9 +39,11 @@ public:
   IInstrument* getInstrument(uint64_t id) const;
   IInstrument* defaultInstrument() const;
 
-private:
-  std::unordered_map<uint64_t, std::unique_ptr<IInstrument>> instruments;
+protected:
   std::unique_ptr<IInstrument> defaultInst;
+  std::unordered_map<uint64_t, std::unique_ptr<IInstrument>> instruments;
+
+private:
   std::vector<int16_t> mixBuffer;
   double currentTimestamp, maximumTimestamp;
   S2WContext* ctx;

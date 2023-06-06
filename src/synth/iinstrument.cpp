@@ -18,11 +18,20 @@ void IInstrument::channelEvent(Channel* channel, std::shared_ptr<ChannelEvent> e
 
 void IInstrument::modulatorEvent(Channel* channel, std::shared_ptr<ModulatorEvent> event)
 {
-  auto noteIter = channel->notes.find(event->playbackID);
-  if (noteIter != channel->notes.end()) {
-    auto param = noteIter->second->source->param(event->param);
-    if (param) {
-      param->setConstant(event->value);
+  if (event->playbackID) {
+    auto noteIter = channel->notes.find(event->playbackID);
+    if (noteIter != channel->notes.end()) {
+      auto param = noteIter->second->source->param(event->param);
+      if (param) {
+        param->setConstant(event->value);
+      }
+    }
+  } else {
+    for (auto& pair : channel->notes) {
+      auto param = pair.second->source->param(event->param);
+      if (param) {
+        param->setConstant(event->value);
+      }
     }
   }
 }
