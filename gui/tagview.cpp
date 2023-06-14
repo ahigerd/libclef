@@ -46,7 +46,11 @@ void TagView::loadTags(S2WPluginBase* plugin, const QString& filename, const std
       if (s == stdPath) {
         target = subsong->count();
       }
-      subsong->addItem(QString::fromStdString(subTags["title"]), QString::fromStdString(s));
+      QString title = QString::fromStdString(subTags["title"]);
+      if (title.isEmpty()) {
+        title = QString::fromStdString(s).section('?', -1);
+      }
+      subsong->addItem(title, QString::fromStdString(s));
     }
     subsong->setCurrentIndex(target);
     QObject::connect(subsong, SIGNAL(currentIndexChanged(int)), this, SLOT(subsongSelected(int)), Qt::QueuedConnection);
