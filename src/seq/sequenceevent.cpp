@@ -27,7 +27,8 @@ inline uint64_t BaseNoteEvent::nextPlaybackID()
 }
 
 BaseNoteEvent::BaseNoteEvent()
-: playbackID(nextPlaybackID()), duration(-1), volume(1.0), pan(0.5), useEnvelope(false), expAttack(false), expDecay(false)
+: playbackID(nextPlaybackID()), duration(-1), volume(1.0), pan(0.5), useEnvelope(false),
+  expAttack(false), expDecay(false), attack(0), hold(0), decay(0), sustain(1), fade(HUGE_VAL), release(0)
 {
   // initializers only
 }
