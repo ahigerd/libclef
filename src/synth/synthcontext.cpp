@@ -34,6 +34,14 @@ void SynthContext::addChannel(Channel* channel)
   channels.emplace_back(channel);
 }
 
+void SynthContext::setSampleRate(double newRate)
+{
+  double* sr = const_cast<double*>(&sampleRate);
+  double* st = const_cast<double*>(&sampleTime);
+  *sr = newRate;
+  *st = 1.0 / newRate;
+}
+
 void SynthContext::addChannel(ITrack* track)
 {
   addChannel(new Channel(this, track));
@@ -77,6 +85,21 @@ size_t SynthContext::fillBuffer(uint8_t* buffer, size_t length)
   }
   currentTimestamp += written * sampleTime / (2 * outputChannels);
   return written;
+}
+
+void SynthContext::fillBuffers(float* buffers[], size_t numSamples)
+{
+  if (mixBuffer.size() < numSamples) {
+    mixBuffer.resize(numSamples);
+  }
+  int numChannels = channels.size();
+  for (int ch = 0; ch < numChannels; ch++) {
+    uint32_t written = channels[ch]->fillBuffer(mixBuffer, numSamples);
+    for (int i = 0; i < numSamples; i++) {
+      buffers[ch][i] = i < written ? mixBuffer[i] / 32768.0f : 0;
+    }
+  }
+  currentTimestamp += numSamples * sampleTime / (2 * outputChannels);
 }
 
 void SynthContext::stream(std::ostream& output)

@@ -22,6 +22,9 @@ public:
   const double sampleRate;
   const double sampleTime;
   const int outputChannels;
+
+  void setSampleRate(double newRate);
+
   std::vector<std::unique_ptr<Channel>> channels;
   IInterpolator* interpolator;
 
@@ -32,6 +35,7 @@ public:
   double maximumTime() const;
   void seek(double timestamp);
   size_t fillBuffer(uint8_t* buffer, size_t length);
+  void fillBuffers(float* buffers[], size_t numSamples);
   void stream(std::ostream& output);
   void save(RiffWriter* riff);
 

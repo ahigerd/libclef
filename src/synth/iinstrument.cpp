@@ -7,6 +7,16 @@
 #include "seq/sequenceevent.h"
 #include <iostream>
 
+std::vector<int32_t> IInstrument::supportedChannelParams() const
+{
+  return { AudioNode::Gain, AudioNode::Pan };
+}
+
+std::vector<int32_t> IInstrument::supportedNoteParams() const
+{
+  return { AudioNode::Gain, AudioNode::Pan };
+}
+
 void IInstrument::channelEvent(Channel* channel, std::shared_ptr<ChannelEvent> event)
 {
   // TODO: more types

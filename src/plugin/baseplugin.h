@@ -11,12 +11,19 @@
 #include "tagmap.h"
 #include "s2wcontext.h"
 #include "synth/synthcontext.h"
+class S2WPluginInfo;
 
 using ConstPairList = const std::vector<std::pair<std::string, std::string>>;
 
+#ifdef BUILD_CLAP
+# define S2WPLUGIN_BANK_EXT static ConstPairList bankExtensions;
+#else
+# define S2WPLUGIN_BANK_EXT
+#endif
+
 #define S2WPLUGIN_STATIC_FIELDS \
-  static const std::string version, pluginName, pluginShortName, about; \
-  static ConstPairList extensions;
+  static const std::string version, pluginName, pluginShortName, about, author, url; \
+  static ConstPairList extensions; S2WPLUGIN_BANK_EXT
 
 struct TagsM3UMixin {
   static TagMap readTags(S2WContext* s2w, const std::string& filename);
@@ -151,6 +158,8 @@ protected:
 #include "plugin/winampplugin.h"
 #elif defined(BUILD_FOOBAR)
 #include "plugin/foobarplugin.h"
+#elif defined(BUILD_CLAP)
+#include "plugin/clapplugin.h"
 #else
 namespace S2W {
   S2WPluginBase* makePlugin(S2WContext* ctx);

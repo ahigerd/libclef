@@ -2,7 +2,13 @@
 #include "codec/sampledata.h"
 
 S2WContext::S2WContext(const OpenFn& openFile)
-: pluginData(nullptr), openFn(openFile), lastSampleID(0)
+: S2WContext(false, openFile)
+{
+  // forwarded constructor only
+}
+
+S2WContext::S2WContext(bool isDawPlugin, const OpenFn& openFile)
+: pluginData(nullptr), isDawPlugin(isDawPlugin), openFn(openFile), lastSampleID(0)
 {
   // initializers only
 }

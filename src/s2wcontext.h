@@ -8,6 +8,7 @@
 class S2WContext {
 public:
   S2WContext(const OpenFn& openFile = openFstream);
+  S2WContext(bool isDawPlugin, const OpenFn& openFile = openFstream);
 
   std::unique_ptr<std::istream> openFile(const std::string& path) const;
 
@@ -15,6 +16,8 @@ public:
   void purgeSamples();
 
   void* pluginData;
+
+  const bool isDawPlugin;
 
 private:
   OpenFn openFn;
