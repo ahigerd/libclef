@@ -40,11 +40,14 @@ public:
   void save(RiffWriter* riff);
 
   void registerInstrument(uint64_t id, std::unique_ptr<IInstrument>&& inst);
+  int numInstruments() const;
+  uint64_t instrumentID(int index) const;
   IInstrument* getInstrument(uint64_t id) const;
   IInstrument* defaultInstrument() const;
 
 protected:
   std::unique_ptr<IInstrument> defaultInst;
+  std::vector<uint64_t> instrumentIDs;
   std::unordered_map<uint64_t, std::unique_ptr<IInstrument>> instruments;
 
 private:

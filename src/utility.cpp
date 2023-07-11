@@ -137,3 +137,14 @@ double fastSin(double theta)
   pos = pos % tableSize;
   return lerp(table[pos], table[pos + 1], frac);
 }
+
+std::string fourccToString(uint32_t magic)
+{
+  char str[4] = {
+    char((magic >> 24) & 0xFF),
+    char((magic >> 16) & 0xFF),
+    char((magic >> 8) & 0xFF),
+    char((magic >> 0) & 0xFF),
+  };
+  return std::string(str, 4);
+}

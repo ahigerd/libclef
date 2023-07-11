@@ -124,6 +124,9 @@ void SynthContext::save(RiffWriter* riff)
 
 void SynthContext::registerInstrument(uint64_t id, std::unique_ptr<IInstrument>&& inst)
 {
+  if (!instruments.count(id)) {
+    instrumentIDs.push_back(id);
+  }
   instruments[id] = std::move(inst);
 }
 
@@ -139,4 +142,17 @@ IInstrument* SynthContext::getInstrument(uint64_t id) const
 IInstrument* SynthContext::defaultInstrument() const
 {
   return defaultInst.get();
+}
+
+int SynthContext::numInstruments() const
+{
+  return instrumentIDs.size();
+}
+
+uint64_t SynthContext::instrumentID(int index) const
+{
+  if (index < 0 || index >= instrumentIDs.size()) {
+    return 0xFFFFFFFFFFFFFFFFULL;
+  }
+  return instrumentIDs[index];
 }

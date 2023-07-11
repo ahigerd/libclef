@@ -5,6 +5,10 @@
 #include "plugin/baseplugin.h"
 #include "plugin/realtimetrack.h"
 #include <clap/clap.h>
+#include <atomic>
+#include <thread>
+#include <mutex>
+#include <unordered_set>
 #include <cstring>
 
 class S2WClapPluginBase
@@ -36,7 +40,16 @@ public:
   virtual uint32_t audioPortCount(bool isInput) const;
   virtual bool getAudioPort(uint32_t index, bool isInput, clap_audio_port_info_t& port) const;
 
+  virtual uint32_t paramCount() const;
+  virtual bool paramInfo(uint32_t index, clap_param_info_t& info) const;
+  virtual bool paramValue(clap_id id, double& value) const;
+  virtual bool paramValueText(clap_id id, double value, char* text, uint32_t size) const;
+  virtual bool paramTextValue(clap_id id, const char* text, double& value) const;
+  virtual void flushParams(const clap_input_events_t* inEvents, const clap_output_events_t* outEvents);
+
 protected:
+  void requestParamSync(bool rescanInfo = false);
+
   virtual SynthContext* createContext(S2WContext* ctx, const std::string& filename, std::istream& file) = 0;
   virtual BaseNoteEvent* createNoteEvent(const clap_event_note_t* event);
 
@@ -49,9 +62,14 @@ protected:
   virtual void midiEvent(const clap_event_midi_t* event);
   virtual void sysexEvent(const clap_event_midi_sysex_t* event);
   virtual void midi2Event(const clap_event_midi2_t* event);
+  virtual IInstrument* selectInstrumentByIndex(uint32_t index);
+  virtual IInstrument* selectInstrumentByID(uint64_t id, bool force = false);
+  inline IInstrument* currentInstrument() const { return instrument; }
+  inline uint32_t currentInstrumentID() const { return currentInstID; }
 
   clap_plugin_note_ports_t notePorts;
   clap_plugin_audio_ports_t audioPorts;
+  clap_plugin_params_t paramsExtension;
 
   double eventTimestamp(const clap_event_header_t* event) const;
 
@@ -59,9 +77,19 @@ protected:
   inline double eventTimestamp(const EVENT* event) const
   { return eventTimestamp(&event->header); }
 
+  mutable std::mutex synthMutex;
+
 private:
-  int64_t steadyTime;
   std::unordered_map<uint32_t, uint32_t> nextPlaybackIDs;
+  uint64_t currentInstID;
+  IInstrument* instrument;
+  std::string filePath;
+  std::vector<uint32_t> paramOrder;
+  std::unordered_set<uint32_t> chanParams;
+  std::unordered_set<uint32_t> noteParams;
+  const clap_host_params_t* hostParams;
+  std::thread::id mainThreadID;
+  std::atomic<bool> mustRescanInfo, queueRescanValues;
 };
 
 template <typename S2WPluginInfo>

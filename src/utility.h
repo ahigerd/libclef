@@ -70,5 +70,6 @@ std::wstring toUtf16(const std::string& str);
 std::string toUtf8(const std::wstring& str);
 std::string formatDuration(double seconds);
 std::string formatDuration(const std::string& seconds);
+std::string fourccToString(uint32_t magic);
 
 #endif
