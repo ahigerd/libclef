@@ -1,16 +1,26 @@
 #include "audionode.h"
 #include "synthcontext.h"
 
-AudioNode::AudioNode(const SynthContext* ctx) : AudioParamContainer(ctx)
+AudioNode::AudioNode(const SynthContext* ctx)
+: AudioParamContainer(ctx), pGain(nullptr), pPan(nullptr)
 {
   // initializers only
 }
 
+void AudioNode::onParamAdded(int32_t key, std::shared_ptr<AudioParam>& param)
+{
+  if (key == Gain) {
+    pGain = &param;
+  } else if (key == Pan) {
+    pPan = &param;
+  }
+}
+
 int16_t AudioNode::getSample(double time, int channel)
 {
-  double scale = paramValue(Gain, time, 1.0);
+  double scale = (pGain && *pGain) ? (*pGain)->valueAt(time) : 1.0;
   if (ctx->outputChannels > 1) {
-    double pan = paramValue(Pan, time, 0.5);
+    double pan = (pPan && *pPan) ? (*pPan)->valueAt(time) : 0.5;
     scale *= ((channel % 2) ? pan : (1 - pan));
   }
   return scale ? generateSample(time, channel) * scale : 0;

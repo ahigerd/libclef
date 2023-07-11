@@ -116,26 +116,78 @@ double fastExp(double r, double dt)
   return table[idx] + interp[idx] * (idx - pos);
 }
 
+namespace {
+  struct SinTable {
+    enum { bits = 13, size = 1 << bits, mask = size - 1 };
+
+    double table[size];
+    double interp[size];
+
+    SinTable() {
+      static constexpr double unit = M_PI * 2 / size;
+      for (int i = 0; i < size; i++) {
+        table[i] = std::sin(i * unit);
+      }
+      for (int i = 0; i < size - 1; i++) {
+        interp[i] = table[i + 1] - table[i];
+      }
+      interp[size - 1] = -table[size - 1];
+    }
+
+    inline double operator[](int x) const {
+      return table[x];
+    }
+
+    inline double operator[](double x) const {
+      return table[int(x) & mask];
+    }
+
+    inline double interpolate(int x, double frac) const {
+      return table[x] + (interp[x] * frac);
+    }
+  };
+
+  static constexpr double sinTableFactor = SinTable::size / (M_PI * 2);
+  static SinTable sinTable;
+}
+
 double fastSin(double theta)
 {
-  constexpr int tableSize = M_PI * 2 * 1000;
-  static bool init = false;
-  static double table[tableSize + 1];
-  if (!init) {
-    for (int i = 0; i < tableSize; i++) {
-      table[i] = std::sin(i * 0.001);
-    }
-    table[tableSize] = 0;
-    init = true;
-  }
   if (theta < 0) {
     return -fastSin(-theta);
   }
-  theta *= 1000;
+  theta *= sinTableFactor;
   int pos = theta;
   double frac = theta - pos;
-  pos = pos % tableSize;
-  return lerp(table[pos], table[pos + 1], frac);
+  pos = pos & SinTable::mask;
+  return sinTable.interpolate(pos, frac);
+}
+
+double fastSin1(double phase)
+{
+  if (phase < 0) {
+    return -fastSin1(-phase);
+  }
+  int pos = phase * SinTable::size;
+  double frac = phase - pos;
+  pos = pos & SinTable::mask;
+  return sinTable.interpolate(pos, frac);
+}
+
+double fasterSin(double theta)
+{
+  if (theta < 0) {
+    return -sinTable[-theta * sinTableFactor];
+  }
+  return sinTable[theta * sinTableFactor];
+}
+
+double fasterSin1(double phase)
+{
+  if (phase < 0) {
+    return -sinTable[-phase * SinTable::size];
+  }
+  return sinTable[phase * SinTable::size];
 }
 
 std::string fourccToString(uint32_t magic)

@@ -91,7 +91,7 @@ SineOscillator::SineOscillator(const SynthContext* ctx) : BaseOscillator(ctx)
 
 double SineOscillator::calcSample(double)
 {
-  return fastSin(phase * M_PI * 2);
+  return fasterSin1(phase);
 }
 
 SquareOscillator::SquareOscillator(const SynthContext* ctx, double duty)

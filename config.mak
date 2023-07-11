@@ -30,7 +30,7 @@ endif
 endif
 
 CXXFLAGS_R := $(CXXFLAGS) -O3
-CXXFLAGS_D := $(CXXFLAGS) -ggdb
+CXXFLAGS_D := $(CXXFLAGS) -Og -ggdb3
 LDFLAGS := $(LDFLAGS) -L../seq2wav/$(BUILDPATH) -L../$(BUILDPATH) $(PLUGIN_LDFLAGS)
 LDFLAGS_R := $(LDFLAGS) -lseq2wav
 LDFLAGS_D := $(LDFLAGS) -lseq2wav_d

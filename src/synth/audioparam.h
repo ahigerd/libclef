@@ -3,7 +3,7 @@
 
 #include "s2wconfig.h"
 #include <memory>
-#include <unordered_map>
+#include <map>
 class AudioNode;
 class SynthContext;
 
@@ -49,7 +49,9 @@ public:
 protected:
   AudioParamContainer(const SynthContext* ctx);
 
-  std::unordered_map<int32_t, std::shared_ptr<AudioParam>> params;
+  virtual void onParamAdded(int32_t key, std::shared_ptr<AudioParam>& param);
+
+  std::map<int32_t, std::shared_ptr<AudioParam>> params;
 };
 
 #endif

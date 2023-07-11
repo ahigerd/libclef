@@ -80,15 +80,20 @@ std::shared_ptr<AudioParam> AudioParamContainer::param(int32_t param) const
 std::shared_ptr<AudioParam> AudioParamContainer::addParam(int32_t key, double initialValue)
 {
   std::shared_ptr<AudioParam> p(new AudioParam(ctx, initialValue));
-  params[key] = p;
+  addParam(key, p);
   return p;
 }
 
 void AudioParamContainer::addParam(int32_t key, std::shared_ptr<AudioParam> param)
 {
   if (param) {
-    params[key] = param;
+    onParamAdded(key, params[key] = param);
   }
+}
+
+void AudioParamContainer::onParamAdded(int32_t key, std::shared_ptr<AudioParam>& param)
+{
+  // default implementation does nothing
 }
 
 double AudioParamContainer::paramValue(int32_t key, double time, double defaultValue) const

@@ -27,11 +27,14 @@ public:
 protected:
   AudioNode(const SynthContext* ctx);
 
+  virtual void onParamAdded(int32_t key, std::shared_ptr<AudioParam>& param);
   virtual int16_t generateSample(double time, int channel = 0) = 0;
 
 private:
   friend class FilterNode;
-  std::unordered_map<int32_t, std::shared_ptr<IModulator>> mods;
+  std::map<int32_t, std::shared_ptr<IModulator>> mods;
+  std::shared_ptr<AudioParam>* pGain;
+  std::shared_ptr<AudioParam>* pPan;
 };
 
 class FilterNode : public AudioNode {
