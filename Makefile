@@ -6,10 +6,6 @@ debug: seq2wav_test_d$(EXE)
 
 static: $(BUILDPATH)/libseq2wav.a
 
-INCLUDES = $(patsubst src/%.h, include/%.h, $(wildcard src/*.h src/*/*.h))
-
-includes: $(INCLUDES)
-
 $(BUILDPATH)/Makefile.d: $(wildcard src/*.cpp src/*/*.cpp src/*.h src/*/*.h) Makefile src/Makefile
 	$(MAKE) -C src ../$(BUILDPATH)/Makefile.d
 

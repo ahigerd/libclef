@@ -1,8 +1,8 @@
 include ../config.mak
 
-CXXFLAGS := $(patsubst -I../seq2wav/include,-I../include,$(CXXFLAGS))
-CXXFLAGS_R := $(patsubst -I../seq2wav/include,-I../include,$(CXXFLAGS_R))
-CXXFLAGS_D := $(patsubst -I../seq2wav/include,-I../include,$(CXXFLAGS_D))
+CXXFLAGS := $(patsubst -I../seq2wav/src,-I../src,$(CXXFLAGS))
+CXXFLAGS_R := $(patsubst -I../seq2wav/src,-I../src,$(CXXFLAGS_R))
+CXXFLAGS_D := $(patsubst -I../seq2wav/src,-I../src,$(CXXFLAGS_D))
 
 SOURCES = $(filter-out main.cpp, $(wildcard *.cpp */*.cpp))
 
