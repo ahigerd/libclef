@@ -9,13 +9,17 @@ public:
   AutomationNode(const SynthContext* ctx, double initialValue = 0);
 
   bool isActive() const;
-  int16_t generateSample(double time, int channel = 0);
+  int16_t getSample(double time, int channel = 0);
 
   inline void setValueAt(double time, double value) { addTransition(Step, time, value); }
   inline void linearTo(double time, double value) { addTransition(Linear, time, value); }
   inline void cosineTo(double time, double value) { addTransition(Cosine, time, value); }
   inline void easeInTo(double time, double value) { addTransition(EaseIn, time, value); }
   inline void easeOutTo(double time, double value) { addTransition(EaseOut, time, value); }
+
+protected:
+  // Unused: overrides getSample instead
+  virtual int16_t generateSample(double time, int channel = 0) { return 0; }
 
 private:
   double initialValue;

@@ -10,6 +10,9 @@
 #include <mutex>
 #include <unordered_set>
 #include <cstring>
+namespace pfd {
+  class open_file;
+}
 
 class S2WClapPluginBase
 {
@@ -47,6 +50,9 @@ public:
   virtual bool paramTextValue(clap_id id, const char* text, double& value) const;
   virtual void flushParams(const clap_input_events_t* inEvents, const clap_output_events_t* outEvents);
 
+  virtual bool saveState(const clap_ostream_t* stream);
+  virtual bool loadState(const clap_istream_t* stream);
+
 protected:
   void requestParamSync(bool rescanInfo = false);
 
@@ -62,14 +68,15 @@ protected:
   virtual void midiEvent(const clap_event_midi_t* event);
   virtual void sysexEvent(const clap_event_midi_sysex_t* event);
   virtual void midi2Event(const clap_event_midi2_t* event);
-  virtual IInstrument* selectInstrumentByIndex(uint32_t index);
-  virtual IInstrument* selectInstrumentByID(uint64_t id, bool force = false);
+  virtual IInstrument* selectInstrumentByIndex(uint32_t index, bool force = false, bool rescan = true);
+  virtual IInstrument* selectInstrumentByID(uint64_t id, bool force = false, bool rescan = true);
   inline IInstrument* currentInstrument() const { return instrument; }
   inline uint32_t currentInstrumentID() const { return currentInstID; }
 
   clap_plugin_note_ports_t notePorts;
   clap_plugin_audio_ports_t audioPorts;
   clap_plugin_params_t paramsExtension;
+  clap_plugin_state_t stateExtension;
 
   double eventTimestamp(const clap_event_header_t* event) const;
 
@@ -89,7 +96,8 @@ private:
   std::unordered_set<uint32_t> noteParams;
   const clap_host_params_t* hostParams;
   std::thread::id mainThreadID;
-  std::atomic<bool> mustRescanInfo, queueRescanValues;
+  std::atomic<bool> mustRescanInfo, queueRescanValues, mustRestart;
+  pfd::open_file* openFileDialog;
 };
 
 template <typename S2WPluginInfo>

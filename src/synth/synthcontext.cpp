@@ -89,17 +89,25 @@ size_t SynthContext::fillBuffer(uint8_t* buffer, size_t length)
 
 void SynthContext::fillBuffers(float* buffers[], size_t numSamples)
 {
-  if (mixBuffer.size() < numSamples) {
-    mixBuffer.resize(numSamples);
+  size_t totalSamples = numSamples * outputChannels;
+  if (mixBuffer.size() < totalSamples) {
+    mixBuffer.resize(totalSamples);
   }
   int numChannels = channels.size();
-  for (int ch = 0; ch < numChannels; ch++) {
-    uint32_t written = channels[ch]->fillBuffer(mixBuffer, numSamples);
+  for (int ich = 0; ich < numChannels; ich++) {
+    uint32_t written = channels[ich]->fillBuffer(mixBuffer, totalSamples);
+    int pos = 0;
     for (int i = 0; i < numSamples; i++) {
-      buffers[ch][i] = i < written ? mixBuffer[i] / 32768.0f : 0;
+      for (int ch = 0; ch < outputChannels; ch++) {
+        if (ich == 0) {
+          buffers[ch][i] = pos < written ? mixBuffer[pos++] / 32768.0f : 0;
+        } else {
+          buffers[ch][i] += pos < written ? mixBuffer[pos++] / 32768.0f : 0;
+        }
+      }
     }
   }
-  currentTimestamp += numSamples * sampleTime / (2 * outputChannels);
+  currentTimestamp += numSamples * sampleTime;
 }
 
 void SynthContext::stream(std::ostream& output)

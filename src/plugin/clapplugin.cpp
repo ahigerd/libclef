@@ -1,16 +1,19 @@
 #ifdef BUILD_CLAP
 #include "plugin/clapplugin.h"
+#include "plugin/portable-file-dialogs.h"
 #include "synth/channel.h"
 #include "synth/iinstrument.h"
 #include <fstream>
 #include <thread>
+#include <sstream>
 #include <limits.h>
 
 #define C_P const clap_plugin_t* plugin
 #define WRAP_METHOD(RET, method, sig, ...) []sig -> RET { return reinterpret_cast<S2WClapPluginBase*>(plugin->plugin_data)->method(__VA_ARGS__); }
 #define WRAP_METHOD_VOID(method, sig, ...) []sig { reinterpret_cast<S2WClapPluginBase*>(plugin->plugin_data)->method(__VA_ARGS__); }
 S2WClapPluginBase::S2WClapPluginBase(const clap_host_t* host)
-: host(host), ctx(new S2WContext(true)), synth(nullptr), currentInstID(0), instrument(nullptr), hostParams(nullptr), mustRescanInfo(true)
+: host(host), ctx(new S2WContext(true)), synth(nullptr), currentInstID(0), instrument(nullptr), hostParams(nullptr), mustRescanInfo(true),
+  mustRestart(false), openFileDialog(nullptr)
 {
   mainThreadID = std::this_thread::get_id();
 
@@ -38,6 +41,9 @@ S2WClapPluginBase::S2WClapPluginBase(const clap_host_t* host)
   paramsExtension.value_to_text = WRAP_METHOD(bool, paramValueText, (C_P, clap_id id, double value, char* text, uint32_t size), id, value, text, size);
   paramsExtension.text_to_value = WRAP_METHOD(bool, paramTextValue, (C_P, clap_id id, const char* text, double* value), id, text, *value);
   paramsExtension.flush = WRAP_METHOD_VOID(flushParams, (C_P, const clap_input_events_t* inEvents, const clap_output_events_t* outEvents), inEvents, outEvents);
+
+  stateExtension.save = WRAP_METHOD(bool, saveState, (C_P, const clap_ostream_t* stream), stream);
+  stateExtension.load = WRAP_METHOD(bool, loadState, (C_P, const clap_istream_t* stream), stream);
 }
 
 S2WClapPluginBase::~S2WClapPluginBase()
@@ -45,13 +51,16 @@ S2WClapPluginBase::~S2WClapPluginBase()
   if (synth) {
     delete synth;
   }
+  if (openFileDialog) {
+    delete openFileDialog;
+  }
 }
 
 bool S2WClapPluginBase::init()
 {
   hostParams = reinterpret_cast<const clap_host_params_t*>(host->get_extension(host, CLAP_EXT_PARAMS));
   synth = new SynthContext(ctx, 48000, 2);
-  paramOrder = { 'inst' };
+  paramOrder = { 'FNAM', 'inst' };
   return true;
 }
 
@@ -66,18 +75,18 @@ void S2WClapPluginBase::destroy()
 
 bool S2WClapPluginBase::activate(double sampleRate, uint32_t minFrames, uint32_t maxFrames)
 {
-  if (filePath.empty()) {
+  std::lock_guard lock(synthMutex);
+  std::cerr << "activate" << std::endl;
+  if (!filePath.empty()) {
     if (synth) {
       delete synth;
     }
-    filePath = "/home/coda/dse2wav/B_EVENT_BOSS_02.smd";
     std::ifstream file(filePath);
     synth = createContext(ctx, filePath, file);
     synth->addChannel(&seq);
-    currentInstID = 95;
+    selectInstrumentByIndex(0, true, false);
     seq.addEvent(new ChannelEvent('inst', uint64_t(currentInstID)));
     seq.sync();
-    selectInstrumentByID(currentInstID, true);
   }
   synth->setSampleRate(sampleRate);
   return true;
@@ -85,6 +94,8 @@ bool S2WClapPluginBase::activate(double sampleRate, uint32_t minFrames, uint32_t
 
 void S2WClapPluginBase::deactivate()
 {
+  std::cerr << "deactivate" << std::endl;
+  seq.reset();
 }
 
 bool S2WClapPluginBase::startProcessing()
@@ -112,6 +123,22 @@ clap_process_status S2WClapPluginBase::process(const clap_process_t* process)
     return CLAP_PROCESS_CONTINUE;
   }
 
+  if (openFileDialog && openFileDialog->ready(0)) {
+    auto fn = openFileDialog->result();
+    delete openFileDialog;
+    openFileDialog = nullptr;
+    if (fn.size()) {
+      std::cerr << "selected " << fn[0] << std::endl;
+      filePath = fn[0];
+      activate(synth->sampleRate, 0, 0);
+      requestParamSync(true);
+      return CLAP_PROCESS_CONTINUE;
+    } else {
+      std::cerr << "canceled" << std::endl;
+      requestParamSync(false);
+    }
+  }
+
   try {
     uint32_t numEvents = process->in_events->size(process->in_events);
 
@@ -124,11 +151,6 @@ clap_process_status S2WClapPluginBase::process(const clap_process_t* process)
       seq.sync();
     }
 
-    if (queueRescanValues) {
-      requestParamSync(false);
-      queueRescanValues = false;
-    }
-
     float* buffers[2] = {
       process->audio_outputs[0].data32[0],
       process->audio_outputs[0].data32[1],
@@ -136,6 +158,11 @@ clap_process_status S2WClapPluginBase::process(const clap_process_t* process)
     {
       std::lock_guard lock(synthMutex);
       synth->fillBuffers(buffers, process->frames_count);
+    }
+
+    if (queueRescanValues) {
+      host->request_callback(host);
+      queueRescanValues = false;
     }
 
     return CLAP_PROCESS_CONTINUE;
@@ -196,13 +223,17 @@ const void* S2WClapPluginBase::getExtension(const char* id)
     return &audioPorts;
   } else if (!strcmp(id, CLAP_EXT_PARAMS)) {
     return &paramsExtension;
+  } else if (!strcmp(id, CLAP_EXT_STATE)) {
+    return &stateExtension;
   }
   return nullptr;
 }
 
 void S2WClapPluginBase::onMainThread()
 {
-  if (mustRescanInfo) {
+  if (mustRestart) {
+    host->request_restart(host);
+  } else if (mustRescanInfo) {
     mustRescanInfo = false;
     hostParams->rescan(host, CLAP_PARAM_RESCAN_INFO);
     hostParams->rescan(host, CLAP_PARAM_RESCAN_VALUES | CLAP_PARAM_RESCAN_TEXT);
@@ -217,6 +248,7 @@ BaseNoteEvent* S2WClapPluginBase::createNoteEvent(const clap_event_note_t* event
   InstrumentNoteEvent* note = new InstrumentNoteEvent();
   note->pitch = event->key;
   note->volume = event->velocity;
+  note->timestamp = eventTimestamp(event);
   return note;
 }
 
@@ -224,7 +256,6 @@ void S2WClapPluginBase::noteEvent(const clap_event_note_t* event)
 {
   if (event->header.type == CLAP_EVENT_NOTE_ON) {
     BaseNoteEvent* note = createNoteEvent(event);
-    note->timestamp = eventTimestamp(event);
     if (event->note_id >= 0) {
       note->playbackID = event->note_id;
     } else {
@@ -256,11 +287,24 @@ void S2WClapPluginBase::expressionEvent(const clap_event_note_expression_t* even
 
 void S2WClapPluginBase::paramValueEvent(const clap_event_param_value_t* event)
 {
-  if (event->param_id == 'inst') {
+  if (event->param_id == 'FNAM') {
+    if (event->value < 0.5) {
+      return;
+    }
+    if (openFileDialog) {
+      requestParamSync(false);
+      return;
+    }
+    openFileDialog = new pfd::open_file("Select file", filePath);
+  } else if (event->param_id == 'inst') {
     std::lock_guard lock(synthMutex);
-    selectInstrumentByIndex(uint64_t(event->value));
-    seq.addEvent(new ChannelEvent('inst', uint64_t(currentInstID)));
-  } else if (event->note_id >= 0) {
+    IInstrument* found = selectInstrumentByIndex(uint64_t(event->value));
+    if (found) {
+      ChannelEvent* ch = new ChannelEvent('inst', uint64_t(currentInstID));
+      ch->timestamp = eventTimestamp(event);
+      seq.addEvent(ch);
+    }
+  } else if (event->note_id > 0) {
     ModulatorEvent* mod = new ModulatorEvent(event->note_id, event->param_id, event->value);
     mod->timestamp = eventTimestamp(event);
     seq.addEvent(mod);
@@ -278,6 +322,7 @@ void S2WClapPluginBase::paramValueEvent(const clap_event_param_value_t* event)
     ChannelEvent* ch = new ChannelEvent(event->param_id, event->value);
     ch->timestamp = eventTimestamp(event);
     seq.addEvent(ch);
+    //requestParamSync(false);
   }
 }
 
@@ -346,6 +391,17 @@ bool S2WClapPluginBase::paramInfo(uint32_t index, clap_param_info_t& info) const
   std::memset(&info, '\0', sizeof(clap_param_info_t));
   uint32_t id = paramOrder[index];
   info.id = id;
+  if (id == 'FNAM') {
+    info.flags |= CLAP_PARAM_IS_AUTOMATABLE;
+    info.flags |= CLAP_PARAM_IS_STEPPED;
+    info.min_value = 0;
+    info.max_value = 1;
+    info.default_value = 0;
+    std::string name = "Load file...";
+    std::strncpy(info.name, name.c_str(), sizeof(info.name));
+    return true;
+  }
+
   if (id == 'inst' || chanParams.count(id)) {
     info.flags |= CLAP_PARAM_IS_AUTOMATABLE;
   }
@@ -375,7 +431,10 @@ bool S2WClapPluginBase::paramInfo(uint32_t index, clap_param_info_t& info) const
 bool S2WClapPluginBase::paramValue(clap_id id, double& value) const
 {
   std::lock_guard lock(synthMutex);
-  if (id == 'inst') {
+  if (id == 'FNAM') {
+    value = 0;
+    return true;
+  } else if (id == 'inst') {
     int numInsts = synth->numInstruments();
     for (int i = 0; i < numInsts; i++) {
       if (synth->instrumentID(i) == currentInstID) {
@@ -400,9 +459,15 @@ bool S2WClapPluginBase::paramValue(clap_id id, double& value) const
 bool S2WClapPluginBase::paramValueText(clap_id id, double value, char* text, uint32_t size) const
 {
   std::string strValue;
-  if (id == 'inst') {
+  if (id == 'FNAM') {
+    if (filePath.empty()) {
+      strValue = "(none)";
+    } else {
+      strValue = filePath;
+    }
+  } else if (id == 'inst') {
     std::lock_guard lock(synthMutex);
-    strValue = "#" + std::to_string(currentInstID);
+    strValue = std::to_string(currentInstID);
   } else {
     strValue = std::to_string(value);
   }
@@ -412,16 +477,17 @@ bool S2WClapPluginBase::paramValueText(clap_id id, double value, char* text, uin
 
 bool S2WClapPluginBase::paramTextValue(clap_id id, const char* text, double& value) const
 {
-  if (id == 'inst') {
+  if (id == 'FNAM') {
+    return false;
+  } else if (id == 'inst') {
     std::lock_guard lock(synthMutex);
     uint64_t instrumentID = 0;
 #if ULONG_MAX == UINT64_MAX
-    int success = std::sscanf(text, "#%lu", &instrumentID);
+    int success = std::sscanf(text, " %lu", &instrumentID);
 #else
     int success = std::sscanf(text, " %llu", &instrumentID);
 #endif
     if (!success) {
-      std::cerr << "paramTextValue error: " << text << std::endl;
       return false;
     }
     int numInsts = synth->numInstruments();
@@ -441,19 +507,21 @@ void S2WClapPluginBase::flushParams(const clap_input_events_t* inEvents, const c
 {
 }
 
-IInstrument* S2WClapPluginBase::selectInstrumentByIndex(uint32_t index)
+IInstrument* S2WClapPluginBase::selectInstrumentByIndex(uint32_t index, bool force, bool rescan)
 {
   if (index >= synth->numInstruments()) {
     std::cerr << "instrument index out of range: " << index << std::endl;
     return nullptr;
   }
-  return selectInstrumentByID(synth->instrumentID(index));
+  return selectInstrumentByID(synth->instrumentID(index), force, rescan);
 }
 
-IInstrument* S2WClapPluginBase::selectInstrumentByID(uint64_t instrumentID, bool force)
+IInstrument* S2WClapPluginBase::selectInstrumentByID(uint64_t instrumentID, bool force, bool rescan)
 {
   if (!force && instrumentID == currentInstID) {
-    requestParamSync(false);
+    if (rescan) {
+      requestParamSync(false);
+    }
     return instrument;
   }
   IInstrument* found = synth->getInstrument(instrumentID);
@@ -466,7 +534,7 @@ IInstrument* S2WClapPluginBase::selectInstrumentByID(uint64_t instrumentID, bool
   chanParams.clear();
   noteParams.clear();
   chanParams.insert('inst');
-  paramOrder = { 'inst' };
+  paramOrder = { 'FNAM', 'inst' };
 
   for (uint32_t param : instrument->supportedChannelParams()) {
     if (!chanParams.count(param)) {
@@ -485,7 +553,9 @@ IInstrument* S2WClapPluginBase::selectInstrumentByID(uint64_t instrumentID, bool
   }
 
   currentInstID = instrumentID;
-  requestParamSync(true);
+  if (rescan) {
+    requestParamSync(true);
+  }
   return found;
 }
 
@@ -501,5 +571,87 @@ void S2WClapPluginBase::requestParamSync(bool rescanInfo)
   } else {
     host->request_callback(host);
   }
+}
+
+bool S2WClapPluginBase::saveState(const clap_ostream_t* stream)
+{
+  std::lock_guard lock(synthMutex);
+  if (filePath.empty() || !instrument || synth->channels.empty()) {
+    // No state to save
+    return true;
+  }
+
+  std::ostringstream ss;
+  ss << filePath << std::endl;
+  ss << currentInstID << std::endl;
+  ss << chanParams.size();
+  ss << std::hexfloat;
+  double now = synth->currentTime();
+  for (uint32_t p : chanParams) {
+    if (p == 'inst') {
+      // This was serialized separately
+      continue;
+    }
+    ss << " " << fourccToString(p) << " " << synth->channels[0]->paramValue(p, now);
+  }
+
+  std::string state = ss.str();
+  std::cerr << state << std::endl;
+  return stream->write(stream, state.c_str(), state.size()) == state.size();
+}
+
+bool S2WClapPluginBase::loadState(const clap_istream_t* stream)
+{
+  std::string state;
+  char buffer[1024];
+  int bytesRead = 0;
+  do {
+    bytesRead = stream->read(stream, buffer, 1024);
+    state.append(buffer, bytesRead);
+  } while (bytesRead > 0);
+
+  std::istringstream ss(state);
+  std::getline(ss, filePath);
+  std::cerr << filePath << std::endl;
+  uint64_t instID = 0;
+  ss >> instID;
+  std::cerr << "instID=" << instID << std::endl;
+  int numParams = 0;
+  ss >> numParams;
+  std::cerr << "numParams=" << numParams << std::endl;
+
+  {
+    std::lock_guard lock(synthMutex);
+    seq.reset();
+    delete synth;
+    std::ifstream file(filePath);
+    synth = createContext(ctx, filePath, file);
+    synth->addChannel(&seq);
+    IInstrument* found = selectInstrumentByID(instID, true, false);
+    if (!found) {
+      requestParamSync(true);
+      return false;
+    }
+
+    char fourcc[5] = { '\0', '\0', '\0', '\0', '\0' };
+    uint32_t paramID;
+    std::string strValue;
+    double value;
+    for (int i = 0; i < numParams; i++) {
+      ss.ignore(1, ' ');
+      ss.read(fourcc, 4);
+      paramID = parseIntBE<uint32_t>(fourcc, 0);
+      ss >> strValue;
+      value = std::stod(strValue);
+      std::cerr << fourcc << "\t" << paramID << "\t" << value << std::endl;
+      if (paramID != 'inst') {
+        ChannelEvent* ch = new ChannelEvent(paramID, value);
+        seq.addEvent(ch);
+      }
+    }
+  }
+
+  requestParamSync(true);
+  return true;
 }
 #endif

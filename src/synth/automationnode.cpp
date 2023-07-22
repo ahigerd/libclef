@@ -13,7 +13,7 @@ bool AutomationNode::isActive() const
   return true;
 }
 
-int16_t AutomationNode::generateSample(double time, int)
+int16_t AutomationNode::getSample(double time, int)
 {
   if (!phases.size()) {
     return initialValue;
@@ -22,7 +22,7 @@ int16_t AutomationNode::generateSample(double time, int)
   while (phase < phases.size()) {
     const Endpoint& endPhase = phases[phase];
     double endTime = endPhase.time, endValue = endPhase.value;
-    if (time > endTime) {
+    if (time >= endTime) {
       ++phase;
       continue;
     }
