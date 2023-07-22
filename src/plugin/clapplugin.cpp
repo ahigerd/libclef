@@ -86,7 +86,6 @@ bool S2WClapPluginBase::activate(double sampleRate, uint32_t minFrames, uint32_t
     synth->addChannel(&seq);
     selectInstrumentByIndex(0, true, false);
     seq.addEvent(new ChannelEvent('inst', uint64_t(currentInstID)));
-    seq.sync();
   }
   synth->setSampleRate(sampleRate);
   return true;
@@ -145,10 +144,6 @@ clap_process_status S2WClapPluginBase::process(const clap_process_t* process)
     for (uint32_t i = 0; i < numEvents; i++) {
       const clap_event_header_t *event = process->in_events->get(process->in_events, i);
       dispatchEvent(event);
-    }
-
-    if (numEvents > 0) {
-      seq.sync();
     }
 
     float* buffers[2] = {
@@ -235,11 +230,10 @@ void S2WClapPluginBase::onMainThread()
     host->request_restart(host);
   } else if (mustRescanInfo) {
     mustRescanInfo = false;
-    hostParams->rescan(host, CLAP_PARAM_RESCAN_INFO);
-    hostParams->rescan(host, CLAP_PARAM_RESCAN_VALUES | CLAP_PARAM_RESCAN_TEXT);
+    hostParams->rescan(host, CLAP_PARAM_RESCAN_ALL | CLAP_PARAM_RESCAN_INFO | CLAP_PARAM_RESCAN_VALUES | CLAP_PARAM_RESCAN_TEXT);
     queueRescanValues = true;
   } else {
-    hostParams->rescan(host, CLAP_PARAM_RESCAN_VALUES);
+    hostParams->rescan(host, CLAP_PARAM_RESCAN_VALUES | CLAP_PARAM_RESCAN_TEXT);
   }
 }
 
@@ -460,14 +454,18 @@ bool S2WClapPluginBase::paramValueText(clap_id id, double value, char* text, uin
 {
   std::string strValue;
   if (id == 'FNAM') {
-    if (filePath.empty()) {
-      strValue = "(none)";
+    if (value < 0.5) {
+      if (filePath.empty()) {
+        strValue = "(No File Loaded)";
+      } else {
+        strValue = filePath;
+      }
     } else {
-      strValue = filePath;
+      strValue = "(Load New...)";
     }
   } else if (id == 'inst') {
     std::lock_guard lock(synthMutex);
-    strValue = std::to_string(currentInstID);
+    strValue = std::to_string(synth->instrumentID(uint64_t(value)));
   } else {
     strValue = std::to_string(value);
   }

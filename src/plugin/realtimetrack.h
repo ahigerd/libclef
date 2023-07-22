@@ -2,26 +2,25 @@
 #define S2W_REALTIMETRACK_H
 
 #include "seq/itrack.h"
-#include <mutex>
-#include <queue>
+#include <atomic>
 
 class RealTimeTrack : public ITrack
 {
 public:
+  RealTimeTrack();
+
   bool isFinished() const;
   void seek(double timestamp);
   virtual double length() const;
 
   void addEvent(SequenceEvent* event);
-  void sync();
 
 protected:
   std::shared_ptr<SequenceEvent> readNextEvent();
   void internalReset();
 
-  std::queue<std::shared_ptr<SequenceEvent>> readQueue;
-  std::queue<std::shared_ptr<SequenceEvent>> writeQueue;
-  std::mutex mutex;
+  std::shared_ptr<SequenceEvent> events[256];
+  std::atomic<uint8_t> queueHead, queueTail;
 };
 
 #endif

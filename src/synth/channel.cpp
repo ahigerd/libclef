@@ -7,19 +7,7 @@
 #include <iostream>
 
 Channel::Note::Note()
-: event(nullptr), source(nullptr), duration(0), kill(true)
-{
-  // initializers only
-}
-
-Channel::Note::Note(std::shared_ptr<BaseNoteEvent> event, AudioNode* source, double duration)
-: Note(event, std::shared_ptr<AudioNode>(source), duration)
-{
-  // forwarded constructor only
-}
-
-Channel::Note::Note(std::shared_ptr<BaseNoteEvent> event, std::shared_ptr<AudioNode> source, double duration)
-: event(event), source(source), duration(duration), kill(false)
+: event(nullptr), source(nullptr), duration(0), kill(true), inUse(false)
 {
   // initializers only
 }
@@ -27,6 +15,10 @@ Channel::Note::Note(std::shared_ptr<BaseNoteEvent> event, std::shared_ptr<AudioN
 Channel::Channel(const SynthContext* ctx, ITrack* track)
 : AudioParamContainer(ctx), mute(false), track(track), nextEvent(nullptr)
 {
+  notePool.resize(128);
+  poolFree = 128;
+  poolNext = 0;
+
   instrument = ctx->defaultInstrument();
   gain = addParam(AudioNode::Gain, 1.0).get();
   pan = addParam(AudioNode::Pan, 0.5).get();
@@ -69,16 +61,12 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
         instrument->modulatorEvent(this, modEvent);
       } else if (auto noteEvent = BaseNoteEvent::castShared(event)) {
         Note* note = instrument->noteEvent(this, noteEvent);
-        if (note && !note->kill) {
-          notes.emplace(std::make_pair(note->event->playbackID, note));
-        }
+        trackNote(note);
       } else if (event->eventType() >= SequenceEvent::UserBase) {
         // This must go after the BaseNoteEvent case because user-defined
         // note events should be sent there.
         Note* note = instrument->userEvent(this, event);
-        if (note && !note->kill) {
-          notes.emplace(std::make_pair(note->event->playbackID, note));
-        }
+        trackNote(note);
       } else if (KillEvent* killEvent = event->cast<KillEvent>()) {
         auto noteIter = notes.find(killEvent->playbackID);
         if (noteIter != notes.end()) {
@@ -114,6 +102,7 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
         }
         if (stop) {
           toErase.push_back(noteID);
+          deallocNote(note);
         } else if (start <= timestamp) {
           // TODO: modulators
           // TODO: mixdown if source is stereo and output is mono
@@ -142,8 +131,57 @@ void Channel::seek(double timestamp)
   if (timestamp == this->timestamp) {
     return;
   }
+  for (int i = notePool.size() - 1; i >= 0; --i) {
+    notePool[i].inUse = false;
+  }
+  poolNext = 0;
+  poolFree = notePool.size();
   notes.clear();
   nextEvent = std::shared_ptr<SequenceEvent>();
   track->seek(timestamp);
   this->timestamp = timestamp;
+}
+
+Channel::Note* Channel::allocNote(const std::shared_ptr<BaseNoteEvent>& event, const std::shared_ptr<AudioNode>& source, double duration)
+{
+  if (poolFree == 0) {
+    poolNext = notePool.size();
+    poolFree = notePool.size();
+    notePool.resize(notePool.size() * 2);
+  }
+  int mask = notePool.size() - 1;
+  Note* note = nullptr;
+  do {
+    note = &notePool[poolNext];
+    poolNext = (poolNext + 1) & mask;
+  } while (note->inUse);
+  poolFree--;
+  note->inUse = true;
+  note->event = event;
+  note->source = source;
+  note->duration = duration;
+  note->kill = false;
+  return note;
+}
+
+void Channel::deallocNote(Note* note)
+{
+  note->event.reset();
+  note->source.reset();
+  note->inUse = false;
+  poolFree++;
+}
+
+void Channel::trackNote(Note* note)
+{
+  if (note && note->inUse && !note->kill) {
+    uint64_t id = note->event->playbackID;
+    auto iter = notes.find(id);
+    if (iter == notes.end()) {
+      notes[id] = note;
+    } else {
+      deallocNote(iter->second);
+      iter->second = note;
+    }
+  }
 }

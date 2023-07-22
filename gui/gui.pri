@@ -40,7 +40,7 @@ CONFIG += c++17
 QMAKE_CXXFLAGS += -std=c++17 -Wno-multichar
 DEFINES -= QT_DEPRECATED_WARNINGS
 DEFINES += QT_NO_DEPRECATED_WARNINGS
-INCLUDEPATH += $$S2WPATH/include $$S2WPATH/gui $$PROJPATH/src
+INCLUDEPATH += $$S2WPATH/src $$S2WPATH/gui $$PROJPATH/src
 LIBS += $$S2W_LDFLAGS
 
 S2W_CLASSES = mainwindow tagview playercontrols vumeter

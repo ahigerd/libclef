@@ -79,7 +79,7 @@ Channel::Note* DefaultInstrument::noteEvent(Channel* channel, std::shared_ptr<Ba
     std::cerr << "ERROR: unhandled instrument or user event" << std::endl;
     return nullptr;
   }
-  Channel::Note* note = new Channel::Note(event, node, duration);
+  Channel::Note* note = channel->allocNote(event, node, duration);
   if (event->useEnvelope) {
     applyEnvelope(channel, note);
   }

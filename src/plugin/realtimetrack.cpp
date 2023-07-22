@@ -1,6 +1,12 @@
 #include "realtimetrack.h"
 #include <iostream>
 
+RealTimeTrack::RealTimeTrack()
+: queueHead(0), queueTail(0)
+{
+  // initializers only
+}
+
 bool RealTimeTrack::isFinished() const
 {
   return false;
@@ -18,35 +24,20 @@ double RealTimeTrack::length() const
 
 std::shared_ptr<SequenceEvent> RealTimeTrack::readNextEvent()
 {
-  if (readQueue.empty()) {
+  if (queueHead == queueTail) {
     return nullptr;
   }
-  auto event = readQueue.front();
-  readQueue.pop();
+  std::shared_ptr<SequenceEvent> event(nullptr);
+  event.swap(events[queueTail++]);
   return event;
 }
 
 void RealTimeTrack::internalReset()
 {
-  std::lock_guard lock(mutex);
-  while (!readQueue.empty()) {
-    readQueue.pop();
-  }
-  while (!writeQueue.empty()) {
-    writeQueue.pop();
-  }
+  while (readNextEvent());
 }
 
 void RealTimeTrack::addEvent(SequenceEvent* event)
 {
-  writeQueue.emplace(event);
-}
-
-void RealTimeTrack::sync()
-{
-  std::lock_guard lock(mutex);
-  while (!writeQueue.empty()) {
-    readQueue.push(std::move(writeQueue.front()));
-    writeQueue.pop();
-  }
+  events[queueHead++].reset(event);
 }

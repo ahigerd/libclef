@@ -4,6 +4,7 @@
 #include "s2wconfig.h"
 #include <unordered_map>
 #include <vector>
+#include <deque>
 #include <memory>
 #include "audionode.h"
 #include "audioparam.h"
@@ -31,23 +32,30 @@ public:
   class Note {
   public:
     Note();
-    Note(std::shared_ptr<BaseNoteEvent> event, AudioNode* source, double duration);
-    Note(std::shared_ptr<BaseNoteEvent> event, std::shared_ptr<AudioNode> source, double duration);
-    Note(const Note& other) = default;
-    Note(Note&& other) = default;
-    Note& operator=(const Note& other) = default;
-
     std::shared_ptr<BaseNoteEvent> event;
     std::shared_ptr<AudioNode> source;
     double duration;
     bool kill;
+
+  private:
+    friend class Channel;
+    bool inUse;
   };
-  std::unordered_map<uint64_t, std::unique_ptr<Note>> notes;
+  std::unordered_map<uint64_t, Note*> notes;
+  Note* allocNote(const std::shared_ptr<BaseNoteEvent>& event, const std::shared_ptr<AudioNode>& source, double duration);
+  inline Note* allocNote(const std::shared_ptr<BaseNoteEvent>& event, AudioNode* source, double duration) {
+    return allocNote(event, std::shared_ptr<AudioNode>(source), duration);
+  }
 
 private:
+  void trackNote(Note* note);
+  void deallocNote(Note* note);
+
   ITrack* track;
   IInstrument* instrument;
   std::shared_ptr<SequenceEvent> nextEvent;
+  std::deque<Note> notePool;
+  int poolFree, poolNext;
 
   double timestamp;
 };
