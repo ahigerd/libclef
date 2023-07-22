@@ -24,6 +24,8 @@ protected:
   const SampleData* sample;
   double offset;
   double lastTime;
+  AudioParam* pPitch;
+  AudioParam* pPitchBend;
 };
 
 #endif

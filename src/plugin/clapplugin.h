@@ -56,8 +56,12 @@ public:
 protected:
   void requestParamSync(bool rescanInfo = false);
 
+  void buildContext(const std::string& filename, uint64_t instID = 0xFFFFFFFFFFFFFFFFULL);
   virtual SynthContext* createContext(S2WContext* ctx, const std::string& filename, std::istream& file) = 0;
   virtual BaseNoteEvent* createNoteEvent(const clap_event_note_t* event);
+  virtual void prepareChannel(Channel* channel) {}
+
+  virtual void getParamRange(uint32_t id, double& minValue, double& maxValue, double& defaultValue) const;
 
   virtual void dispatchEvent(const clap_event_header_t* event);
   virtual void noteEvent(const clap_event_note_t* event);
@@ -104,6 +108,7 @@ template <typename S2WPluginInfo>
 class S2WClapPlugin : public S2WClapPluginBase
 {
 public:
+  using PluginBase = S2WClapPlugin<S2WPluginInfo>;
   using PluginInfo = S2WPluginInfo;
   PluginInfo* s2wPlugin;
 

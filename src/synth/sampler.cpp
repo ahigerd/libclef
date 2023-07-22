@@ -6,8 +6,8 @@
 Sampler::Sampler(const SynthContext* ctx, const SampleData* sample, double pitch)
 : AudioNode(ctx), interpolator(ctx->interpolator), sample(sample), offset(0), lastTime(0)
 {
-  addParam(Pitch, pitch);
-  addParam(PitchBend, 1.0);
+  pPitch = addParam(Pitch, pitch).get();
+  pPitchBend = addParam(PitchBend, 1.0).get();
   addParam(Gain, 1.0);
   addParam(Pan, 0.5);
 }
@@ -23,7 +23,7 @@ int16_t Sampler::generateSample(double time, int channel)
     return 0;
   }
   double sampleStepBase = ctx->sampleTime * sample->sampleRate;
-  double sampleStep = sampleStepBase * paramValue(Pitch, lastTime) * paramValue(PitchBend, lastTime);
+  double sampleStep = sampleStepBase * pPitch->valueAt(lastTime) * pPitchBend->valueAt(lastTime);
   while (time > lastTime) {
     offset += sampleStep;
     lastTime += ctx->sampleTime;

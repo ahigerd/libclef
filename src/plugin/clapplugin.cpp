@@ -3,6 +3,8 @@
 #include "plugin/portable-file-dialogs.h"
 #include "synth/channel.h"
 #include "synth/iinstrument.h"
+#include "synth/sampler.h"
+#include "synth/oscillator.h"
 #include <fstream>
 #include <thread>
 #include <sstream>
@@ -73,10 +75,10 @@ void S2WClapPluginBase::destroy()
   delete this;
 }
 
-bool S2WClapPluginBase::activate(double sampleRate, uint32_t minFrames, uint32_t maxFrames)
+void S2WClapPluginBase::buildContext(const std::string& filePath, uint64_t instID)
 {
   std::lock_guard lock(synthMutex);
-  std::cerr << "activate" << std::endl;
+  seq.reset();
   if (!filePath.empty()) {
     if (synth) {
       delete synth;
@@ -84,9 +86,24 @@ bool S2WClapPluginBase::activate(double sampleRate, uint32_t minFrames, uint32_t
     std::ifstream file(filePath);
     synth = createContext(ctx, filePath, file);
     synth->addChannel(&seq);
-    selectInstrumentByIndex(0, true, false);
-    seq.addEvent(new ChannelEvent('inst', uint64_t(currentInstID)));
+    prepareChannel(synth->channels[0].get());
+    if (instID == 0xFFFFFFFFFFFFFFFFULL && synth->numInstruments() > 0) {
+      instID = synth->instrumentID(0);
+    }
+    IInstrument* found = selectInstrumentByID(instID, true, false);
+    if (found) {
+      seq.addEvent(new ChannelEvent('inst', uint64_t(currentInstID)));
+    } else {
+      currentInstID = 0;
+      instrument = nullptr;
+    }
   }
+}
+
+bool S2WClapPluginBase::activate(double sampleRate, uint32_t minFrames, uint32_t maxFrames)
+{
+  std::cerr << "activate" << std::endl;
+  buildContext(filePath);
   synth->setSampleRate(sampleRate);
   return true;
 }
@@ -316,7 +333,7 @@ void S2WClapPluginBase::paramValueEvent(const clap_event_param_value_t* event)
     ChannelEvent* ch = new ChannelEvent(event->param_id, event->value);
     ch->timestamp = eventTimestamp(event);
     seq.addEvent(ch);
-    //requestParamSync(false);
+    requestParamSync(false);
   }
 }
 
@@ -412,14 +429,23 @@ bool S2WClapPluginBase::paramInfo(uint32_t index, clap_param_info_t& info) const
     std::lock_guard lock(synthMutex);
     info.max_value = synth->numInstruments() - 1;
   } else {
-    // TODO: ranges
-    info.min_value = 0.0f;
-    info.max_value = 1.0f;
-    info.default_value = 0.5f;
+    getParamRange(id, info.min_value, info.max_value, info.default_value);
   }
   auto name = fourccToString(id);
   std::strncpy(info.name, name.c_str(), 5);
   return true;
+}
+
+void S2WClapPluginBase::getParamRange(uint32_t id, double& minValue, double& maxValue, double& defaultValue) const
+{
+  if (id == Sampler::PitchBend || id == BaseOscillator::PitchBend) {
+    minValue = -1.0f;
+    defaultValue = 0.0f;
+  } else {
+    minValue = 0.0f;
+    defaultValue = 0.5f;
+  }
+  maxValue = 1.0f;
 }
 
 bool S2WClapPluginBase::paramValue(clap_id id, double& value) const
@@ -525,6 +551,7 @@ IInstrument* S2WClapPluginBase::selectInstrumentByID(uint64_t instrumentID, bool
   IInstrument* found = synth->getInstrument(instrumentID);
   if (!found) {
     std::cerr << "instrument not found: " << instrumentID << std::endl;
+    currentInstID = 0;
     return nullptr;
   }
 
@@ -617,20 +644,14 @@ bool S2WClapPluginBase::loadState(const clap_istream_t* stream)
   int numParams = 0;
   ss >> numParams;
   std::cerr << "numParams=" << numParams << std::endl;
+  buildContext(filePath, instID);
+  if (!instrument) {
+    requestParamSync(false);
+    return false;
+  }
 
   {
     std::lock_guard lock(synthMutex);
-    seq.reset();
-    delete synth;
-    std::ifstream file(filePath);
-    synth = createContext(ctx, filePath, file);
-    synth->addChannel(&seq);
-    IInstrument* found = selectInstrumentByID(instID, true, false);
-    if (!found) {
-      requestParamSync(true);
-      return false;
-    }
-
     char fourcc[5] = { '\0', '\0', '\0', '\0', '\0' };
     uint32_t paramID;
     std::string strValue;
