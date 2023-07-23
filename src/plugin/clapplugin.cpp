@@ -243,7 +243,7 @@ const void* S2WClapPluginBase::getExtension(const char* id)
 
 void S2WClapPluginBase::onMainThread()
 {
-  if (mustRestart) {
+  if (mustRestart || !hostParams) {
     host->request_restart(host);
   } else if (mustRescanInfo) {
     mustRescanInfo = false;
@@ -309,7 +309,7 @@ void S2WClapPluginBase::paramValueEvent(const clap_event_param_value_t* event)
     openFileDialog = new pfd::open_file("Select file", filePath);
   } else if (event->param_id == 'inst') {
     std::lock_guard lock(synthMutex);
-    IInstrument* found = selectInstrumentByIndex(uint64_t(event->value));
+    IInstrument* found = selectInstrumentByIndex(uint64_t(event->value), false, false);
     if (found) {
       ChannelEvent* ch = new ChannelEvent('inst', uint64_t(currentInstID));
       ch->timestamp = eventTimestamp(event);
@@ -621,7 +621,6 @@ bool S2WClapPluginBase::saveState(const clap_ostream_t* stream)
   }
 
   std::string state = ss.str();
-  std::cerr << state << std::endl;
   return stream->write(stream, state.c_str(), state.size()) == state.size();
 }
 
@@ -637,13 +636,10 @@ bool S2WClapPluginBase::loadState(const clap_istream_t* stream)
 
   std::istringstream ss(state);
   std::getline(ss, filePath);
-  std::cerr << filePath << std::endl;
   uint64_t instID = 0;
   ss >> instID;
-  std::cerr << "instID=" << instID << std::endl;
   int numParams = 0;
   ss >> numParams;
-  std::cerr << "numParams=" << numParams << std::endl;
   buildContext(filePath, instID);
   if (!instrument) {
     requestParamSync(false);
@@ -662,7 +658,6 @@ bool S2WClapPluginBase::loadState(const clap_istream_t* stream)
       paramID = parseIntBE<uint32_t>(fourcc, 0);
       ss >> strValue;
       value = std::stod(strValue);
-      std::cerr << fourcc << "\t" << paramID << "\t" << value << std::endl;
       if (paramID != 'inst') {
         ChannelEvent* ch = new ChannelEvent(paramID, value);
         seq.addEvent(ch);

@@ -40,7 +40,7 @@ support building with Microsoft Visual C++.
 
 Template project
 ----------------
-A template project for creating tools or plugins basd on seq2wav may be found in the `template/`
+A template project for creating tools or plugins based on seq2wav may be found in the `template/`
 folder. Copy all of the files in `template/` to a new folder and place the seq2wav source tree
 in a `seq2wav/` folder inside it. (If using `git`, you may use
 `git submodule add https://bitbucket.org/ahigerd/seq2wav` to clone seq2wav into the appropriate

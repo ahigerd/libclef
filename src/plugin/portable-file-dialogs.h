@@ -1537,6 +1537,7 @@ inline notify::notify(std::string const &title,
     }
 
     ENUMRESNAMEPROC icon_enum_callback = [](HMODULE, LPCTSTR, LPTSTR lpName, LONG_PTR lParam) -> BOOL
+      __attribute__((__stdcall__))
     {
         ((NOTIFYICONDATAW *)lParam)->hIcon = ::LoadIcon(GetModuleHandle(nullptr), lpName);
         return false;

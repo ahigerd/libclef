@@ -1,6 +1,8 @@
 #ifndef S2W_GUIUTILS_H
 #define S2W_GUIUTILS_H
 
+#include <QThread>
+
 #if QT_CONFIG(cxx11_future)
 #define qThreadCreate QThread::create
 #else
