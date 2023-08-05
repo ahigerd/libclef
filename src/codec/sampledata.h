@@ -26,6 +26,7 @@ struct SampleData {
 private:
   mutable int32_t m_numSamples;
   mutable double m_duration;
+  mutable uint8_t m_numChannels;
 };
 
 #endif

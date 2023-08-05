@@ -50,6 +50,7 @@ protected:
   virtual int16_t generateSample(double time, int channel = 0);
   virtual int16_t filterSample(double time, int channel, int16_t sample) = 0;
   std::shared_ptr<AudioNode> source;
+  AudioParam* pTrigger;
 };
 
 class DelayNode : public FilterNode {
@@ -68,6 +69,8 @@ protected:
 
 private:
   void init(double delay, double initial);
+  AudioParam* pDelay;
+  AudioParam* pInitial;
 };
 
 #endif

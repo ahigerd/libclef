@@ -22,10 +22,15 @@ SampleData::SampleData(S2WContext* ctx, double sampleRate, int loopStart, int lo
 uint32_t SampleData::numSamples() const
 {
   if (m_numSamples < 0) {
-    m_numSamples = 0;
-    for (const std::vector<int16_t>& channel : channels) {
-      if (channel.size() > m_numSamples) {
-        m_numSamples = channel.size();
+    m_numChannels = channels.size();
+    if (m_numChannels == 0) {
+      m_numSamples = 0;
+      return 0;
+    }
+    m_numSamples = channels[0].size();
+    for (int i = 1; i < m_numChannels; i++) {
+      if (channels[i].size() < m_numSamples) {
+        m_numSamples = channels[i].size();
       }
     }
   }
@@ -48,8 +53,10 @@ int16_t SampleData::at(int index, int channel) const
   if (loopEnd > 0 && loopEnd > loopStart && index > loopEnd) {
     index = loopStart + (index - loopStart) % (loopEnd - loopStart);
   }
-  if (index >= numSamples()) {
-    return 0;
+  if (index >= m_numSamples) {
+    if (m_numSamples >= 0 || index >= numSamples()) {
+      return 0;
+    }
   }
-  return channels[channel % channels.size()][index];
+  return channels[channel % m_numChannels][index];
 }

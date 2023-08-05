@@ -11,14 +11,13 @@ Envelope::Envelope(const SynthContext* ctx, double attack, double hold, double d
 Envelope::Envelope(const SynthContext* ctx, double attack, double hold, double decay, double sustain, double fade, double release)
 : FilterNode(ctx), expAttack(false), expDecay(false), stepAt(0), lastLevel(0), step(Attack)
 {
-  addParam(StartGain, 0.0);
-  addParam(Attack, attack);
-  addParam(Hold, hold);
-  addParam(Decay, decay);
-  addParam(Sustain, sustain);
-  addParam(Fade, fade);
-  addParam(Release, release);
-  addParam(Trigger, 1.0);
+  pStartGain = addParam(StartGain, 0.0).get();
+  pAttack = addParam(Attack, attack).get();
+  pHold = addParam(Hold, hold).get();
+  pDecay = addParam(Decay, decay).get();
+  pSustain = addParam(Sustain, sustain).get();
+  pFade = addParam(Fade, fade).get();
+  pRelease = addParam(Release, release).get();
 }
 
 bool Envelope::isActive() const
@@ -34,22 +33,22 @@ int16_t Envelope::filterSample(double time, int channel, int16_t sample)
   }
   switch (step) {
     case Attack: {
-      double a = paramValue(Attack, time);
+      double a = pAttack->valueAt(time);
       if (expAttack) {
         double dt = time - stepAt;
-        lastLevel = paramValue(StartGain, time) + fastExp(a, dt);
+        lastLevel = pStartGain->valueAt(time) + fastExp(a, dt);
         if (lastLevel < 1.0) {
           return lastLevel * sample;
         }
         return (lastLevel = lastLevel - a * time * time) * sample;
       } else if (time < a) {
-        return (lastLevel = lerp(paramValue(StartGain, time), 1.0, time, 0.0, a)) * sample;
+        return (lastLevel = lerp(pStartGain->valueAt(time), 1.0, time, 0.0, a)) * sample;
       }
       step = Hold;
       stepAt = time;
     }
     case Hold: {
-      double h = stepAt + paramValue(Hold, time);
+      double h = stepAt + pHold->valueAt(time);
       if (time < h) {
         lastLevel = 1.0;
         return sample;
@@ -58,8 +57,8 @@ int16_t Envelope::filterSample(double time, int channel, int16_t sample)
       stepAt = time;
     }
     case Decay: {
-      double d = paramValue(Decay, time);
-      double s = paramValue(Sustain, time);
+      double d = pDecay->valueAt(time);
+      double s = pSustain->valueAt(time);
       if (expDecay && d < 0) {
         double dt = time - stepAt;
         lastLevel = fastExp(-d, dt);
@@ -67,14 +66,14 @@ int16_t Envelope::filterSample(double time, int channel, int16_t sample)
           return lastLevel * sample;
         }
       } else if (time < d + stepAt) {
-        lastLevel = lerp(1.0, paramValue(Sustain, time), time, stepAt, d + stepAt);
+        lastLevel = lerp(1.0, pSustain->valueAt(time), time, stepAt, d + stepAt);
         return lastLevel * sample;
       }
       step = Sustain;
       stepAt = time;
     }
     case Sustain: {
-      double f = paramValue(Fade, time);
+      double f = pFade->valueAt(time);
       if (std::isfinite(f)) {
         if (expDecay && f < 0) {
           double dt = time - stepAt;
@@ -83,15 +82,15 @@ int16_t Envelope::filterSample(double time, int channel, int16_t sample)
             lastLevel = 0;
           }
         } else if (time < f + stepAt) {
-          lastLevel = lerp(paramValue(Sustain, time), 0.0, time, stepAt, f + stepAt);
+          lastLevel = lerp(pSustain->valueAt(time), 0.0, time, stepAt, f + stepAt);
         }
       } else {
-        lastLevel = paramValue(Sustain, time);
+        lastLevel = pSustain->valueAt(time);
       }
       return lastLevel * sample;
     }
     case Release: {
-      double r = paramValue(Release, time);
+      double r = pRelease->valueAt(time);
       if (expDecay && r < 0) {
         double dt = time - stepAt;
         double level = lastLevel * fastExp(-r, dt);

@@ -27,6 +27,13 @@ protected:
   virtual int16_t filterSample(double time, int channel, int16_t sample);
   double stepAt, lastLevel;
   int step;
+  AudioParam* pStartGain;
+  AudioParam* pAttack;
+  AudioParam* pHold;
+  AudioParam* pDecay;
+  AudioParam* pSustain;
+  AudioParam* pFade;
+  AudioParam* pRelease;
 };
 
 #endif

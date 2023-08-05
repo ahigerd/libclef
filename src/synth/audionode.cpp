@@ -18,10 +18,14 @@ void AudioNode::onParamAdded(int32_t key, std::shared_ptr<AudioParam>& param)
 
 int16_t AudioNode::getSample(double time, int channel)
 {
-  double scale = (pGain && *pGain) ? (*pGain)->valueAt(time) : 1.0;
+  double scale = pGain ? (*pGain)->valueAt(time) : 1.0;
   if (ctx->outputChannels > 1) {
-    double pan = (pPan && *pPan) ? (*pPan)->valueAt(time) : 0.5;
-    scale *= ((channel % 2) ? pan : (1 - pan));
+    if (pPan) {
+      double pan = (*pPan)->valueAt(time);
+      scale *= ((channel & 0x1) ? pan : (1.0 - pan));
+    } else {
+      scale *= .5;
+    }
   }
   return scale ? generateSample(time, channel) * scale : 0;
 }
@@ -76,15 +80,15 @@ DelayNode::DelayNode(std::shared_ptr<AudioNode> source, double delay, double ini
 
 void DelayNode::init(double delay, double initial)
 {
-  addParam(Delay, delay);
-  addParam(Initial, initial);
+  pDelay = addParam(Delay, delay).get();
+  pInitial = addParam(Initial, initial).get();
 }
 
 int16_t DelayNode::generateSample(double time, int channel)
 {
-  time -= paramValue(Delay, time, 0);
+  time -= pDelay->valueAt(time);
   if (time < 0) {
-    return paramValue(Initial, time, 0);
+    return pInitial->valueAt(time);
   }
   return FilterNode::generateSample(time, channel);
 }

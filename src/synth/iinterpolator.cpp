@@ -35,7 +35,7 @@ IInterpolator* IInterpolator::get(IInterpolator::InterpolationMode mode)
 
 int16_t ZeroInterpolator::interpolate(const SampleData* data, double time, int channel, double sampleStep) const
 {
-  return data->at(std::floor(time), channel);
+  return data->at(int(time), channel);
 }
 
 int16_t LinearInterpolator::interpolate(const SampleData* data, double time, int channel, double sampleStep) const

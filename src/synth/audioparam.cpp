@@ -104,9 +104,9 @@ void AudioParamContainer::onParamAdded(int32_t key, std::shared_ptr<AudioParam>&
 
 double AudioParamContainer::paramValue(int32_t key, double time, double defaultValue) const
 {
-  std::shared_ptr<AudioParam> obj(param(key));
-  if (obj) {
-    return obj->valueAt(time);
+  auto iter = params.find(key);
+  if (iter != params.end()) {
+    return iter->second->valueAt(time);;
   }
   return defaultValue;
 }

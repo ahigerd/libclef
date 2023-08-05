@@ -27,7 +27,7 @@ int16_t Sampler::generateSample(double time, int channel)
   while (time > lastTime) {
     offset += sampleStep;
     lastTime += ctx->sampleTime;
-    sampleStep = sampleStepBase * paramValue(Pitch, lastTime) * paramValue(PitchBend, lastTime);
+    sampleStep = sampleStepBase * pPitch->valueAt(lastTime) * pPitchBend->valueAt(lastTime);
   }
   if (sample->loopStart >= 0 && offset >= sample->loopEnd) {
     offset -= (sample->loopEnd - sample->loopStart);
