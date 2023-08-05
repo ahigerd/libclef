@@ -74,3 +74,5 @@ ifneq ($(EXPECT_XSPEC),$(XSPEC))
 endif
 
 gui/Makefile gui/Makefile.debug: validategui
+
+FORCE:

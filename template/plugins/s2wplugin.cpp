@@ -3,12 +3,19 @@
 // This include should come last to avoid namespace collisions.
 #include "plugin/baseplugin.h"
 
+#ifdef BUILD_CLAP
+#include "plugin/clapplugin.h"
+#endif
+
 // In the functions below, ctx->openFile() is provided by the plugin interface. Use
 // this instead of standard library functions to open additional files in order to use
 // the host's virtual filesystem.
 
 struct S2WPluginInfo {
   S2WPLUGIN_STATIC_FIELDS
+#ifdef BUILD_CLAP
+  using ClapPlugin = S2WClapPlugin<S2WPluginInfo>;
+#endif
 
   static bool isPlayable(std::istream& file) {
     // Implementations should check to see if the file is supported.

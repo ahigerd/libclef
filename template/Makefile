@@ -1,3 +1,5 @@
+_default: cli
+
 include config.mak
 
 cli: $(PLUGIN_NAME)$(EXE)
@@ -17,6 +19,8 @@ audacious: aud_$(PLUGIN_NAME).$(DLL)
 winamp: in_$(PLUGIN_NAME).dll
 
 foobar: foo_input_$(PLUGIN_NAME).dll
+
+clap: $(PLUGIN_NAME).clap
 
 seq2wav/src:
 	git submodule update --init --recursive
@@ -47,10 +51,10 @@ $(BUILDPATH)/lib$(PLUGIN_NAME)_d.a: src/Makefile $(BUILDPATH)/Makefile.d config.
 	$(MAKE) -C src ../$@
 
 gui/Makefile: gui/gui.pro seq2wav/gui/gui.pri Makefile config.mak
-	cd gui && qmake BUILDPATH=../$(BUILDPATH) PLUGIN_NAME=$(PLUGIN_NAME) S2W_LDFLAGS="$(LDFLAGS_R)"
+	cd gui && $(QMAKE) BUILDPATH=../$(BUILDPATH) PLUGIN_NAME=$(PLUGIN_NAME) S2W_LDFLAGS="$(LDFLAGS_R)"
 
 gui/Makefile.debug: gui/gui.pro seq2wav/gui/gui.pri Makefile config.mak
-	cd gui && qmake -o Makefile.debug BUILD_DEBUG=1 BUILDPATH=../$(BUILDPATH) PLUGIN_NAME=$(PLUGIN_NAME) S2W_LDFLAGS="$(LDFLAGS_D)"
+	cd gui && $(QMAKE) -o Makefile.debug BUILD_DEBUG=1 BUILDPATH=../$(BUILDPATH) PLUGIN_NAME=$(PLUGIN_NAME) S2W_LDFLAGS="$(LDFLAGS_D)"
 
 $(PLUGIN_NAME)_gui$(EXE): src/Makefile $(BUILDPATH)/Makefile.d config.mak seq2wav/$(BUILDPATH)/libseq2wav.a gui/Makefile $(BUILDPATH)/lib$(PLUGIN_NAME).a
 	$(MAKE) -C gui
@@ -74,6 +78,9 @@ else
 in_$(PLUGIN_NAME).dll in_$(PLUGIN_NAME)_d.dll: FORCE
 	$(MAKE) CROSS=mingw $@
 endif
+
+$(PLUGIN_NAME).clap: $(PLUGIN_NAME)$(EXE) seq2wav/$(BUILDPATH)/libseq2wav.a plugins/Makefile config.mak plugins/s2wplugin.cpp
+	$(MAKE) -C plugins ../$@
 
 guiclean: FORCE
 	-[ -f gui/Makefile ] && $(MAKE) -C gui distclean
