@@ -82,9 +82,10 @@ void S2WClapPluginBase::buildContext(const std::string& filePath, uint64_t instI
   if (!filePath.empty()) {
     if (synth) {
       delete synth;
+      synth = nullptr;
     }
-    std::ifstream file(filePath);
-    synth = createContext(ctx, filePath, file);
+    auto file = ctx->openFile(filePath);
+    synth = createContext(filePath, *file.get());
     synth->addChannel(&seq);
     prepareChannel(synth->channels[0].get());
     if (instID == 0xFFFFFFFFFFFFFFFFULL && synth->numInstruments() > 0) {
@@ -103,7 +104,31 @@ void S2WClapPluginBase::buildContext(const std::string& filePath, uint64_t instI
 bool S2WClapPluginBase::activate(double sampleRate, uint32_t minFrames, uint32_t maxFrames)
 {
   std::cerr << "activate" << std::endl;
-  buildContext(filePath);
+  try {
+    buildContext(filePath);
+  } catch (std::exception& e) {
+    std::string message(e.what());
+    std::system_error* se = dynamic_cast<std::system_error*>(&e);
+    if (se) {
+      message = se->code().message();
+    }
+    message += "\n\n" + filePath;
+
+    messageDialog = new pfd::message(
+        s2wPlugin->pluginName(),
+        message,
+        pfd::choice::ok,
+        pfd::icon::error
+    );
+    filePath.clear();
+    seq.reset();
+    if (synth) {
+      delete synth;
+    }
+    synth = new SynthContext(ctx, 48000, 2);
+    paramOrder = { 'FNAM', 'inst' };
+    return false;
+  }
   synth->setSampleRate(sampleRate);
   return true;
 }
@@ -135,6 +160,11 @@ void S2WClapPluginBase::reset()
 
 clap_process_status S2WClapPluginBase::process(const clap_process_t* process)
 {
+  if (messageDialog && messageDialog->ready(0)) {
+    delete messageDialog;
+    messageDialog = nullptr;
+  }
+
   if (!synth) {
     return CLAP_PROCESS_CONTINUE;
   }
@@ -146,9 +176,12 @@ clap_process_status S2WClapPluginBase::process(const clap_process_t* process)
     if (fn.size()) {
       std::cerr << "selected " << fn[0] << std::endl;
       filePath = fn[0];
-      activate(synth->sampleRate, 0, 0);
-      requestParamSync(true);
-      return CLAP_PROCESS_CONTINUE;
+      if (activate(synth->sampleRate, 0, 0)) {
+        requestParamSync(true);
+        return CLAP_PROCESS_CONTINUE;
+      } else {
+        return CLAP_PROCESS_ERROR;
+      }
     } else {
       std::cerr << "canceled" << std::endl;
       requestParamSync(false);
@@ -306,7 +339,14 @@ void S2WClapPluginBase::paramValueEvent(const clap_event_param_value_t* event)
       requestParamSync(false);
       return;
     }
-    openFileDialog = new pfd::open_file("Select file", filePath);
+    std::vector<std::string> filters;
+    for (const auto& ext : s2wPlugin->extensions()) {
+      filters.push_back(ext.second);
+      filters.push_back("*." + ext.first);
+    }
+    filters.push_back("All Files");
+    filters.push_back("*");
+    openFileDialog = new pfd::open_file("Select file", filePath, filters);
   } else if (event->param_id == 'inst') {
     std::lock_guard lock(synthMutex);
     IInstrument* found = selectInstrumentByIndex(uint64_t(event->value), false, false);

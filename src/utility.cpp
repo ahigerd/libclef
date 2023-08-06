@@ -12,7 +12,16 @@ namespace std { using namespace std::experimental; }
 
 std::unique_ptr<std::istream> openFstream(const std::string& path)
 {
-  return std::unique_ptr<std::istream>(new std::ifstream(std::filesystem::u8path(path), std::ios::in | std::ios::binary));
+  std::ifstream* stream = new std::ifstream();
+  try {
+    stream->exceptions(std::ifstream::failbit);
+    stream->open(std::filesystem::u8path(path), std::ios::in | std::ios::binary);
+    stream->exceptions(std::ifstream::goodbit);
+    return std::unique_ptr<std::istream>(stream);
+  } catch (...) {
+    delete stream;
+    throw;
+  }
 }
 
 double noteToFreq(double midiNote)

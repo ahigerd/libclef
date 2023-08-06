@@ -19,6 +19,11 @@ else ifeq ($(CROSS),mingw)
 	CXX := i686-w64-mingw32-g++-posix
 	OS := Windows_NT
 	EXPECT_XSPEC := win32-g++
+else ifeq ($(CROSS),mingw64)
+	CC := x86_64-w64-mingw32-gcc-posix
+	CXX := x86_64-w64-mingw32-g++-posix
+	OS := Windows_NT
+	EXPECT_XSPEC := win32-g++
 endif
 ifeq ($(OS),Windows_NT)
 	DLL := dll
@@ -35,7 +40,11 @@ endif
 endif
 
 CXXFLAGS_R := $(CXXFLAGS) -O3 -ffast-math
+ifeq ($(OS),Windows_NT)
+CXXFLAGS_D := $(CXXFLAGS) -Og -ffast-math -gstabs
+else
 CXXFLAGS_D := $(CXXFLAGS) -Og -ffast-math -ggdb3
+endif
 LDFLAGS := $(LDFLAGS) -L../seq2wav/$(BUILDPATH) -L../$(BUILDPATH) $(PLUGIN_LDFLAGS)
 LDFLAGS_R := $(LDFLAGS) -lseq2wav
 LDFLAGS_D := $(LDFLAGS) -lseq2wav_d

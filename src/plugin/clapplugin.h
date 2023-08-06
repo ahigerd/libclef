@@ -12,6 +12,7 @@
 #include <cstring>
 namespace pfd {
   class open_file;
+  class message;
 }
 
 class S2WClapPluginBase
@@ -20,6 +21,7 @@ public:
   clap_plugin_t plugin;
   const clap_host_t* host;
   S2WContext* ctx;
+  S2WPluginBase* s2wPlugin;
   SynthContext* synth;
   RealTimeTrack seq;
 
@@ -57,7 +59,7 @@ protected:
   void requestParamSync(bool rescanInfo = false);
 
   void buildContext(const std::string& filename, uint64_t instID = 0xFFFFFFFFFFFFFFFFULL);
-  virtual SynthContext* createContext(S2WContext* ctx, const std::string& filename, std::istream& file) = 0;
+  virtual SynthContext* createContext(const std::string& filename, std::istream& file) = 0;
   virtual BaseNoteEvent* createNoteEvent(const clap_event_note_t* event);
   virtual void prepareChannel(Channel* channel) {}
 
@@ -102,6 +104,7 @@ private:
   std::thread::id mainThreadID;
   std::atomic<bool> mustRescanInfo, queueRescanValues, mustRestart;
   pfd::open_file* openFileDialog;
+  pfd::message* messageDialog;
 };
 
 template <typename S2WPluginInfo>
@@ -110,16 +113,15 @@ class S2WClapPlugin : public S2WClapPluginBase
 public:
   using PluginBase = S2WClapPlugin<S2WPluginInfo>;
   using PluginInfo = S2WPluginInfo;
-  PluginInfo* s2wPlugin;
 
   S2WClapPlugin(const clap_host_t* host) : S2WClapPluginBase(host)
   {
-    s2wPlugin = new S2WPluginInfo();
+    s2wPlugin = new S2WPlugin<PluginInfo>(ctx);
   }
 
-  SynthContext* createContext(S2WContext* ctx, const std::string& filename, std::istream& file)
+  SynthContext* createContext(const std::string& filename, std::istream& file)
   {
-    return s2wPlugin->prepare(ctx, filename, file);
+    return s2wPlugin->prepare(filename, file);
   }
 };
 
