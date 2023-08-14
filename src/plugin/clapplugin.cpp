@@ -14,8 +14,8 @@
 #define WRAP_METHOD(RET, method, sig, ...) []sig -> RET { return reinterpret_cast<S2WClapPluginBase*>(plugin->plugin_data)->method(__VA_ARGS__); }
 #define WRAP_METHOD_VOID(method, sig, ...) []sig { reinterpret_cast<S2WClapPluginBase*>(plugin->plugin_data)->method(__VA_ARGS__); }
 S2WClapPluginBase::S2WClapPluginBase(const clap_host_t* host)
-: host(host), ctx(new S2WContext(true)), synth(nullptr), currentInstID(0), instrument(nullptr), hostParams(nullptr), mustRescanInfo(true),
-  mustRestart(false), openFileDialog(nullptr)
+: host(host), ctx(new S2WContext(true)), synth(nullptr), currentInstID(0xFFFFFFFFFFFFFFFFULL), instrument(nullptr), hostParams(nullptr), mustRescanInfo(true),
+  mustRestart(false), openFileDialog(nullptr), messageDialog(nullptr)
 {
   mainThreadID = std::this_thread::get_id();
 
@@ -298,8 +298,16 @@ BaseNoteEvent* S2WClapPluginBase::createNoteEvent(const clap_event_note_t* event
 
 void S2WClapPluginBase::noteEvent(const clap_event_note_t* event)
 {
+  if (currentInstID == 0xFFFFFFFFFFFFFFFFULL) {
+    // No selected instrument (probably no file loaded).
+    return;
+  }
   if (event->header.type == CLAP_EVENT_NOTE_ON) {
     BaseNoteEvent* note = createNoteEvent(event);
+    if (!note) {
+      // The plugin has rejected the note. Don't even try to play it.
+      return;
+    }
     if (event->note_id >= 0) {
       note->playbackID = event->note_id;
     } else {
@@ -331,6 +339,7 @@ void S2WClapPluginBase::expressionEvent(const clap_event_note_expression_t* even
 
 void S2WClapPluginBase::paramValueEvent(const clap_event_param_value_t* event)
 {
+  std::cerr << fourccToString(event->param_id) << " = " << event->value << std::endl;
   if (event->param_id == 'FNAM') {
     if (event->value < 0.5) {
       return;
@@ -347,14 +356,21 @@ void S2WClapPluginBase::paramValueEvent(const clap_event_param_value_t* event)
     filters.push_back("All Files");
     filters.push_back("*");
     openFileDialog = new pfd::open_file("Select file", filePath, filters);
+    return;
   } else if (event->param_id == 'inst') {
     std::lock_guard lock(synthMutex);
-    IInstrument* found = selectInstrumentByIndex(uint64_t(event->value), false, false);
+    uint64_t instID = std::round(event->value);
+    IInstrument* found = selectInstrumentByIndex(instID, false, false);
     if (found) {
       ChannelEvent* ch = new ChannelEvent('inst', uint64_t(currentInstID));
       ch->timestamp = eventTimestamp(event);
       seq.addEvent(ch);
     }
+    return;
+  }
+  if (currentInstID == 0xFFFFFFFFFFFFFFFFULL) {
+    // No selected instrument (probably no file loaded).
+    return;
   } else if (event->note_id > 0) {
     ModulatorEvent* mod = new ModulatorEvent(event->note_id, event->param_id, event->value);
     mod->timestamp = eventTimestamp(event);
