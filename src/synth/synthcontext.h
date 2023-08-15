@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <map>
 class Channel;
 class IInterpolator;
 class ITrack;
@@ -44,11 +45,12 @@ public:
   uint64_t instrumentID(int index) const;
   IInstrument* getInstrument(uint64_t id) const;
   IInstrument* defaultInstrument() const;
+  std::string instrumentName(uint64_t id) const;
 
 protected:
   std::unique_ptr<IInstrument> defaultInst;
   std::vector<uint64_t> instrumentIDs;
-  std::unordered_map<uint64_t, std::unique_ptr<IInstrument>> instruments;
+  std::map<uint64_t, std::unique_ptr<IInstrument>> instruments;
 
 private:
   std::vector<int16_t> mixBuffer;

@@ -38,19 +38,25 @@ void TagView::loadTags(S2WPluginBase* plugin, const QString& filename, const std
     layout->addRow(tr("&Subsong:"), subsong);
     int target = -1;
     for (const std::string& s : subsongs) {
-      auto subFile = plugin->context()->openFile(s);
-      if (!subFile) {
+      std::string subFilename = QString::fromStdString(s).section('?', 0, 0).toStdString();
+      try {
+        auto subFile = plugin->context()->openFile(subFilename);
+        if (!subFile) {
+          continue;
+        }
+        TagMap subTags = plugin->getTags(s, *subFile.get());
+        if (s == stdPath) {
+          target = subsong->count();
+        }
+        QString title = QString::fromStdString(subTags["title"]);
+        if (title.isEmpty()) {
+          title = QString::fromStdString(s).section('?', -1);
+        }
+        subsong->addItem(title, QString::fromStdString(s));
+      } catch (std::exception& e) {
+        qDebug() << s.c_str() << subFilename.c_str() << e.what();
         continue;
       }
-      TagMap subTags = plugin->getTags(s, *subFile.get());
-      if (s == stdPath) {
-        target = subsong->count();
-      }
-      QString title = QString::fromStdString(subTags["title"]);
-      if (title.isEmpty()) {
-        title = QString::fromStdString(s).section('?', -1);
-      }
-      subsong->addItem(title, QString::fromStdString(s));
     }
     subsong->setCurrentIndex(target);
     QObject::connect(subsong, SIGNAL(currentIndexChanged(int)), this, SLOT(subsongSelected(int)), Qt::QueuedConnection);

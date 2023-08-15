@@ -152,6 +152,19 @@ IInstrument* SynthContext::defaultInstrument() const
   return defaultInst.get();
 }
 
+std::string SynthContext::instrumentName(uint64_t id) const
+{
+  IInstrument* inst = getInstrument(id);
+  std::string name;
+  if (inst) {
+    name = inst->displayName();
+  }
+  if (name.size() == 0) {
+    return std::to_string(id);
+  }
+  return name;
+}
+
 int SynthContext::numInstruments() const
 {
   return instrumentIDs.size();

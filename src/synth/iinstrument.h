@@ -19,6 +19,8 @@ public:
   virtual Channel::Note* noteEvent(Channel* channel, std::shared_ptr<BaseNoteEvent> event) = 0;
   virtual void modulatorEvent(Channel* channel, std::shared_ptr<ModulatorEvent> event);
   virtual Channel::Note* userEvent(Channel* channel, std::shared_ptr<SequenceEvent> event);
+
+  virtual std::string displayName() const;
 };
 
 class DefaultInstrument : public IInstrument {

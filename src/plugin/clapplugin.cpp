@@ -86,12 +86,20 @@ void S2WClapPluginBase::buildContext(const std::string& filePath, uint64_t instI
     }
     auto file = ctx->openFile(filePath);
     synth = createContext(filePath, *file.get());
+    if (!synth) {
+      std::cerr << "failed to create context when loading " << filePath << std::endl;
+      return;
+    }
     synth->addChannel(&seq);
     prepareChannel(synth->channels[0].get());
     if (instID == 0xFFFFFFFFFFFFFFFFULL && synth->numInstruments() > 0) {
       instID = synth->instrumentID(0);
     }
     IInstrument* found = selectInstrumentByID(instID, true, false);
+    if (!found) {
+      instID = synth->instrumentID(0);
+      found = selectInstrumentByID(instID, true, false);
+    }
     if (found) {
       seq.addEvent(new ChannelEvent('inst', uint64_t(currentInstID)));
     } else {
@@ -103,7 +111,7 @@ void S2WClapPluginBase::buildContext(const std::string& filePath, uint64_t instI
 
 bool S2WClapPluginBase::activate(double sampleRate, uint32_t minFrames, uint32_t maxFrames)
 {
-  std::cerr << "activate" << std::endl;
+  std::cerr << "activate " << filePath << " " << currentInstID << std::endl;
   try {
     buildContext(filePath);
   } catch (std::exception& e) {
@@ -114,6 +122,7 @@ bool S2WClapPluginBase::activate(double sampleRate, uint32_t minFrames, uint32_t
     }
     message += "\n\n" + filePath;
 
+    std::cerr << message << std::endl;
     messageDialog = new pfd::message(
         s2wPlugin->pluginName(),
         message,
@@ -547,7 +556,8 @@ bool S2WClapPluginBase::paramValueText(clap_id id, double value, char* text, uin
     }
   } else if (id == 'inst') {
     std::lock_guard lock(synthMutex);
-    strValue = std::to_string(synth->instrumentID(uint64_t(value)));
+    uint64_t id = synth->instrumentID(uint64_t(value));
+    strValue = synth->instrumentName(id);
   } else {
     strValue = std::to_string(value);
   }

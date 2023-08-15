@@ -52,6 +52,11 @@ Channel::Note* IInstrument::userEvent(Channel* channel, std::shared_ptr<Sequence
   return nullptr;
 }
 
+std::string IInstrument::displayName() const
+{
+  return std::string();
+}
+
 Channel::Note* DefaultInstrument::noteEvent(Channel* channel, std::shared_ptr<BaseNoteEvent> event)
 {
   std::shared_ptr<AudioNode> node;
