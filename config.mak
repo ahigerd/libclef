@@ -64,23 +64,27 @@ ifeq ($(XSPEC),)
 endif
 endef
 
-validategui: FORCE
-	$(eval XSPEC := $(shell $(QMAKE) -query QMAKE_XSPEC))
-	$(eval $(call validate_xspec))
-ifeq ($(EXPECT_XSPEC),)
-	$(eval EXPECT_XSPEC := $(shell $(QMAKE) -query QMAKE_SPEC))
-endif
-ifneq ($(EXPECT_XSPEC),$(XSPEC))
+define validate_spec =
+ifneq ("$(EXPECT_XSPEC)","$(XSPEC)")
 	@echo
 	@echo Incorrect qmake binary detected: $(QMAKE)
-	@echo - qmake target platform: $(XSPEC)
-	@echo - expected: $(EXPECT_XSPEC)
+	@echo - qmake target platform: "'$(XSPEC)'"
+	@echo - expected: "'$(EXPECT_XSPEC)'"
 	@echo
 	@echo Please specify the path to the correct qmake binary:
 	@echo "  $(MAKE) gui QMAKE=/path/to/qmake"
 	@echo
 	@exit 1
 endif
+endef
+
+validategui: FORCE
+	$(eval XSPEC := $(shell $(QMAKE) -query QMAKE_XSPEC))
+	$(eval $(call validate_xspec))
+ifeq ($(EXPECT_XSPEC),)
+	$(eval EXPECT_XSPEC := $(shell $(QMAKE) -query QMAKE_SPEC))
+endif
+	$(eval $(call validate_spec))
 
 gui/Makefile gui/Makefile.debug: validategui
 
