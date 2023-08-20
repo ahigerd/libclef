@@ -120,6 +120,7 @@ void MainWindow::openFile(const QString& path, bool doAcquire, bool autoPlay)
     }
   }
   currentFile = path;
+  controls->stop();
   if (ctx) {
     m_plugin->unload();
     ctx = nullptr;

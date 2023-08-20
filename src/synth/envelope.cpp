@@ -61,7 +61,7 @@ int16_t Envelope::filterSample(double time, int channel, int16_t sample)
       double s = pSustain->valueAt(time);
       if (expDecay && d < 0) {
         double dt = time - stepAt;
-        lastLevel = fastExp(-d, dt);
+        lastLevel = fastExp(d, dt);
         if (lastLevel > s) {
           return lastLevel * sample;
         }
@@ -77,7 +77,7 @@ int16_t Envelope::filterSample(double time, int channel, int16_t sample)
       if (std::isfinite(f)) {
         if (expDecay && f < 0) {
           double dt = time - stepAt;
-          lastLevel = fastExp(-f, dt);
+          lastLevel = fastExp(f, dt);
           if (lastLevel < 1.0 / 32767.0) {
             lastLevel = 0;
           }
@@ -93,8 +93,8 @@ int16_t Envelope::filterSample(double time, int channel, int16_t sample)
       double r = pRelease->valueAt(time);
       if (expDecay && r < 0) {
         double dt = time - stepAt;
-        double level = lastLevel * fastExp(-r, dt);
-        if (level <= 0) {
+        double level = lastLevel * fastExp(r, dt);
+        if (level < 1.0 / 32767.0) {
           step = 0;
           return 0;
         }
