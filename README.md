@@ -6,9 +6,10 @@ seq2wav is a generic library for building decoders and media player plugins for 
 Currently, there is support for the following targets:
 
 * Command-line (Windows, POSIX platforms)
-* Audacious plugin (Windows, macOS, X11 platforms)
-* Winamp plugin (Windows)
-* Foobar2000 plugin (Windows)
+* Audacious player plugin (Windows, macOS, X11 platforms)
+* Winamp player plugin (Windows)
+* Foobar2000 player plugin (Windows)
+* CLAP instrument plugin (Windows, POSIX platforms)
 
 Building
 --------
@@ -16,7 +17,7 @@ seq2wav is meant to be statically linked as a component in another project. See 
 project" section below for more information.
 
 On POSIX systems or when building under MinGW, seq2wav itself has no dependencies beyond a
-C++14-compliant compiler and GNU Make. To build seq2wav using Microsoft Visual Studio, ATL support
+C++17-compliant compiler and GNU Make. To build seq2wav using Microsoft Visual Studio, ATL support
 and the Visual Studio command-line tools must be installed.
 
 To build an Audacious plugin, the Audacious development headers must be present. These may be found in
@@ -57,5 +58,9 @@ Further information can be found in the [template project documentation](templat
 
 License
 -------
-seq2wav is copyright (c) 2020-2022 Adam Higerd and distributed
+seq2wav is copyright (c) 2020-2023 Adam Higerd and distributed
 under the terms of the [MIT license](LICENSE.md).
+
+[CLAP](https://cleveraudio.org/) is an open-source audio plugin format. The
+[CLAP SDK](https://github.com/free-audio/clap) is copyright (c) 2021 Alexander BIQUE
+and distributed under the terms of the [MIT license](LICENSE.CLAP).
