@@ -557,7 +557,7 @@ bool S2WClapPluginBase::paramValueText(clap_id id, double value, char* text, uin
   } else if (id == 'inst') {
     std::lock_guard lock(synthMutex);
     uint64_t id = synth->instrumentID(uint64_t(value));
-    strValue = synth->instrumentName(id);
+    strValue = "[" + std::to_string(uint64_t(value)) + "] " + synth->instrumentName(id);
   } else {
     strValue = std::to_string(value);
   }

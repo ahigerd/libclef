@@ -114,11 +114,11 @@ double fastExp(double r, double dt)
 
   // clamp results to appropriate range
   if (r < 0) {
-    if (idx < 0) return HUGE_VAL;
+    if (idx < 0) return 0;
     if (idx > 1023) return 1;
   } else {
     if (idx < 1024) return 1;
-    if (idx > 2047) return 0;
+    if (idx > 2047) return HUGE_VAL;
   }
 
   // linear interpolation
