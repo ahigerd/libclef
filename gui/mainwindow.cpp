@@ -71,6 +71,15 @@ void MainWindow::openFile()
     return;
   }
   QStringList filters;
+  auto exts = m_plugin->extensions();
+  if (exts.size() > 1) {
+    QString allExts;
+    for (const auto& pair : m_plugin->extensions()) {
+      QString ext = QString::fromStdString(pair.first);
+      allExts += QStringLiteral(" *.%1").arg(ext);
+    }
+    filters << tr("All supported formats (%1)").arg(allExts.trimmed());
+  }
   for (const auto& pair : m_plugin->extensions()) {
     QString desc = QString::fromStdString(pair.second);
     if (!desc.contains("(")) {
@@ -127,7 +136,7 @@ void MainWindow::openFile(const QString& path, bool doAcquire, bool autoPlay)
   }
   {
     auto stream = m_plugin->context()->openFile(stdFilename);
-    if (!m_plugin->isPlayable(stdFilename, *stream)) {
+    if (!m_plugin->isPlayable(stdFilename, *stream, true)) {
       // TODO: error
       m_plugin->unload();
       ctx = nullptr;

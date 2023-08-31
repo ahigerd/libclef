@@ -34,7 +34,7 @@ struct TagsM3UMixin {
 #ifdef BUILD_DUMMY_PLUGIN
 struct DummyPluginInfo : public TagsM3UMixin {
   S2WPLUGIN_STATIC_FIELDS
-  static bool isPlayable(std::istream& file) {
+  static bool isPlayable(S2WContext* s2w, const std::string& filename, std::istream& file, bool ignoreExtension = false) {
     return false;
   }
   static double length(S2WContext* s2w, const std::string& filename, std::istream& file) {
@@ -84,7 +84,7 @@ public:
   virtual const std::string& pluginName() const = 0;
   virtual const ConstPairList& extensions() const = 0;
   virtual const std::string& about() const = 0;
-  virtual bool isPlayable(const std::string& filename, std::istream& file) const = 0;
+  virtual bool isPlayable(const std::string& filename, std::istream& file, bool ignoreExtension = false) const = 0;
   virtual double length(const std::string& filename, std::istream& file) const = 0;
   virtual int sampleRate(const std::string& filename, std::istream& file) const = 0; // of unloaded track
 
@@ -101,6 +101,9 @@ protected:
 
 template <typename Info, typename U = int> struct GetSubsongs {
 static std::vector<std::string> getSubsongsImpl(S2WContext* s2w, const std::string& filename, std::istream& file) {
+  (void)s2w;
+  (void)filename;
+  (void)file;
   return std::vector<std::string>();
 }
 };
@@ -127,14 +130,14 @@ public:
     static std::string message = Info::about + seq2wavCopyright();
     return message;
   }
-  virtual bool isPlayable(const std::string& filename, std::istream& file) const {
+  virtual bool isPlayable(const std::string& filename, std::istream& file, bool ignoreExtension = false) const {
     try {
-      if (!matchExtension(filename)) {
+      if (!ignoreExtension && !matchExtension(filename)) {
         return false;
       }
       file.clear();
       file.seekg(0);
-      return Info::isPlayable(file);
+      return Info::isPlayable(s2w, filename, file);
     } catch (...) {
       return false;
     }
