@@ -48,7 +48,7 @@ template <typename T, typename Container>
 T parseInt(const Container& buffer, size_t offset)
 {
   uint64_t result = 0;
-  for (ssize_t i = sizeof(T) - 1; i >= 0; --i) {
+  for (ssize_t i = sizeof(T) - 1; i >= 0 && i < sizeof(T); --i) {
     result = (result << 8) | uint8_t(buffer[offset + i]);
   }
   return T(result);
