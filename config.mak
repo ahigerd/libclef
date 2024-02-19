@@ -14,14 +14,24 @@ ifneq ($(OS),Windows_NT)
 endif
 	EXPECT_XSPEC := win32-msvc
 plugins: winamp foobar
-else ifeq ($(CROSS),mingw)
+else ifeq ($(CROSS),mingw-posix)
 	CC := i686-w64-mingw32-gcc-posix
 	CXX := i686-w64-mingw32-g++-posix
 	OS := Windows_NT
 	EXPECT_XSPEC := win32-g++
-else ifeq ($(CROSS),mingw64)
+else ifeq ($(CROSS),mingw64-posix)
 	CC := x86_64-w64-mingw32-gcc-posix
 	CXX := x86_64-w64-mingw32-g++-posix
+	OS := Windows_NT
+	EXPECT_XSPEC := win32-g++
+else ifeq ($(CROSS),mingw)
+	CC := i686-w64-mingw32-gcc
+	CXX := i686-w64-mingw32-g++
+	OS := Windows_NT
+	EXPECT_XSPEC := win32-g++
+else ifeq ($(CROSS),mingw64)
+	CC := x86_64-w64-mingw32-gcc
+	CXX := x86_64-w64-mingw32-g++
 	OS := Windows_NT
 	EXPECT_XSPEC := win32-g++
 endif

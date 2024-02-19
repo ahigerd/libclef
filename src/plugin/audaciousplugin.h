@@ -96,7 +96,7 @@ public:
 };
 
 template <typename ClefPluginInfo>
-class ClefPlugin : public InputPlugin {
+class ClefAudPlugin : public InputPlugin {
   struct ExtExpand {
     std::vector<const char*> exts;
     operator const char* const *() const { return exts.data(); }
@@ -113,7 +113,7 @@ class ClefPlugin : public InputPlugin {
   static ExtExpand extensions;
 
 public:
-  ClefPlugin();
+  ClefAudPlugin();
 
   bool is_our_file(const char* filename, VFSFile& file) {
     vfsfile_istream vs(&file);
@@ -181,7 +181,7 @@ static std::unique_ptr<std::istream> clefAudaciousOpenFile(const std::string& fi
 }
 
 template <typename ClefPluginInfo>
-ClefPlugin<ClefPluginInfo>::ClefPlugin()
+ClefAudPlugin<ClefPluginInfo>::ClefAudPlugin()
 : InputPlugin(
     PluginInfo{ N_(plugin.pluginName().c_str()), plugin.pluginName().c_str(), plugin.about().c_str() },
     InputInfo().with_priority(8).with_exts(extensions)
@@ -190,7 +190,7 @@ ClefPlugin<ClefPluginInfo>::ClefPlugin()
 }
 
 template <typename ClefPluginInfo>
-bool ClefPlugin<ClefPluginInfo>::play(const char* filename, VFSFile& file)
+bool ClefAudPlugin<ClefPluginInfo>::play(const char* filename, VFSFile& file)
 {
   vfsfile_istream vs(&file);
   bool ok = plugin.play(filename, vs);
@@ -214,6 +214,6 @@ bool ClefPlugin<ClefPluginInfo>::play(const char* filename, VFSFile& file)
 }
 
 #define CLEF_PLUGIN(ClefPluginInfo) \
-  template<> ClefPlugin<ClefPluginInfo>::ExtExpand ClefPlugin<ClefPluginInfo>::extensions = ClefPlugin<ClefPluginInfo>::ExtExpand(); \
-  EXPORT ClefPlugin<ClefPluginInfo> aud_plugin_instance;
+  template<> ClefAudPlugin<ClefPluginInfo>::ExtExpand ClefAudPlugin<ClefPluginInfo>::extensions = ClefAudPlugin<ClefPluginInfo>::ExtExpand(); \
+  EXPORT ClefAudPlugin<ClefPluginInfo> aud_plugin_instance;
 #endif
