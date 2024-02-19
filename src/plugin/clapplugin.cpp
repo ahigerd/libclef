@@ -11,10 +11,10 @@
 #include <limits.h>
 
 #define C_P const clap_plugin_t* plugin
-#define WRAP_METHOD(RET, method, sig, ...) []sig -> RET { return reinterpret_cast<S2WClapPluginBase*>(plugin->plugin_data)->method(__VA_ARGS__); }
-#define WRAP_METHOD_VOID(method, sig, ...) []sig { reinterpret_cast<S2WClapPluginBase*>(plugin->plugin_data)->method(__VA_ARGS__); }
-S2WClapPluginBase::S2WClapPluginBase(const clap_host_t* host)
-: host(host), ctx(new S2WContext(true)), synth(nullptr), currentInstID(0xFFFFFFFFFFFFFFFFULL), instrument(nullptr), hostParams(nullptr), mustRescanInfo(true),
+#define WRAP_METHOD(RET, method, sig, ...) []sig -> RET { return reinterpret_cast<ClefClapPluginBase*>(plugin->plugin_data)->method(__VA_ARGS__); }
+#define WRAP_METHOD_VOID(method, sig, ...) []sig { reinterpret_cast<ClefClapPluginBase*>(plugin->plugin_data)->method(__VA_ARGS__); }
+ClefClapPluginBase::ClefClapPluginBase(const clap_host_t* host)
+: host(host), ctx(new ClefContext(true)), synth(nullptr), currentInstID(0xFFFFFFFFFFFFFFFFULL), instrument(nullptr), hostParams(nullptr), mustRescanInfo(true),
   mustRestart(false), openFileDialog(nullptr), messageDialog(nullptr)
 {
   mainThreadID = std::this_thread::get_id();
@@ -48,7 +48,7 @@ S2WClapPluginBase::S2WClapPluginBase(const clap_host_t* host)
   stateExtension.load = WRAP_METHOD(bool, loadState, (C_P, const clap_istream_t* stream), stream);
 }
 
-S2WClapPluginBase::~S2WClapPluginBase()
+ClefClapPluginBase::~ClefClapPluginBase()
 {
   if (synth) {
     delete synth;
@@ -58,7 +58,7 @@ S2WClapPluginBase::~S2WClapPluginBase()
   }
 }
 
-bool S2WClapPluginBase::init()
+bool ClefClapPluginBase::init()
 {
   hostParams = reinterpret_cast<const clap_host_params_t*>(host->get_extension(host, CLAP_EXT_PARAMS));
   synth = new SynthContext(ctx, 48000, 2);
@@ -66,7 +66,7 @@ bool S2WClapPluginBase::init()
   return true;
 }
 
-void S2WClapPluginBase::destroy()
+void ClefClapPluginBase::destroy()
 {
   if (synth) {
     delete synth;
@@ -75,7 +75,7 @@ void S2WClapPluginBase::destroy()
   delete this;
 }
 
-void S2WClapPluginBase::buildContext(const std::string& filePath, uint64_t instID)
+void ClefClapPluginBase::buildContext(const std::string& filePath, uint64_t instID)
 {
   std::lock_guard lock(synthMutex);
   seq.reset();
@@ -109,7 +109,7 @@ void S2WClapPluginBase::buildContext(const std::string& filePath, uint64_t instI
   }
 }
 
-bool S2WClapPluginBase::activate(double sampleRate, uint32_t minFrames, uint32_t maxFrames)
+bool ClefClapPluginBase::activate(double sampleRate, uint32_t minFrames, uint32_t maxFrames)
 {
   std::cerr << "activate " << filePath << " " << currentInstID << std::endl;
   try {
@@ -124,7 +124,7 @@ bool S2WClapPluginBase::activate(double sampleRate, uint32_t minFrames, uint32_t
 
     std::cerr << message << std::endl;
     messageDialog = new pfd::message(
-        s2wPlugin->pluginName(),
+        clefPlugin->pluginName(),
         message,
         pfd::choice::ok,
         pfd::icon::error
@@ -142,22 +142,22 @@ bool S2WClapPluginBase::activate(double sampleRate, uint32_t minFrames, uint32_t
   return true;
 }
 
-void S2WClapPluginBase::deactivate()
+void ClefClapPluginBase::deactivate()
 {
   std::cerr << "deactivate" << std::endl;
   seq.reset();
 }
 
-bool S2WClapPluginBase::startProcessing()
+bool ClefClapPluginBase::startProcessing()
 {
   return true;
 }
 
-void S2WClapPluginBase::stopProcessing()
+void ClefClapPluginBase::stopProcessing()
 {
 }
 
-void S2WClapPluginBase::reset()
+void ClefClapPluginBase::reset()
 {
   if (!synth) {
     return;
@@ -167,7 +167,7 @@ void S2WClapPluginBase::reset()
   activate(sampleRate, 0, 0);
 }
 
-clap_process_status S2WClapPluginBase::process(const clap_process_t* process)
+clap_process_status ClefClapPluginBase::process(const clap_process_t* process)
 {
   if (messageDialog && messageDialog->ready(0)) {
     delete messageDialog;
@@ -225,7 +225,7 @@ clap_process_status S2WClapPluginBase::process(const clap_process_t* process)
   }
 }
 
-double S2WClapPluginBase::eventTimestamp(const clap_event_header_t* event) const
+double ClefClapPluginBase::eventTimestamp(const clap_event_header_t* event) const
 {
   if (synth) {
     //return (steadyTime + event->time) * synth->sampleTime;
@@ -234,7 +234,7 @@ double S2WClapPluginBase::eventTimestamp(const clap_event_header_t* event) const
   return -1;
 }
 
-void S2WClapPluginBase::dispatchEvent(const clap_event_header_t* event)
+void ClefClapPluginBase::dispatchEvent(const clap_event_header_t* event)
 {
   if (event->space_id != CLAP_CORE_EVENT_SPACE_ID) {
     return;
@@ -269,7 +269,7 @@ void S2WClapPluginBase::dispatchEvent(const clap_event_header_t* event)
   }
 }
 
-const void* S2WClapPluginBase::getExtension(const char* id)
+const void* ClefClapPluginBase::getExtension(const char* id)
 {
   if (!strcmp(id, CLAP_EXT_NOTE_PORTS)) {
     return &notePorts;
@@ -283,7 +283,7 @@ const void* S2WClapPluginBase::getExtension(const char* id)
   return nullptr;
 }
 
-void S2WClapPluginBase::onMainThread()
+void ClefClapPluginBase::onMainThread()
 {
   if (mustRestart || !hostParams) {
     host->request_restart(host);
@@ -296,7 +296,7 @@ void S2WClapPluginBase::onMainThread()
   }
 }
 
-BaseNoteEvent* S2WClapPluginBase::createNoteEvent(const clap_event_note_t* event)
+BaseNoteEvent* ClefClapPluginBase::createNoteEvent(const clap_event_note_t* event)
 {
   InstrumentNoteEvent* note = new InstrumentNoteEvent();
   note->pitch = event->key;
@@ -305,7 +305,7 @@ BaseNoteEvent* S2WClapPluginBase::createNoteEvent(const clap_event_note_t* event
   return note;
 }
 
-void S2WClapPluginBase::noteEvent(const clap_event_note_t* event)
+void ClefClapPluginBase::noteEvent(const clap_event_note_t* event)
 {
   if (currentInstID == 0xFFFFFFFFFFFFFFFFULL) {
     // No selected instrument (probably no file loaded).
@@ -344,9 +344,9 @@ void S2WClapPluginBase::noteEvent(const clap_event_note_t* event)
   }
 }
 
-void S2WClapPluginBase::expressionEvent(const clap_event_note_expression_t* event) {}
+void ClefClapPluginBase::expressionEvent(const clap_event_note_expression_t* event) {}
 
-void S2WClapPluginBase::paramValueEvent(const clap_event_param_value_t* event)
+void ClefClapPluginBase::paramValueEvent(const clap_event_param_value_t* event)
 {
   std::cerr << fourccToString(event->param_id) << " = " << event->value << std::endl;
   if (event->param_id == 'FNAM') {
@@ -358,7 +358,7 @@ void S2WClapPluginBase::paramValueEvent(const clap_event_param_value_t* event)
       return;
     }
     std::vector<std::string> filters;
-    for (const auto& ext : s2wPlugin->extensions()) {
+    for (const auto& ext : clefPlugin->extensions()) {
       filters.push_back(ext.second);
       filters.push_back("*." + ext.first);
     }
@@ -402,16 +402,16 @@ void S2WClapPluginBase::paramValueEvent(const clap_event_param_value_t* event)
   }
 }
 
-void S2WClapPluginBase::paramModEvent(const clap_event_param_mod_t* event)
+void ClefClapPluginBase::paramModEvent(const clap_event_param_mod_t* event)
 {
 }
 
-void S2WClapPluginBase::transportEvent(const clap_event_transport_t* event) {}
-void S2WClapPluginBase::midiEvent(const clap_event_midi_t* event) {}
-void S2WClapPluginBase::sysexEvent(const clap_event_midi_sysex_t* event) {}
-void S2WClapPluginBase::midi2Event(const clap_event_midi2_t* event) {}
+void ClefClapPluginBase::transportEvent(const clap_event_transport_t* event) {}
+void ClefClapPluginBase::midiEvent(const clap_event_midi_t* event) {}
+void ClefClapPluginBase::sysexEvent(const clap_event_midi_sysex_t* event) {}
+void ClefClapPluginBase::midi2Event(const clap_event_midi2_t* event) {}
 
-uint32_t S2WClapPluginBase::notePortCount(bool isInput) const
+uint32_t ClefClapPluginBase::notePortCount(bool isInput) const
 {
   if (isInput) {
     return 1;
@@ -419,7 +419,7 @@ uint32_t S2WClapPluginBase::notePortCount(bool isInput) const
   return 0;
 }
 
-bool S2WClapPluginBase::getNotePort(uint32_t index, bool isInput, clap_note_port_info_t& port) const
+bool ClefClapPluginBase::getNotePort(uint32_t index, bool isInput, clap_note_port_info_t& port) const
 {
   if (!isInput || index != 0) {
     return false;
@@ -431,7 +431,7 @@ bool S2WClapPluginBase::getNotePort(uint32_t index, bool isInput, clap_note_port
   return true;
 }
 
-uint32_t S2WClapPluginBase::audioPortCount(bool isInput) const
+uint32_t ClefClapPluginBase::audioPortCount(bool isInput) const
 {
   if (isInput) {
     return 0;
@@ -439,7 +439,7 @@ uint32_t S2WClapPluginBase::audioPortCount(bool isInput) const
   return 1;
 }
 
-bool S2WClapPluginBase::getAudioPort(uint32_t index, bool isInput, clap_audio_port_info_t& port) const
+bool ClefClapPluginBase::getAudioPort(uint32_t index, bool isInput, clap_audio_port_info_t& port) const
 {
   if (isInput || index != 0) {
     return false;
@@ -453,12 +453,12 @@ bool S2WClapPluginBase::getAudioPort(uint32_t index, bool isInput, clap_audio_po
   return true;
 }
 
-uint32_t S2WClapPluginBase::paramCount() const
+uint32_t ClefClapPluginBase::paramCount() const
 {
   return paramOrder.size();
 }
 
-bool S2WClapPluginBase::paramInfo(uint32_t index, clap_param_info_t& info) const
+bool ClefClapPluginBase::paramInfo(uint32_t index, clap_param_info_t& info) const
 {
   if (index >= paramOrder.size()) {
     std::cerr << "unknown param index " << index << std::endl;
@@ -501,7 +501,7 @@ bool S2WClapPluginBase::paramInfo(uint32_t index, clap_param_info_t& info) const
   return true;
 }
 
-void S2WClapPluginBase::getParamRange(uint32_t id, double& minValue, double& maxValue, double& defaultValue) const
+void ClefClapPluginBase::getParamRange(uint32_t id, double& minValue, double& maxValue, double& defaultValue) const
 {
   if (id == Sampler::PitchBend || id == BaseOscillator::PitchBend) {
     minValue = -1.0f;
@@ -513,7 +513,7 @@ void S2WClapPluginBase::getParamRange(uint32_t id, double& minValue, double& max
   maxValue = 1.0f;
 }
 
-bool S2WClapPluginBase::paramValue(clap_id id, double& value) const
+bool ClefClapPluginBase::paramValue(clap_id id, double& value) const
 {
   std::lock_guard lock(synthMutex);
   if (id == 'FNAM') {
@@ -541,7 +541,7 @@ bool S2WClapPluginBase::paramValue(clap_id id, double& value) const
   return true;
 }
 
-bool S2WClapPluginBase::paramValueText(clap_id id, double value, char* text, uint32_t size) const
+bool ClefClapPluginBase::paramValueText(clap_id id, double value, char* text, uint32_t size) const
 {
   std::string strValue;
   if (id == 'FNAM') {
@@ -565,7 +565,7 @@ bool S2WClapPluginBase::paramValueText(clap_id id, double value, char* text, uin
   return true;
 }
 
-bool S2WClapPluginBase::paramTextValue(clap_id id, const char* text, double& value) const
+bool ClefClapPluginBase::paramTextValue(clap_id id, const char* text, double& value) const
 {
   if (id == 'FNAM') {
     return false;
@@ -593,11 +593,11 @@ bool S2WClapPluginBase::paramTextValue(clap_id id, const char* text, double& val
   return success;
 }
 
-void S2WClapPluginBase::flushParams(const clap_input_events_t* inEvents, const clap_output_events_t* outEvents)
+void ClefClapPluginBase::flushParams(const clap_input_events_t* inEvents, const clap_output_events_t* outEvents)
 {
 }
 
-IInstrument* S2WClapPluginBase::selectInstrumentByIndex(uint32_t index, bool force, bool rescan)
+IInstrument* ClefClapPluginBase::selectInstrumentByIndex(uint32_t index, bool force, bool rescan)
 {
   if (index >= synth->numInstruments()) {
     std::cerr << "instrument index out of range: " << index << std::endl;
@@ -606,7 +606,7 @@ IInstrument* S2WClapPluginBase::selectInstrumentByIndex(uint32_t index, bool for
   return selectInstrumentByID(synth->instrumentID(index), force, rescan);
 }
 
-IInstrument* S2WClapPluginBase::selectInstrumentByID(uint64_t instrumentID, bool force, bool rescan)
+IInstrument* ClefClapPluginBase::selectInstrumentByID(uint64_t instrumentID, bool force, bool rescan)
 {
   if (!force && instrumentID == currentInstID) {
     if (rescan) {
@@ -650,7 +650,7 @@ IInstrument* S2WClapPluginBase::selectInstrumentByID(uint64_t instrumentID, bool
   return found;
 }
 
-void S2WClapPluginBase::requestParamSync(bool rescanInfo)
+void ClefClapPluginBase::requestParamSync(bool rescanInfo)
 {
   if (rescanInfo) {
     mustRescanInfo = rescanInfo;
@@ -664,7 +664,7 @@ void S2WClapPluginBase::requestParamSync(bool rescanInfo)
   }
 }
 
-bool S2WClapPluginBase::saveState(const clap_ostream_t* stream)
+bool ClefClapPluginBase::saveState(const clap_ostream_t* stream)
 {
   std::lock_guard lock(synthMutex);
   if (filePath.empty() || !instrument || synth->channels.empty()) {
@@ -690,7 +690,7 @@ bool S2WClapPluginBase::saveState(const clap_ostream_t* stream)
   return stream->write(stream, state.c_str(), state.size()) == state.size();
 }
 
-bool S2WClapPluginBase::loadState(const clap_istream_t* stream)
+bool ClefClapPluginBase::loadState(const clap_istream_t* stream)
 {
   std::string state;
   char buffer[1024];

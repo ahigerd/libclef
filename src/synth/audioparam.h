@@ -1,7 +1,7 @@
-#ifndef S2W_AUDIOPARAM_H
-#define S2W_AUDIOPARAM_H
+#ifndef CLEF_AUDIOPARAM_H
+#define CLEF_AUDIOPARAM_H
 
-#include "s2wconfig.h"
+#include "clefconfig.h"
 #include <memory>
 #include <map>
 class AudioNode;

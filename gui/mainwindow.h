@@ -1,10 +1,10 @@
-#ifndef S2W_MAINWINDOW_H
-#define S2W_MAINWINDOW_H
+#ifndef CLEF_MAINWINDOW_H
+#define CLEF_MAINWINDOW_H
 
 #include <QMainWindow>
 #include <QPointer>
 #include <QAtomicInteger>
-class S2WPluginBase;
+class ClefPluginBase;
 class SynthContext;
 class TagView;
 class PlayerControls;
@@ -13,7 +13,7 @@ class MainWindow : public QMainWindow
 {
 Q_OBJECT
 public:
-  MainWindow(S2WPluginBase* plugin);
+  MainWindow(ClefPluginBase* plugin);
 
   void openFile(const QString& path, bool autoPlay = false);
 
@@ -44,7 +44,7 @@ private:
   void openFile(const QString& path, bool doAcquire, bool autoPlay);
 
 protected:
-  S2WPluginBase* m_plugin;
+  ClefPluginBase* m_plugin;
   SynthContext* ctx;
   PlayerControls* controls;
 

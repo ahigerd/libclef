@@ -1,5 +1,5 @@
-#ifndef S2W_VUMETER_H
-#define S2W_VUMETER_H
+#ifndef CLEF_VUMETER_H
+#define CLEF_VUMETER_H
 
 #include <QWidget>
 #include <QVector>

@@ -5,7 +5,7 @@
 build
 build_win
 include
-seq2wav_test*
+clef_test*
 *.dll
 *.a
 *.so

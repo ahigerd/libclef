@@ -1,22 +1,24 @@
+first: test
+
 include config.mak
 
-test: seq2wav_test$(EXE)
+test: clef_test$(EXE)
 
-debug: seq2wav_test_d$(EXE)
+debug: clef_test_d$(EXE)
 
-static: $(BUILDPATH)/libseq2wav.a
+static: $(BUILDPATH)/libclef.a
 
 $(BUILDPATH)/Makefile.d: $(wildcard src/*.cpp src/*/*.cpp src/*.h src/*/*.h) Makefile src/Makefile
 	$(MAKE) -C src ../$(BUILDPATH)/Makefile.d
 
-seq2wav_test$(EXE) seq2wav_test_d$(EXE): src/Makefile $(BUILDPATH)/Makefile.d
+clef_test$(EXE) clef_test_d$(EXE): src/Makefile $(BUILDPATH)/Makefile.d
 	$(MAKE) -C src ../$@
 
-$(BUILDPATH)/libseq2wav.a $(BUILDPATH)/libseq2wav_d.a: src/Makefile $(BUILDPATH)/Makefile.d $(INCLUDES)
+$(BUILDPATH)/libclef.a $(BUILDPATH)/libclef_d.a: src/Makefile $(BUILDPATH)/Makefile.d $(INCLUDES)
 	$(MAKE) -C src ../$@
 
 clean: FORCE
 	-rm -f $(BUILDPATH)/*.o $(BUILDPATH)/*.d $(BUILDPATH)/*/*.o $(BUILDPATH)/Makefile.d
-	-rm -f seq2wav_test$(EXE) seq2wav_test_d$(EXE) $(BUILDPATH)/libseq2wav.a $(BUILDPATH)/libseq2wav_d.a
+	-rm -f clef_test$(EXE) clef_test_d$(EXE) $(BUILDPATH)/libclef.a $(BUILDPATH)/libclef_d.a
 
 FORCE:

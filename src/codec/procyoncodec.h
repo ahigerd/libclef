@@ -1,11 +1,11 @@
-#ifndef S2W_PROCYONCODEC_H
-#define S2W_PROCYONCODEC_H
+#ifndef CLEF_PROCYONCODEC_H
+#define CLEF_PROCYONCODEC_H
 
 #include "icodec.h"
 
 class ProcyonCodec : public ICodec {
 public:
-  ProcyonCodec(S2WContext* ctx, bool stereo = false);
+  ProcyonCodec(ClefContext* ctx, bool stereo = false);
 
   virtual SampleData* decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID = 0);
 

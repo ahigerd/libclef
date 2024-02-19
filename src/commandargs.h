@@ -1,5 +1,5 @@
-#ifndef S2W_COMMANDARGS_H
-#define S2W_COMMANDARGS_H
+#ifndef CLEF_COMMANDARGS_H
+#define CLEF_COMMANDARGS_H
 
 #include <string>
 #include <map>

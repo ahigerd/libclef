@@ -1,9 +1,9 @@
 #include "sampledata.h"
-#include "s2wcontext.h"
+#include "clefcontext.h"
 #include <unordered_map>
 #include <memory>
 
-SampleData::SampleData(S2WContext* ctx, uint64_t sampleID, double sampleRate, int loopStart, int loopEnd)
+SampleData::SampleData(ClefContext* ctx, uint64_t sampleID, double sampleRate, int loopStart, int loopEnd)
 : sampleID(sampleID), sampleRate(sampleRate), loopStart(loopStart), loopEnd(loopEnd)
 {
   if (sampleID != Uncached && ctx) {
@@ -13,7 +13,7 @@ SampleData::SampleData(S2WContext* ctx, uint64_t sampleID, double sampleRate, in
   m_duration = -1;
 }
 
-SampleData::SampleData(S2WContext* ctx, double sampleRate, int loopStart, int loopEnd)
+SampleData::SampleData(ClefContext* ctx, double sampleRate, int loopStart, int loopEnd)
 : SampleData(ctx, ctx ? ctx->nextSampleID() : 0, sampleRate, loopStart, loopEnd)
 {
   // forwarded constructor only

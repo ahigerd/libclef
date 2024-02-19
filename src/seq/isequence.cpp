@@ -1,7 +1,7 @@
 #include "isequence.h"
 #include "sequenceevent.h"
 
-ISequence::ISequence(S2WContext* ctx)
+ISequence::ISequence(ClefContext* ctx)
 : ctx(ctx)
 {
   // initializers only
@@ -9,7 +9,7 @@ ISequence::ISequence(S2WContext* ctx)
 
 ISequence::~ISequence() {}
 
-S2WContext* ISequence::context() const
+ClefContext* ISequence::context() const
 {
   return ctx;
 }
@@ -34,7 +34,7 @@ bool ISequence::isFinished() const
   return true;
 }
 
-StreamSequence::StreamSequence(S2WContext* ctx, uint64_t sampleID, double startTime)
+StreamSequence::StreamSequence(ClefContext* ctx, uint64_t sampleID, double startTime)
 : BaseSequence(ctx)
 {
   BasicTrack* track = new BasicTrack;

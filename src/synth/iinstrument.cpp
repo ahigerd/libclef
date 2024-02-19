@@ -3,7 +3,7 @@
 #include "sampler.h"
 #include "oscillator.h"
 #include "synthcontext.h"
-#include "s2wcontext.h"
+#include "clefcontext.h"
 #include "seq/sequenceevent.h"
 #include <iostream>
 
@@ -68,7 +68,7 @@ Channel::Note* DefaultInstrument::noteEvent(Channel* channel, std::shared_ptr<Ba
     duration = oscEvent->duration;
     node.reset(osc);
   } else if (SampleEvent* sampEvent = event->cast<SampleEvent>()) {
-    SampleData* sampleData = channel->ctx->s2wContext()->getSample(sampEvent->sampleID);
+    SampleData* sampleData = channel->ctx->clefContext()->getSample(sampEvent->sampleID);
     if (!sampleData) {
       std::cerr << "ERROR: sample " << std::hex << sampEvent->sampleID << std::dec << " not found" << std::endl;
       return nullptr;

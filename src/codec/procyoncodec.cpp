@@ -9,7 +9,7 @@ static const int16_t procyonFactor[][2] = {
 };
 static const int16_t maxProcyonFactor = (sizeof(procyonFactor) >> 2) - 1;
 
-ProcyonCodec::ProcyonCodec(S2WContext* ctx, bool stereo)
+ProcyonCodec::ProcyonCodec(ClefContext* ctx, bool stereo)
 : ICodec(ctx), stereo(stereo)
 {
   // initializers only

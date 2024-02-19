@@ -1,7 +1,7 @@
-#ifndef S2W_IINTERPOLATOR_H
-#define S2W_IINTERPOLATOR_H
+#ifndef CLEF_IINTERPOLATOR_H
+#define CLEF_IINTERPOLATOR_H
 
-#include "s2wconfig.h"
+#include "clefconfig.h"
 #include <vector>
 #include <cstdint>
 struct SampleData;

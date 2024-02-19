@@ -1,5 +1,5 @@
-#ifndef S2W_BASEPLUGIN_H
-#define S2W_BASEPLUGIN_H
+#ifndef CLEF_BASEPLUGIN_H
+#define CLEF_BASEPLUGIN_H
 
 #include <string>
 #include <utility>
@@ -9,41 +9,41 @@
 #include <type_traits>
 #include "utility.h"
 #include "tagmap.h"
-#include "s2wcontext.h"
+#include "clefcontext.h"
 #include "synth/synthcontext.h"
-class S2WPluginInfo;
+class ClefPluginInfo;
 
 using ConstPairList = const std::vector<std::pair<std::string, std::string>>;
 
 #ifdef BUILD_CLAP
-# define S2WPLUGIN_BANK_EXT static ConstPairList bankExtensions;
+# define CLEF_PLUGIN_BANK_EXT static ConstPairList bankExtensions;
 #else
-# define S2WPLUGIN_BANK_EXT
+# define CLEF_PLUGIN_BANK_EXT
 #endif
 
-#define S2WPLUGIN_STATIC_FIELDS \
+#define CLEF_PLUGIN_STATIC_FIELDS \
   static const std::string version, pluginName, pluginShortName, about, author, url; \
-  static ConstPairList extensions; S2WPLUGIN_BANK_EXT
+  static ConstPairList extensions; CLEF_PLUGIN_BANK_EXT
 
 struct TagsM3UMixin {
-  static TagMap readTags(S2WContext* s2w, const std::string& filename);
-  static inline TagMap readTags(S2WContext* s2w, const std::string& filename, std::istream& /* unused */) { return readTags(s2w, filename); }
-  static std::vector<std::string> getSubsongs(S2WContext* s2w, const std::string& filename, std::istream& file);
+  static TagMap readTags(ClefContext* clef, const std::string& filename);
+  static inline TagMap readTags(ClefContext* clef, const std::string& filename, std::istream& /* unused */) { return readTags(clef, filename); }
+  static std::vector<std::string> getSubsongs(ClefContext* clef, const std::string& filename, std::istream& file);
 };
 
 #ifdef BUILD_DUMMY_PLUGIN
 struct DummyPluginInfo : public TagsM3UMixin {
-  S2WPLUGIN_STATIC_FIELDS
-  static bool isPlayable(S2WContext* s2w, const std::string& filename, std::istream& file, bool ignoreExtension = false) {
+  CLEF_PLUGIN_STATIC_FIELDS
+  static bool isPlayable(ClefContext* clef, const std::string& filename, std::istream& file, bool ignoreExtension = false) {
     return false;
   }
-  static double length(S2WContext* s2w, const std::string& filename, std::istream& file) {
+  static double length(ClefContext* clef, const std::string& filename, std::istream& file) {
     return 0;
   }
-  static double sampleRate(S2WContext* s2w, const std::string& filename, std::istream& file) {
+  static double sampleRate(ClefContext* clef, const std::string& filename, std::istream& file) {
     return 44100;
   }
-  SynthContext* prepare(S2WContext* s2w, const std::string& filename, std::istream& file) {
+  SynthContext* prepare(ClefContext* clef, const std::string& filename, std::istream& file) {
     // Implementations should retain appropriate pointers
     return nullptr;
   }
@@ -53,18 +53,18 @@ struct DummyPluginInfo : public TagsM3UMixin {
 };
 
 const std::string DummyPluginInfo::version = "0.0.1";
-const std::string DummyPluginInfo::pluginName = "seq2wav";
+const std::string DummyPluginInfo::pluginName = "dummyClef";
 ConstPairList DummyPluginInfo::extensions = { { "dummy", "Dummy files (*.dummy)" } };
 const std::string DummyPluginInfo::about =
   "Dummy plugin copyright (C) 2020 Adam Higerd\n"
   "Distributed under the MIT license.";
 #endif
 
-class S2WPluginBase {
+class ClefPluginBase {
 public:
-  static std::string seq2wavCopyright();
+  static std::string libclefCopyright();
 
-  inline S2WContext* context() const { return s2w; }
+  inline ClefContext* context() const { return clef; }
 
   bool matchExtension(const std::string& filename) const;
   TagMap getTags(const std::string& filename, std::istream& file) const;
@@ -92,16 +92,16 @@ public:
   virtual void release() = 0;
 
 protected:
-  S2WPluginBase(S2WContext* s2w);
+  ClefPluginBase(ClefContext* clef);
   virtual TagMap getTagsBase(const std::string& filename, std::istream& file) const = 0;
 
-  S2WContext* s2w;
+  ClefContext* clef;
   SynthContext* ctx;
 };
 
 template <typename Info, typename U = int> struct GetSubsongs {
-static std::vector<std::string> getSubsongsImpl(S2WContext* s2w, const std::string& filename, std::istream& file) {
-  (void)s2w;
+static std::vector<std::string> getSubsongsImpl(ClefContext* clef, const std::string& filename, std::istream& file) {
+  (void)clef;
   (void)filename;
   (void)file;
   return std::vector<std::string>();
@@ -109,25 +109,25 @@ static std::vector<std::string> getSubsongsImpl(S2WContext* s2w, const std::stri
 };
 
 template <typename Info> struct GetSubsongs<Info, decltype((void) Info::getSubsongs, 0)> {
-static std::vector<std::string> getSubsongsImpl(S2WContext* s2w, const std::string& filename, std::istream& file) {
+static std::vector<std::string> getSubsongsImpl(ClefContext* clef, const std::string& filename, std::istream& file) {
   file.seekg(0);
-  return Info::getSubsongs(s2w, filename, file);
+  return Info::getSubsongs(clef, filename, file);
 }
 };
 
 template <typename PluginInfo>
-class S2WPlugin : public S2WPluginBase, public PluginInfo {
+class ClefPlugin : public ClefPluginBase, public PluginInfo {
 public:
   using Info = PluginInfo;
 
-  S2WPlugin(S2WContext* ctx) : S2WPluginBase(ctx) {}
+  ClefPlugin(ClefContext* ctx) : ClefPluginBase(ctx) {}
 
   const std::string& version() const { return Info::version; }
   const std::string& pluginShortName() const { return Info::pluginShortName; }
   const std::string& pluginName() const { return Info::pluginName; }
   const ConstPairList& extensions() const { return Info::extensions; }
   const std::string& about() const {
-    static std::string message = Info::about + seq2wavCopyright();
+    static std::string message = Info::about + libclefCopyright();
     return message;
   }
   virtual bool isPlayable(const std::string& filename, std::istream& file, bool ignoreExtension = false) const {
@@ -137,22 +137,22 @@ public:
       }
       file.clear();
       file.seekg(0);
-      return Info::isPlayable(s2w, filename, file);
+      return Info::isPlayable(clef, filename, file);
     } catch (...) {
       return false;
     }
   }
-  double length(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::length(s2w, filename, file); }
-  int sampleRate(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::sampleRate(s2w, filename, file); }
-  inline int sampleRate() const { return S2WPluginBase::sampleRate(); }
+  double length(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::length(clef, filename, file); }
+  int sampleRate(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::sampleRate(clef, filename, file); }
+  inline int sampleRate() const { return ClefPluginBase::sampleRate(); }
 
-  SynthContext* prepare(const std::string& filename, std::istream& file) { file.seekg(0); return Info::prepare(s2w, filename, file); }
+  SynthContext* prepare(const std::string& filename, std::istream& file) { file.seekg(0); return Info::prepare(clef, filename, file); }
   void release() { Info::release(); }
 
-  std::vector<std::string> getSubsongs(const std::string& filename, std::istream& file) const { return GetSubsongs<Info>::getSubsongsImpl(s2w, filename, file); }
+  std::vector<std::string> getSubsongs(const std::string& filename, std::istream& file) const { return GetSubsongs<Info>::getSubsongsImpl(clef, filename, file); }
 
 protected:
-  TagMap getTagsBase(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::readTags(s2w, filename, file); }
+  TagMap getTagsBase(const std::string& filename, std::istream& file) const { file.seekg(0); return Info::readTags(clef, filename, file); }
 };
 
 #if defined(BUILD_AUDACIOUS)
@@ -164,12 +164,12 @@ protected:
 #elif defined(BUILD_CLAP)
 #include "plugin/clapplugin.h"
 #else
-namespace S2W {
-  S2WPluginBase* makePlugin(S2WContext* ctx);
+namespace Clef {
+  ClefPluginBase* makePlugin(ClefContext* ctx);
 }
 
-#define SEQ2WAV_PLUGIN(PluginInfo) namespace S2W { S2WPluginBase* makePlugin(S2WContext* ctx) { \
-  return new S2WPlugin<PluginInfo>(ctx); \
+#define CLEF_PLUGIN(PluginInfo) namespace Clef { ClefPluginBase* makePlugin(ClefContext* ctx) { \
+  return new ClefPlugin<PluginInfo>(ctx); \
 }}
 #endif
 

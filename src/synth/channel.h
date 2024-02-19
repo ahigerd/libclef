@@ -1,7 +1,7 @@
-#ifndef S2W_CHANNEL_H
-#define S2W_CHANNEL_H
+#ifndef CLEF_CHANNEL_H
+#define CLEF_CHANNEL_H
 
-#include "s2wconfig.h"
+#include "clefconfig.h"
 #include <unordered_map>
 #include <vector>
 #include <deque>

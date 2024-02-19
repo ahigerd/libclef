@@ -1,8 +1,8 @@
 This sample project has not been properly customized yet.
 
-This project is based upon seq2wav, distributed under the following terms:
+This project is based upon libclef, distributed under the following terms:
 
-seq2wav is copyright (c) 2020 Adam Higerd
+libclef is copyright (c) 2020-2024 Adam Higerd
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

@@ -1,6 +1,6 @@
 #include "channel.h"
 #include "synthcontext.h"
-#include "s2wcontext.h"
+#include "clefcontext.h"
 #include "iinstrument.h"
 #include "seq/itrack.h"
 #include "seq/sequenceevent.h"

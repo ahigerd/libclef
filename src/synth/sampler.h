@@ -1,5 +1,5 @@
-#ifndef S2W_SAMPLER_H
-#define S2W_SAMPLER_H
+#ifndef CLEF_SAMPLER_H
+#define CLEF_SAMPLER_H
 
 #include "audionode.h"
 #include "codec/sampledata.h"

@@ -1,5 +1,5 @@
-#ifndef S2W_S2WCONFIG_H
-#define S2W_S2WCONFIG_H
+#ifndef CLEF_CLEFCONFIG_H
+#define CLEF_CLEFCONFIG_H
 
 #define _USE_MATH_DEFINES
 

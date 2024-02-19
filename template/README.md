@@ -1,7 +1,7 @@
 Template
 ========
 
-This is a template for creating a project based on seq2wav. It cannot be built as-is.
+This is a template for creating a project based on libclef. It cannot be built as-is.
 
 Be sure to modify `config.mak` to set `PLUGIN_NAME` appropriately, and change the filenames
 in `buildvs.cmd` to refer to the same name instead of `template`.
@@ -50,7 +50,7 @@ License
 -------
 You should fill in the copyright and licensing information for your project here.
 
-This project is based upon seq2wav, copyright (c) 2020-2023 Adam Higerd and distributed
+This project is based upon libclef, copyright (c) 2020-2024 Adam Higerd and distributed
 under the terms of the [MIT license](LICENSE.md).
 
 [CLAP](https://cleveraudio.org/) is an open-source audio plugin format. The

@@ -6,7 +6,7 @@
 
 static const double testNotes[] = { 440, 554.36, 659.26, 880, 1108.73 };
 
-TestSequence::TestSequence(S2WContext* ctx) : BaseSequence(ctx)
+TestSequence::TestSequence(ClefContext* ctx) : BaseSequence(ctx)
 {
   RiffCodec riff(ctx);
   SampleData* sample = riff.decodeFile("cembalo-1.wav");

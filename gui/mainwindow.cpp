@@ -13,7 +13,7 @@
 #include <QThread>
 #include <QTimer>
 
-MainWindow::MainWindow(S2WPluginBase* plugin)
+MainWindow::MainWindow(ClefPluginBase* plugin)
 : QMainWindow(nullptr), m_plugin(plugin), ctx(nullptr), controls(nullptr), m_autoPlay(false)
 {
   setWindowTitle(QString::fromStdString(plugin->pluginName()));

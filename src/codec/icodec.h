@@ -1,15 +1,15 @@
-#ifndef S2W_ICODEC_H
-#define S2W_ICODEC_H
+#ifndef CLEF_ICODEC_H
+#define CLEF_ICODEC_H
 
 #include <cstdint>
 #include <vector>
 #include <string>
 #include "sampledata.h"
-class S2WContext;
+class ClefContext;
 
 class ICodec {
 public:
-  ICodec(S2WContext* ctx);
+  ICodec(ClefContext* ctx);
   virtual ~ICodec();
 
   // TODO: header
@@ -18,10 +18,10 @@ public:
   virtual SampleData* decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID = 0) = 0;
 
 protected:
-  S2WContext* context() const;
+  ClefContext* context() const;
 
 private:
-  S2WContext* ctx;
+  ClefContext* ctx;
 };
 
 #endif

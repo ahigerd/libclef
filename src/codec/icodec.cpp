@@ -1,7 +1,7 @@
 #include "icodec.h"
 #include <fstream>
 
-ICodec::ICodec(S2WContext* ctx)
+ICodec::ICodec(ClefContext* ctx)
 : ctx(ctx)
 {
   // initializers only
@@ -9,7 +9,7 @@ ICodec::ICodec(S2WContext* ctx)
 
 ICodec::~ICodec() {}
 
-S2WContext* ICodec::context() const
+ClefContext* ICodec::context() const
 {
   return ctx;
 }

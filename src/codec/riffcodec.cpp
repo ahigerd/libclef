@@ -29,7 +29,7 @@ WaveFormatEx::WaveFormatEx(std::vector<uint8_t>::const_iterator start, std::vect
   }
 }
 
-RiffCodec::RiffCodec(S2WContext* ctx) : ICodec(ctx)
+RiffCodec::RiffCodec(ClefContext* ctx) : ICodec(ctx)
 {
   // initializers only
 }

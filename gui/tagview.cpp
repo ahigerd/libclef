@@ -16,7 +16,7 @@ TagView::TagView(QWidget* parent)
   clearTags();
 }
 
-void TagView::loadTags(S2WPluginBase* plugin, const QString& filename, const std::string& stdFilename, const std::string& stdPath)
+void TagView::loadTags(ClefPluginBase* plugin, const QString& filename, const std::string& stdFilename, const std::string& stdPath)
 {
   clearTags();
   setTitle(filename);

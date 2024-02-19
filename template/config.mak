@@ -1,2 +1,2 @@
 PLUGIN_NAME = sample
--include $(ROOTPATH)seq2wav/config.mak
+-include $(ROOTPATH)libclef/config.mak

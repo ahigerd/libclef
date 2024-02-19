@@ -1,5 +1,5 @@
-#ifndef S2W_OSCILLATOR_H
-#define S2W_OSCILLATOR_H
+#ifndef CLEF_OSCILLATOR_H
+#define CLEF_OSCILLATOR_H
 
 #include "audionode.h"
 

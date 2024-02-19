@@ -1,5 +1,5 @@
-#ifndef S2W_SEQUENCEEVENT_H
-#define S2W_SEQUENCEEVENT_H
+#ifndef CLEF_SEQUENCEEVENT_H
+#define CLEF_SEQUENCEEVENT_H
 
 #include <cstdint>
 #include <vector>

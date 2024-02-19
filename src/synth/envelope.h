@@ -1,5 +1,5 @@
-#ifndef S2W_ENVELOPE_H
-#define S2W_ENVELOPE_H
+#ifndef CLEF_ENVELOPE_H
+#define CLEF_ENVELOPE_H
 
 #include "audionode.h"
 #include "audioparam.h"

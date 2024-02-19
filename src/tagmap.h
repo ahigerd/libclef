@@ -1,7 +1,7 @@
-#ifndef S2W_TAGSM3U_H
-#define S2W_TAGSM3U_H
+#ifndef CLEF_TAGSM3U_H
+#define CLEF_TAGSM3U_H
 
-#include "s2wconfig.h"
+#include "clefconfig.h"
 #include <iostream>
 #include <vector>
 #include <unordered_map>

@@ -1,8 +1,8 @@
-#ifndef S2W_WINAMPPLUGIN_H
-#define S2W_WINAMPPLUGIN_H
+#ifndef Clef_WINAMPPLUGIN_H
+#define Clef_WINAMPPLUGIN_H
 
 #define UNICODE_INPUT_PLUGIN
-#include "s2wconfig.h"
+#include "clefconfig.h"
 #include <windows.h>
 #include "in2.h"
 #include "wa_ipc.h"
@@ -35,14 +35,14 @@ static ConstPairList fileInfoTags = {
   { "comment", "Comment" },
 };
 
-template <typename S2WPluginInfo>
-class S2WModule : public In_Module {
+template <typename ClefPluginInfo>
+class ClefModule : public In_Module {
   struct ExtExpand {
     std::vector<char> exts;
     operator char*() { return exts.data(); }
 
     ExtExpand() {
-      for (const auto& iter : S2WPluginInfo::extensions) {
+      for (const auto& iter : ClefPluginInfo::extensions) {
         exts.insert(exts.end(), iter.first.begin(), iter.first.end());
         exts.push_back('\0');
         exts.insert(exts.end(), iter.second.begin(), iter.second.end());
@@ -52,12 +52,12 @@ class S2WModule : public In_Module {
     }
   };
 
-  static S2WContext s2w;
-  static S2WPlugin<S2WPluginInfo> plugin;
+  static ClefContext clef;
+  static ClefPlugin<ClefPluginInfo> plugin;
   static ExtExpand extensions;
 public:
-  static S2WModule<S2WPluginInfo>* instance() {
-    static S2WModule<S2WPluginInfo> module;
+  static ClefModule<ClefPluginInfo>* instance() {
+    static ClefModule<ClefPluginInfo> module;
     return &module;
   }
 
@@ -77,7 +77,7 @@ public:
       title = filename = instance()->currentTrack;
       *outMS = instance()->length * 1000;
     }
-    auto file = s2w.openFile(filename);
+    auto file = clef.openFile(filename);
     TagMap tagMap(plugin.getTags(filename, *file));
     if (!isCurrent) {
       std::string len = tagMap.count("length_seconds_fp") ? tagMap.at("length_seconds_fp") : std::string();
@@ -95,7 +95,7 @@ public:
   }
   static int infoBox(const in_char *inFilename, HWND hwndParent) {
     std::string filename = toUtf8(inFilename);
-    auto file = s2w.openFile(filename);
+    auto file = clef.openFile(filename);
     TagMap tagMap(plugin.getTags(filename, *file));
     std::ostringstream ss;
     ss << "Filename:" << std::endl << filename << std::endl << std::endl;
@@ -116,7 +116,7 @@ public:
   static int isOurFile(const in_char *fn)
   {
     std::string path = toUtf8(fn);
-    auto file = s2w.openFile(path);
+    auto file = clef.openFile(path);
     return plugin.isPlayable(path, *file);
   }
   static int play(const in_char* fn) { return instance()->play(toUtf8(fn)); }
@@ -133,13 +133,13 @@ public:
         thread.reset(nullptr);
       }
       try {
-        auto file = s2w.openFile(fn);
+        auto file = clef.openFile(fn);
         length = plugin.length(fn, *file);
       } catch (std::exception& e) {
         std::cerr << "Error reading length: " << e.what() << std::endl;
         return 1;
       }
-      auto file = s2w.openFile(fn);
+      auto file = clef.openFile(fn);
       bool ok = plugin.play(fn, *file);
       if (!ok) {
         plugin.unload();
@@ -247,11 +247,11 @@ public:
   bool running;
   bool paused;
 
-  S2WModule();
+  ClefModule();
 };
 
-template <typename S2WPluginInfo>
-S2WModule<S2WPluginInfo>::S2WModule()
+template <typename ClefPluginInfo>
+ClefModule<ClefPluginInfo>::ClefModule()
 : In_Module(In_Module{
     IN_VER,
     const_cast<char*>(plugin.pluginShortName().c_str()),
@@ -260,26 +260,26 @@ S2WModule<S2WPluginInfo>::S2WModule()
     extensions,
     1, // seekable
     1, // uses output
-    &S2WModule::config,
-    &S2WModule::about,
-    &S2WModule::init,
-    &S2WModule::quit,
-    &S2WModule::getFileInfo,
-    &S2WModule::infoBox,
-    &S2WModule::isOurFile,
-    &S2WModule::play,
-    &S2WModule::pause,
-    &S2WModule::unpause,
-    &S2WModule::isPaused,
-    &S2WModule::stop,
-    &S2WModule::getLength,
-    &S2WModule::getOutputTime,
-    &S2WModule::setOutputTime,
-    &S2WModule::setVolume,
-    &S2WModule::setPan,
+    &ClefModule::config,
+    &ClefModule::about,
+    &ClefModule::init,
+    &ClefModule::quit,
+    &ClefModule::getFileInfo,
+    &ClefModule::infoBox,
+    &ClefModule::isOurFile,
+    &ClefModule::play,
+    &ClefModule::pause,
+    &ClefModule::unpause,
+    &ClefModule::isPaused,
+    &ClefModule::stop,
+    &ClefModule::getLength,
+    &ClefModule::getOutputTime,
+    &ClefModule::setOutputTime,
+    &ClefModule::setVolume,
+    &ClefModule::setPan,
     0, 0, 0, 0, 0, 0, 0, 0, 0,  // visualizer parameters
     0, 0,                       // DSP parameters
-    &S2WModule::eqSet,
+    &ClefModule::eqSet,
     nullptr, // setInfo
     0 // outMod
   })
@@ -292,10 +292,10 @@ S2WModule<S2WPluginInfo>::S2WModule()
   length = 0;
 }
 
-#define SEQ2WAV_PLUGIN(S2WPluginInfo) \
-  template<> S2WContext S2WModule<S2WPluginInfo>::s2w = S2WContext(); \
-  template<> S2WPlugin<S2WPluginInfo> S2WModule<S2WPluginInfo>::plugin = S2WPlugin<S2WPluginInfo>(&S2WModule<S2WPluginInfo>::s2w); \
-  template<> S2WModule<S2WPluginInfo>::ExtExpand S2WModule<S2WPluginInfo>::extensions = S2WModule<S2WPluginInfo>::ExtExpand(); \
-  extern "C" EXPORT In_Module* winampGetInModule2() { return S2WModule<S2WPluginInfo>::instance(); }
+#define CLEF_PLUGIN(ClefPluginInfo) \
+  template<> ClefContext ClefModule<ClefPluginInfo>::clef = ClefContext(); \
+  template<> ClefPlugin<ClefPluginInfo> ClefModule<ClefPluginInfo>::plugin = ClefPlugin<ClefPluginInfo>(&ClefModule<ClefPluginInfo>::clef); \
+  template<> ClefModule<ClefPluginInfo>::ExtExpand ClefModule<ClefPluginInfo>::extensions = ClefModule<ClefPluginInfo>::ExtExpand(); \
+  extern "C" EXPORT In_Module* winampGetInModule2() { return ClefModule<ClefPluginInfo>::instance(); }
 
 #endif

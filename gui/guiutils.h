@@ -1,5 +1,5 @@
-#ifndef S2W_GUIUTILS_H
-#define S2W_GUIUTILS_H
+#ifndef CLEF_GUIUTILS_H
+#define CLEF_GUIUTILS_H
 
 #include <QThread>
 

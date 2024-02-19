@@ -1,11 +1,11 @@
-#ifndef S2W_MSADPCMCODEC_H
-#define S2W_MSADPCMCODEC_H
+#ifndef CLEF_MSADPCMCODEC_H
+#define CLEF_MSADPCMCODEC_H
 
 #include "icodec.h"
 
 class MsAdpcmCodec : public ICodec {
 public:
-  MsAdpcmCodec(S2WContext* ctx, uint16_t blockSize, uint16_t channels);
+  MsAdpcmCodec(ClefContext* ctx, uint16_t blockSize, uint16_t channels);
 
   virtual SampleData* decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID = 0);
 

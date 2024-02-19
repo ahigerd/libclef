@@ -1,5 +1,5 @@
-#ifndef S2W_AUTOMATIONNODE_H
-#define S2W_AUTOMATIONNODE_H
+#ifndef CLEF_AUTOMATIONNODE_H
+#define CLEF_AUTOMATIONNODE_H
 
 #include "audionode.h"
 #include <vector>

@@ -1,22 +1,22 @@
 include ../config.mak
 
-CXXFLAGS := $(patsubst -I../seq2wav/src,-I../src,$(CXXFLAGS))
-CXXFLAGS_R := $(patsubst -I../seq2wav/src,-I../src,$(CXXFLAGS_R))
-CXXFLAGS_D := $(patsubst -I../seq2wav/src,-I../src,$(CXXFLAGS_D))
+CXXFLAGS := $(patsubst -I../libclef/src,-I../src,$(CXXFLAGS))
+CXXFLAGS_R := $(patsubst -I../libclef/src,-I../src,$(CXXFLAGS_R))
+CXXFLAGS_D := $(patsubst -I../libclef/src,-I../src,$(CXXFLAGS_D))
 
 SOURCES = $(filter-out main.cpp, $(wildcard *.cpp */*.cpp))
 
-../seq2wav_test$(EXE): ../$(BUILDPATH)/main.o ../$(BUILDPATH)/libseq2wav.a
+../clef_test$(EXE): ../$(BUILDPATH)/main.o ../$(BUILDPATH)/libclef.a
 	$(CXX) -o $@ $^
 
-../seq2wav_test_d$(EXE): ../$(BUILDPATH)/main_d.o ../$(BUILDPATH)/libseq2wav_d.$(DLL)
+../clef_test_d$(EXE): ../$(BUILDPATH)/main_d.o ../$(BUILDPATH)/libclef_d.$(DLL)
 	$(CXX) -o $@ $^
 
-../$(BUILDPATH)/libseq2wav.a: $(patsubst %.cpp, ../$(BUILDPATH)/%.o, $(SOURCES)) | ../$(BUILDPATH)/Makefile.d
+../$(BUILDPATH)/libclef.a: $(patsubst %.cpp, ../$(BUILDPATH)/%.o, $(SOURCES)) | ../$(BUILDPATH)/Makefile.d
 	rm -f $@
 	gcc-ar -rc $@ $^
 
-../$(BUILDPATH)/libseq2wav_d.a: $(patsubst %.cpp, ../$(BUILDPATH)/%_d.o, $(SOURCES)) | ../$(BUILDPATH)/Makefile.d
+../$(BUILDPATH)/libclef_d.a: $(patsubst %.cpp, ../$(BUILDPATH)/%_d.o, $(SOURCES)) | ../$(BUILDPATH)/Makefile.d
 	rm -f $@
 	gcc-ar -rc $@ $^
 

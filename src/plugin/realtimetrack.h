@@ -1,5 +1,5 @@
-#ifndef S2W_REALTIMETRACK_H
-#define S2W_REALTIMETRACK_H
+#ifndef CLEF_REALTIMETRACK_H
+#define CLEF_REALTIMETRACK_H
 
 #include "seq/itrack.h"
 #include <atomic>

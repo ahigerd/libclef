@@ -1,15 +1,15 @@
-#ifndef S2W_ISEQUENCE_H
-#define S2W_ISEQUENCE_H
+#ifndef CLEF_ISEQUENCE_H
+#define CLEF_ISEQUENCE_H
 
 #include <cstdint>
 #include <vector>
 #include <memory>
 #include "itrack.h"
-class S2WContext;
+class ClefContext;
 
 class ISequence {
 public:
-  ISequence(S2WContext* ctx);
+  ISequence(ClefContext* ctx);
 
   virtual ~ISequence();
 
@@ -27,16 +27,16 @@ public:
   virtual ITrack* getTrack(int index) = 0;
 
 protected:
-  S2WContext* context() const;
+  ClefContext* context() const;
 
 private:
-  S2WContext* ctx;
+  ClefContext* ctx;
 };
 
 template <class Track = BasicTrack>
 class BaseSequence : public ISequence {
 public:
-  BaseSequence(S2WContext* ctx) : ISequence(ctx) {}
+  BaseSequence(ClefContext* ctx) : ISequence(ctx) {}
 
   virtual int numTracks() const {
     return tracks.size();
@@ -60,7 +60,7 @@ protected:
 
 class StreamSequence : public BaseSequence<> {
 public:
-  StreamSequence(S2WContext* ctx, uint64_t sampleID, double startTime = 0);
+  StreamSequence(ClefContext* ctx, uint64_t sampleID, double startTime = 0);
 };
 
 #endif

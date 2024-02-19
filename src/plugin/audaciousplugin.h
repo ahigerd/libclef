@@ -1,5 +1,5 @@
-#ifndef S2W_AUDACITYPLUGIN_H
-#define S2W_AUDACITYPLUGIN_H
+#ifndef CLEF_AUDACITYPLUGIN_H
+#define CLEF_AUDACITYPLUGIN_H
 
 #define WANT_VFS_STDIO_COMPAT
 #include <iomanip>
@@ -95,25 +95,25 @@ public:
   ~vfsfile_istream() { delete rdbuf(nullptr); }
 };
 
-template <typename S2WPluginInfo>
-class Seq2WavPlugin : public InputPlugin {
+template <typename ClefPluginInfo>
+class ClefPlugin : public InputPlugin {
   struct ExtExpand {
     std::vector<const char*> exts;
     operator const char* const *() const { return exts.data(); }
 
-    ExtExpand() : exts(S2WPluginInfo::extensions.size() + 1, nullptr) {
-      for (int i = 0; i < S2WPluginInfo::extensions.size(); i++) {
-        exts[i] = S2WPluginInfo::extensions[i].first.c_str();
+    ExtExpand() : exts(ClefPluginInfo::extensions.size() + 1, nullptr) {
+      for (int i = 0; i < ClefPluginInfo::extensions.size(); i++) {
+        exts[i] = ClefPluginInfo::extensions[i].first.c_str();
       }
     }
   };
 
-  S2WContext s2w;
-  S2WPlugin<S2WPluginInfo> plugin;
+  ClefContext clef;
+  ClefPlugin<ClefPluginInfo> plugin;
   static ExtExpand extensions;
 
 public:
-  Seq2WavPlugin();
+  ClefPlugin();
 
   bool is_our_file(const char* filename, VFSFile& file) {
     vfsfile_istream vs(&file);
@@ -175,22 +175,22 @@ public:
   bool play(const char* filename, VFSFile& file);
 };
 
-static std::unique_ptr<std::istream> s2wAudaciousOpenFile(const std::string& filename)
+static std::unique_ptr<std::istream> clefAudaciousOpenFile(const std::string& filename)
 {
   return std::unique_ptr<std::istream>(new vfsfile_istream(filename.c_str()));
 }
 
-template <typename S2WPluginInfo>
-Seq2WavPlugin<S2WPluginInfo>::Seq2WavPlugin()
+template <typename ClefPluginInfo>
+ClefPlugin<ClefPluginInfo>::ClefPlugin()
 : InputPlugin(
     PluginInfo{ N_(plugin.pluginName().c_str()), plugin.pluginName().c_str(), plugin.about().c_str() },
     InputInfo().with_priority(8).with_exts(extensions)
-  ), plugin(&s2w)
+  ), plugin(&clef)
 {
 }
 
-template <typename S2WPluginInfo>
-bool Seq2WavPlugin<S2WPluginInfo>::play(const char* filename, VFSFile& file)
+template <typename ClefPluginInfo>
+bool ClefPlugin<ClefPluginInfo>::play(const char* filename, VFSFile& file)
 {
   vfsfile_istream vs(&file);
   bool ok = plugin.play(filename, vs);
@@ -213,7 +213,7 @@ bool Seq2WavPlugin<S2WPluginInfo>::play(const char* filename, VFSFile& file)
   return ok;
 }
 
-#define SEQ2WAV_PLUGIN(S2WPluginInfo) \
-  template<> Seq2WavPlugin<S2WPluginInfo>::ExtExpand Seq2WavPlugin<S2WPluginInfo>::extensions = Seq2WavPlugin<S2WPluginInfo>::ExtExpand(); \
-  EXPORT Seq2WavPlugin<S2WPluginInfo> aud_plugin_instance;
+#define CLEF_PLUGIN(ClefPluginInfo) \
+  template<> ClefPlugin<ClefPluginInfo>::ExtExpand ClefPlugin<ClefPluginInfo>::extensions = ClefPlugin<ClefPluginInfo>::ExtExpand(); \
+  EXPORT ClefPlugin<ClefPluginInfo> aud_plugin_instance;
 #endif

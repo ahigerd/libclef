@@ -1,5 +1,5 @@
-#ifndef S2W_CLAPPLUGIN_H
-#define S2W_CLAPPLUGIN_H
+#ifndef CLEF_CLAPPLUGIN_H
+#define CLEF_CLAPPLUGIN_H
 #ifdef BUILD_CLAP
 
 #include "plugin/baseplugin.h"
@@ -15,18 +15,18 @@ namespace pfd {
   class message;
 }
 
-class S2WClapPluginBase
+class ClefClapPluginBase
 {
 public:
   clap_plugin_t plugin;
   const clap_host_t* host;
-  S2WContext* ctx;
-  S2WPluginBase* s2wPlugin;
+  ClefContext* ctx;
+  ClefPluginBase* clefPlugin;
   SynthContext* synth;
   RealTimeTrack seq;
 
-  S2WClapPluginBase(const clap_host_t* host);
-  ~S2WClapPluginBase();
+  ClefClapPluginBase(const clap_host_t* host);
+  ~ClefClapPluginBase();
 
   virtual bool init();
   virtual void destroy();
@@ -107,30 +107,30 @@ private:
   pfd::message* messageDialog;
 };
 
-template <typename S2WPluginInfo>
-class S2WClapPlugin : public S2WClapPluginBase
+template <typename ClefPluginInfo>
+class ClefClapPlugin : public ClefClapPluginBase
 {
 public:
-  using PluginBase = S2WClapPlugin<S2WPluginInfo>;
-  using PluginInfo = S2WPluginInfo;
+  using PluginBase = ClefClapPlugin<ClefPluginInfo>;
+  using PluginInfo = ClefPluginInfo;
 
-  S2WClapPlugin(const clap_host_t* host) : S2WClapPluginBase(host)
+  ClefClapPlugin(const clap_host_t* host) : ClefClapPluginBase(host)
   {
-    s2wPlugin = new S2WPlugin<PluginInfo>(ctx);
+    clefPlugin = new ClefPlugin<PluginInfo>(ctx);
   }
 
   SynthContext* createContext(const std::string& filename, std::istream& file)
   {
-    return s2wPlugin->prepare(filename, file);
+    return clefPlugin->prepare(filename, file);
   }
 };
 
-template <class S2WPluginInfo>
-struct S2WPluginFactory
+template <class ClefPluginInfo>
+struct ClefPluginFactory
 {
   static const clap_plugin_descriptor_t* descriptor()
   {
-    static std::string id("s2w." + S2WPluginInfo::pluginShortName);
+    static std::string id("clef." + ClefPluginInfo::pluginShortName);
 
     static const char* features[] = {
       CLAP_PLUGIN_FEATURE_INSTRUMENT,
@@ -142,13 +142,13 @@ struct S2WPluginFactory
     static const clap_plugin_descriptor_t desc = {
       .clap_version = CLAP_VERSION_INIT,
       .id = id.c_str(),
-      .name = S2WPluginInfo::pluginName.c_str(),
-      .vendor = S2WPluginInfo::author.c_str(),
-      .url = S2WPluginInfo::url.c_str(),
-      .manual_url = S2WPluginInfo::url.c_str(),
-      .support_url = S2WPluginInfo::url.c_str(),
-      .version = S2WPluginInfo::version.c_str(),
-      .description = S2WPluginInfo::about.c_str(),
+      .name = ClefPluginInfo::pluginName.c_str(),
+      .vendor = ClefPluginInfo::author.c_str(),
+      .url = ClefPluginInfo::url.c_str(),
+      .manual_url = ClefPluginInfo::url.c_str(),
+      .support_url = ClefPluginInfo::url.c_str(),
+      .version = ClefPluginInfo::version.c_str(),
+      .description = ClefPluginInfo::about.c_str(),
       .features = features,
     };
 
@@ -164,20 +164,20 @@ struct S2WPluginFactory
       if (!clap_version_is_compatible(host->clap_version) || std::strcmp(pluginID, descriptor()->id)) {
         return nullptr;
       }
-      auto* plugin = new typename S2WPluginInfo::ClapPlugin(host);
+      auto* plugin = new typename ClefPluginInfo::ClapPlugin(host);
       plugin->plugin.desc = descriptor();
       return &plugin->plugin;
     },
   };
 };
 
-#define SEQ2WAV_PLUGIN(S2WPluginInfo) \
+#define CLEF_PLUGIN(ClefPluginInfo) \
   extern "C" const clap_plugin_entry_t clap_entry = { \
     .clap_version = CLAP_VERSION_INIT, \
     .init = [](const char *path) -> bool { return true; }, \
     .deinit = []() {}, \
     .get_factory = [] (const char *factoryID) -> const void* { \
-      return strcmp(factoryID, CLAP_PLUGIN_FACTORY_ID) ? nullptr : &S2WPluginFactory<S2WPluginInfo>::pluginFactory; \
+      return strcmp(factoryID, CLAP_PLUGIN_FACTORY_ID) ? nullptr : &ClefPluginFactory<ClefPluginInfo>::pluginFactory; \
     }, \
   };
 
@@ -185,17 +185,17 @@ struct S2WPluginFactory
 
 using clap_host_t = void;
 
-class S2WClapPluginBase
+class ClefClapPluginBase
 {
 public:
-  S2WClapPluginBase(const void*) {}
+  ClefClapPluginBase(const void*) {}
 };
 
-template <typename S2WPluginInfo>
-class S2WClapPlugin : public S2WClapPluginBase
+template <typename ClefPluginInfo>
+class ClefClapPlugin : public ClefClapPluginBase
 {
 public:
-  S2WClapPlugin(const void*) {}
+  ClefClapPlugin(const void*) {}
 };
 
 #endif

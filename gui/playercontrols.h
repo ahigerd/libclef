@@ -1,5 +1,5 @@
-#ifndef S2W_PLAYERCONTROLS_H
-#define S2W_PLAYERCONTROLS_H
+#ifndef CLEF_PLAYERCONTROLS_H
+#define CLEF_PLAYERCONTROLS_H
 
 #include <QWidget>
 #include <QAudio>

@@ -5,18 +5,18 @@
 #include <sstream>
 #include <vector>
 
-std::string S2WPluginBase::seq2wavCopyright()
+std::string ClefPluginBase::libclefCopyright()
 {
   return "\n\n"
-    "Derived from seq2wav copyright (C) 2020 Adam Higerd\n"
+    "Derived from libclef, copyright (C) 2020-2024 Adam Higerd\n"
     "under the terms of the MIT license.";
 }
 
-TagMap TagsM3UMixin::readTags(S2WContext* s2w, const std::string& filename)
+TagMap TagsM3UMixin::readTags(ClefContext* clef, const std::string& filename)
 {
   std::string m3uPath = TagsM3U::relativeTo(filename);
   try {
-    auto m3uStream(s2w->openFile(m3uPath));
+    auto m3uStream(clef->openFile(m3uPath));
     if (*m3uStream) {
       TagsM3U m3u(*m3uStream);
       TagMap tagMap = m3u.allTags(filename);
@@ -30,7 +30,7 @@ TagMap TagsM3UMixin::readTags(S2WContext* s2w, const std::string& filename)
   return TagMap();
 }
 
-std::vector<std::string> TagsM3UMixin::getSubsongs(S2WContext* s2w, const std::string& filename, std::istream& file)
+std::vector<std::string> TagsM3UMixin::getSubsongs(ClefContext* clef, const std::string& filename, std::istream& file)
 {
   std::string m3uPath = TagsM3U::relativeTo(filename);
   int slashPos = filename.find_last_of(PATH_CHARS);
@@ -38,7 +38,7 @@ std::vector<std::string> TagsM3UMixin::getSubsongs(S2WContext* s2w, const std::s
   std::string baseName = filename.substr(slashPos + 1, qPos - slashPos - 1);
   std::vector<std::string> result;
   try {
-    auto m3uStream(s2w->openFile(m3uPath));
+    auto m3uStream(clef->openFile(m3uPath));
     if (*m3uStream) {
       TagsM3U m3u(*m3uStream);
       std::vector<int> trackIds = m3u.findTracksByPrefix(baseName);
@@ -61,7 +61,7 @@ std::vector<std::string> TagsM3UMixin::getSubsongs(S2WContext* s2w, const std::s
   return result;
 }
 
-S2WPluginBase::S2WPluginBase(S2WContext* s2w) : s2w(s2w), ctx(nullptr)
+ClefPluginBase::ClefPluginBase(ClefContext* clef) : clef(clef), ctx(nullptr)
 {
   // initializers only
 }
@@ -77,7 +77,7 @@ std::string toLower(const std::string& str)
   return str;
 }
 
-bool S2WPluginBase::matchExtension(const std::string& filename) const
+bool ClefPluginBase::matchExtension(const std::string& filename) const
 {
   int dotPos = filename.rfind('.');
   if (dotPos == std::string::npos) {
@@ -92,7 +92,7 @@ bool S2WPluginBase::matchExtension(const std::string& filename) const
   return false;
 }
 
-TagMap S2WPluginBase::getTags(const std::string& filename, std::istream& file) const
+TagMap ClefPluginBase::getTags(const std::string& filename, std::istream& file) const
 {
   try {
     auto pos = file.tellg();
@@ -125,7 +125,7 @@ TagMap S2WPluginBase::getTags(const std::string& filename, std::istream& file) c
   }
 }
 
-int S2WPluginBase::fillBuffer(uint8_t* buffer, int len)
+int ClefPluginBase::fillBuffer(uint8_t* buffer, int len)
 {
   if (!ctx) {
     return 0;
@@ -133,7 +133,7 @@ int S2WPluginBase::fillBuffer(uint8_t* buffer, int len)
   return ctx->fillBuffer(buffer, len);
 }
 
-int S2WPluginBase::channels() const
+int ClefPluginBase::channels() const
 {
   if (!ctx) {
     return 0;
@@ -141,7 +141,7 @@ int S2WPluginBase::channels() const
   return ctx->outputChannels;
 }
 
-int S2WPluginBase::sampleRate() const
+int ClefPluginBase::sampleRate() const
 {
   if (!ctx) {
     return 0;
@@ -149,7 +149,7 @@ int S2WPluginBase::sampleRate() const
   return ctx->sampleRate;
 }
 
-bool S2WPluginBase::play(const std::string& filename, std::istream& file)
+bool ClefPluginBase::play(const std::string& filename, std::istream& file)
 {
   try {
     file.seekg(0);
@@ -168,7 +168,7 @@ bool S2WPluginBase::play(const std::string& filename, std::istream& file)
   }
 }
 
-double S2WPluginBase::currentTime() const
+double ClefPluginBase::currentTime() const
 {
   if (ctx) {
     return ctx->currentTime();
@@ -176,14 +176,14 @@ double S2WPluginBase::currentTime() const
   return 0;
 }
 
-void S2WPluginBase::seek(double time)
+void ClefPluginBase::seek(double time)
 {
   if (ctx) {
     ctx->seek(time);
   }
 }
 
-void S2WPluginBase::unload()
+void ClefPluginBase::unload()
 {
   release();
   ctx = nullptr;

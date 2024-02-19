@@ -1,5 +1,5 @@
-#ifndef S2W_RIFFCODEC_H
-#define S2W_RIFFCODEC_H
+#ifndef CLEF_RIFFCODEC_H
+#define CLEF_RIFFCODEC_H
 
 #include "icodec.h"
 
@@ -23,7 +23,7 @@ struct WaveFormatEx {
 
 class RiffCodec : public ICodec {
 public:
-  RiffCodec(S2WContext* ctx);
+  RiffCodec(ClefContext* ctx);
 
   virtual SampleData* decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID = 0);
 };

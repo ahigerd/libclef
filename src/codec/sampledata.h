@@ -1,17 +1,17 @@
-#ifndef S2W_SAMPLEDATA_H
-#define S2W_SAMPLEDATA_H
+#ifndef CLEF_SAMPLEDATA_H
+#define CLEF_SAMPLEDATA_H
 
 #include <cstdint>
 #include <vector>
-class S2WContext;
+class ClefContext;
 
 struct SampleData {
   enum {
     Uncached = 0xFFFFFFFFFFFFFFFFULL,
   };
 
-  SampleData(S2WContext* ctx, uint64_t sampleID, double sampleRate = 44100.0, int loopStart = -1, int loopEnd = -1);
-  SampleData(S2WContext* ctx, double sampleRate = 44100.0, int loopStart = -1, int loopEnd = -1);
+  SampleData(ClefContext* ctx, uint64_t sampleID, double sampleRate = 44100.0, int loopStart = -1, int loopEnd = -1);
+  SampleData(ClefContext* ctx, double sampleRate = 44100.0, int loopStart = -1, int loopEnd = -1);
 
   uint32_t numSamples() const;
   double duration() const;

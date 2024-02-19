@@ -1,5 +1,5 @@
-#ifndef S2W_SYNTHCONTEXT_H
-#define S2W_SYNTHCONTEXT_H
+#ifndef CLEF_SYNTHCONTEXT_H
+#define CLEF_SYNTHCONTEXT_H
 
 #include <cstdint>
 #include <vector>
@@ -11,14 +11,14 @@ class IInterpolator;
 class ITrack;
 class RiffWriter;
 class IInstrument;
-class S2WContext;
+class ClefContext;
 
 class SynthContext {
 public:
-  SynthContext(S2WContext* ctx, double sampleRate, int outputChannels = 2);
+  SynthContext(ClefContext* ctx, double sampleRate, int outputChannels = 2);
   ~SynthContext();
 
-  S2WContext* s2wContext() const;
+  ClefContext* clefContext() const;
 
   const double sampleRate;
   const double sampleTime;
@@ -55,7 +55,7 @@ protected:
 private:
   std::vector<int16_t> mixBuffer;
   double currentTimestamp, maximumTimestamp;
-  S2WContext* ctx;
+  ClefContext* ctx;
 };
 
 #endif

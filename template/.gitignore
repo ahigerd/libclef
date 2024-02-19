@@ -38,4 +38,4 @@ plugins/pfc
 plugins/libPPUI
 
 # de-ignore submodule
-!/seq2wav
+!/libclef

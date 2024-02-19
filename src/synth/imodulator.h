@@ -1,5 +1,5 @@
-#ifndef S2W_IMODULATOR_H
-#define S2W_IMODULATOR_H
+#ifndef CLEF_IMODULATOR_H
+#define CLEF_IMODULATOR_H
 
 #include "audionode.h"
 #include "iinterpolator.h"

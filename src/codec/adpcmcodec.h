@@ -1,5 +1,5 @@
-#ifndef S2W_ADPCMCODEC_H
-#define S2W_ADPCMCODEC_H
+#ifndef CLEF_ADPCMCODEC_H
+#define CLEF_ADPCMCODEC_H
 
 #include "icodec.h"
 
@@ -11,7 +11,7 @@ public:
     OKI4s,
     NDS,
   };
-  AdpcmCodec(S2WContext* ctx, Format format, int interleave = 0);
+  AdpcmCodec(ClefContext* ctx, Format format, int interleave = 0);
 
   virtual SampleData* decodeRange(std::vector<uint8_t>::const_iterator start, std::vector<uint8_t>::const_iterator end, uint64_t sampleID = 0);
 

@@ -26,7 +26,7 @@ static const int16_t oki4sStep[] = {
 };
 static const int maxOki4sStep = (sizeof(oki4sStep) >> 1) - 1;
 
-AdpcmCodec::AdpcmCodec(S2WContext* ctx, AdpcmCodec::Format format, int interleave)
+AdpcmCodec::AdpcmCodec(ClefContext* ctx, AdpcmCodec::Format format, int interleave)
 : ICodec(ctx), format(format), predictor{ 0, 0 }, index{ 0, 0 }, interleave(interleave)
 {
   if (format == OKI4s) {

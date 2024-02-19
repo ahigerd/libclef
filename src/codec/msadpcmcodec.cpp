@@ -14,7 +14,7 @@ static const int16_t msStep[] = {
   768, 614, 512, 409, 307, 230, 230, 230,
 };
 
-MsAdpcmCodec::MsAdpcmCodec(S2WContext* ctx, uint16_t blockSize, uint16_t channels)
+MsAdpcmCodec::MsAdpcmCodec(ClefContext* ctx, uint16_t blockSize, uint16_t channels)
 : ICodec(ctx), blockSize(blockSize), channels(channels)
 {
   // initializers only

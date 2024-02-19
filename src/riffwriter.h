@@ -1,5 +1,5 @@
-#ifndef S2W_RIFFWRITER_H
-#define S2W_RIFFWRITER_H
+#ifndef CLEF_RIFFWRITER_H
+#define CLEF_RIFFWRITER_H
 
 #include <fstream>
 #include <string>

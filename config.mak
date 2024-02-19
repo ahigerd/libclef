@@ -1,5 +1,5 @@
 # Note: Don't use -march=native for code intended for distribution. -msse2 is probably good.
-CXXFLAGS := -fPIC -std=gnu++17 -Wno-multichar -I../src -I../seq2wav/src -msse2 -I. -Isrc/ $(PLUGIN_CXXFLAGS)
+CXXFLAGS := -fPIC -std=gnu++17 -Wno-multichar -I../src -I../libclef/src -msse2 -I. -Isrc/ $(PLUGIN_CXXFLAGS)
 QMAKE = qmake
 
 DLL := so
@@ -45,9 +45,9 @@ CXXFLAGS_D := $(CXXFLAGS) -Og -ffast-math -gstabs
 else
 CXXFLAGS_D := $(CXXFLAGS) -Og -ffast-math -ggdb3
 endif
-LDFLAGS := $(LDFLAGS) -L../seq2wav/$(BUILDPATH) -L../$(BUILDPATH) $(PLUGIN_LDFLAGS)
-LDFLAGS_R := $(LDFLAGS) -lseq2wav
-LDFLAGS_D := $(LDFLAGS) -lseq2wav_d
+LDFLAGS := $(LDFLAGS) -L../libclef/$(BUILDPATH) -L../$(BUILDPATH) $(PLUGIN_LDFLAGS)
+LDFLAGS_R := $(LDFLAGS) -lclef
+LDFLAGS_D := $(LDFLAGS) -lclef_d
 
 validate: FORCE
 ifeq ($(PLUGIN_NAME),sample)
@@ -55,7 +55,7 @@ ifeq ($(PLUGIN_NAME),sample)
 	@exit 1
 endif
 
-seq2wav/$(BUILDPATH)/libseq2wav.a seq2wav/$(BUILDPATH)/libseq2wav_d.a: validate
+libclef/$(BUILDPATH)/libclef.a libclef/$(BUILDPATH)/libclef_d.a: validate
 
 define validate_xspec =
 ifeq ($(XSPEC),)

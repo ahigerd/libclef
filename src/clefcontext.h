@@ -1,14 +1,14 @@
-#ifndef S2W_S2WCONTEXT_H
-#define S2W_S2WCONTEXT_H
+#ifndef CLEF_CLEFCONTEXT_H
+#define CLEF_CLEFCONTEXT_H
 
 #include <unordered_map>
 #include "utility.h"
 #include "codec/sampledata.h"
 
-class S2WContext {
+class ClefContext {
 public:
-  S2WContext(const OpenFn& openFile = openFstream);
-  S2WContext(bool isDawPlugin, const OpenFn& openFile = openFstream);
+  ClefContext(const OpenFn& openFile = openFstream);
+  ClefContext(bool isDawPlugin, const OpenFn& openFile = openFstream);
 
   std::unique_ptr<std::istream> openFile(const std::string& path) const;
 

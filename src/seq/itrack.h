@@ -1,5 +1,5 @@
-#ifndef S2W_ITRACK_H
-#define S2W_ITRACK_H
+#ifndef CLEF_ITRACK_H
+#define CLEF_ITRACK_H
 
 #include "sequenceevent.h"
 #include <vector>

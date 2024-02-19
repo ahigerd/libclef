@@ -1,5 +1,5 @@
-#ifndef S2W_IINSTRUMENT_H
-#define S2W_IINSTRUMENT_H
+#ifndef CLEF_IINSTRUMENT_H
+#define CLEF_IINSTRUMENT_H
 
 #include <memory>
 #include "channel.h"

@@ -1,11 +1,11 @@
-#ifndef S2W_TAGVIEW_H
-#define S2W_TAGVIEW_H
+#ifndef CLEF_TAGVIEW_H
+#define CLEF_TAGVIEW_H
 
 #include <QGroupBox>
 #include <QList>
 #include <string>
 #include "tagmap.h"
-class S2WPluginBase;
+class ClefPluginBase;
 class QLabel;
 class QFormLayout;
 class QComboBox;
@@ -19,7 +19,7 @@ public:
   QString autoSubsong() const;
 
 public slots:
-  void loadTags(S2WPluginBase* plugin, const QString& filename, const std::string& stdFilename, const std::string& stdPath);
+  void loadTags(ClefPluginBase* plugin, const QString& filename, const std::string& stdFilename, const std::string& stdPath);
   void clearTags();
 
 signals:

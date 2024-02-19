@@ -1,7 +1,7 @@
-#ifndef S2W_AUDIONODE_H
-#define S2W_AUDIONODE_H
+#ifndef CLEF_AUDIONODE_H
+#define CLEF_AUDIONODE_H
 
-#include "s2wconfig.h"
+#include "clefconfig.h"
 #include "audioparam.h"
 class SynthContext;
 class IModulator;

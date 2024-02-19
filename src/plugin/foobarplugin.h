@@ -1,8 +1,8 @@
-#ifndef S2W_FOOBARPLUGIN_H
-#define S2W_FOOBARPLUGIN_H
+#ifndef CLEF_FOOBARPLUGIN_H
+#define CLEF_FOOBARPLUGIN_H
 
 #include "foobar2000/SDK/foobar2000.h"
-#include "s2wconfig.h"
+#include "clefconfig.h"
 #include "plugin/baseplugin.h"
 #include "codec/sampledata.h"
 #include "synth/synthcontext.h"
@@ -118,22 +118,22 @@ public:
 
 static abort_callback_impl dummyAbort;
 
-static std::unique_ptr<std::istream> s2wFoobarOpenFile(const std::string& filename)
+static std::unique_ptr<std::istream> clefFoobarOpenFile(const std::string& filename)
 {
   auto stream = std::unique_ptr<std::istream>(new foofile_istream(filename, dummyAbort));
   stream->seekg(0);
   return stream;
 }
 
-template <typename S2WPluginInfo>
-class input_seq2wav : public input_stubs {
-  using PluginType = S2WPlugin<S2WPluginInfo>;
+template <typename ClefPluginInfo>
+class input_clef : public input_stubs {
+  using PluginType = ClefPlugin<ClefPluginInfo>;
 public:
   static PluginType staticPlugin;
-  S2WContext s2w;
+  ClefContext clef;
   PluginType plugin;
 
-  input_seq2wav(): s2w(s2wFoobarOpenFile), plugin(&s2w) {}
+  input_clef(): clef(clefFoobarOpenFile), plugin(&clef) {}
 
   void open(service_ptr_t<file> p_filehint, const char* p_path, t_input_open_reason p_reason, abort_callback& p_abort) {
     foofile_istream file(p_filehint, p_path, p_reason, p_abort);
@@ -172,7 +172,7 @@ public:
   }
 
   void decode_initialize(unsigned p_flags, abort_callback& p_abort) {
-    s2w.purgeSamples();
+    clef.purgeSamples();
     p_abort.check();
     foofile_istream stream(m_file, p_abort);
     bool ok = plugin.play(m_filename, stream);
@@ -221,7 +221,7 @@ public:
   std::string m_filename;
 };
 
-bool s2wFoobarMeta(const S2WPluginBase& plugin)
+bool clefFoobarMeta(const ClefPluginBase& plugin)
 {
   DECLARE_COMPONENT_VERSION_COPY(plugin.pluginName().c_str(), plugin.version().c_str(), plugin.about().c_str());
 
@@ -238,13 +238,13 @@ bool s2wFoobarMeta(const S2WPluginBase& plugin)
   return true;
 }
 
-#define SEQ2WAV_PLUGIN(S2WPluginInfo) \
-  using S2W = input_seq2wav<S2WPluginInfo>; \
-  template<> S2WPlugin<S2WPluginInfo> S2W::staticPlugin = S2WPlugin<S2WPluginInfo>(nullptr); \
-  DECLARE_COMPONENT_VERSION_COPY(S2W::staticPlugin.pluginName().c_str(), S2W::staticPlugin.version().c_str(), S2W::staticPlugin.about().c_str()); \
-  static bool metaOK = s2wFoobarMeta(S2W::staticPlugin); \
-  static input_singletrack_factory_t<input_seq2wav<S2WPluginInfo>> g_input_seq2wav_factory; \
-  static std::string pluginFilename = "foo_input_" + S2WPluginInfo::pluginShortName + ".dll"; \
+#define CLEF_PLUGIN(ClefPluginInfo) \
+  using Clef = input_clef<ClefPluginInfo>; \
+  template<> ClefPlugin<ClefPluginInfo> Clef::staticPlugin = ClefPlugin<ClefPluginInfo>(nullptr); \
+  DECLARE_COMPONENT_VERSION_COPY(Clef::staticPlugin.pluginName().c_str(), Clef::staticPlugin.version().c_str(), Clef::staticPlugin.about().c_str()); \
+  static bool metaOK = clefFoobarMeta(Clef::staticPlugin); \
+  static input_singletrack_factory_t<input_clef<ClefPluginInfo>> g_input_clef_factory; \
+  static std::string pluginFilename = "foo_input_" + ClefPluginInfo::pluginShortName + ".dll"; \
   VALIDATE_COMPONENT_FILENAME(pluginFilename.c_str());
 
 #endif

@@ -1,7 +1,7 @@
 #include "pcmcodec.h"
 #include "utility.h"
 
-PcmCodec::PcmCodec(S2WContext* ctx, int sampleBits, int channels, bool bigEndian)
+PcmCodec::PcmCodec(ClefContext* ctx, int sampleBits, int channels, bool bigEndian)
 : ICodec(ctx), sampleBits(sampleBits), sampleBytes(sampleBits >> 3), channels(channels), bigEndian(bigEndian)
 {
   // initializers only
