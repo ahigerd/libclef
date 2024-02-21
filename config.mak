@@ -6,6 +6,7 @@ DLL := so
 EXE :=
 BUILDPATH := build
 EXPECT_XSPEC :=
+CLAP_LDFLAGS :=
 ifeq ($(CROSS),msvc)
 	DLL := dll
 	EXE := .exe
@@ -41,12 +42,15 @@ ifeq ($(OS),Windows_NT)
 	CXXFLAGS := $(CXXFLAGS) -static-libgcc -static-libstdc++
 	LDFLAGS := $(LDFLAGS) -static-libgcc -static-libstdc++ -static -lpthread
 	BUILDPATH := build_win
+	CLAP_LDFLAGS := -luuid
 ifneq ($(CROSS),msvc)
 	EXPECT_XSPEC := win32-g++
 plugins: winamp
 else
 	EXPECT_XSPEC := win32-msvc
 endif
+else ifneq ($(CROSS),)
+$(error Invalid CROSS. Supported values: mingw mingw64 mingw-posix mingw64-posix msvc)
 endif
 
 CXXFLAGS_R := $(CXXFLAGS) -O3 -ffast-math
@@ -67,34 +71,8 @@ endif
 
 libclef/$(BUILDPATH)/libclef.a libclef/$(BUILDPATH)/libclef_d.a: validate
 
-define validate_xspec =
-ifeq ($(XSPEC),)
-	@echo Unable to execute qmake binary: $(QMAKE)
-	@exit 1
-endif
-endef
-
-define validate_spec =
-ifneq ("$(EXPECT_XSPEC)","$(XSPEC)")
-	@echo
-	@echo Incorrect qmake binary detected: $(QMAKE)
-	@echo - qmake target platform: "'$(XSPEC)'"
-	@echo - expected: "'$(EXPECT_XSPEC)'"
-	@echo
-	@echo Please specify the path to the correct qmake binary:
-	@echo "  $(MAKE) gui QMAKE=/path/to/qmake"
-	@echo
-	@exit 1
-endif
-endef
-
 validategui: FORCE
-	$(eval XSPEC := $(shell $(QMAKE) -query QMAKE_XSPEC))
-	$(eval $(call validate_xspec))
-ifeq ($(EXPECT_XSPEC),)
-	$(eval EXPECT_XSPEC := $(shell $(QMAKE) -query QMAKE_SPEC))
-endif
-	$(eval $(call validate_spec))
+	@QMAKE=$(QMAKE) MAKE=$(MAKE) sh libclef/validate-qmake.sh $(EXPECT_XSPEC)
 
 gui/Makefile gui/Makefile.debug: validategui
 
