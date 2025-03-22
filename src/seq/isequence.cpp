@@ -1,5 +1,7 @@
 #include "isequence.h"
 #include "sequenceevent.h"
+#include "clefcontext.h"
+#include "codec/sampledata.h"
 
 ISequence::ISequence(ClefContext* ctx)
 : ctx(ctx)
@@ -39,8 +41,10 @@ StreamSequence::StreamSequence(ClefContext* ctx, uint64_t sampleID, double start
 {
   BasicTrack* track = new BasicTrack;
   SampleEvent* event = new SampleEvent;
+  SampleData* sample = ctx->getSample(sampleID);
   event->sampleID = sampleID;
   event->timestamp = startTime;
+  event->duration = sample ? sample->duration() : -1;
   track->addEvent(event);
   tracks.emplace_back(track);
 }

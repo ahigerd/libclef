@@ -38,6 +38,17 @@ class BaseSequence : public ISequence {
 public:
   BaseSequence(ClefContext* ctx) : ISequence(ctx) {}
 
+  virtual double duration() const {
+    double maximumTimestamp = 0;
+    for (auto& track : tracks) {
+      double len = track->length();
+      if (len > maximumTimestamp) {
+        maximumTimestamp = len;
+      }
+    }
+    return maximumTimestamp;
+  }
+
   virtual int numTracks() const {
     return tracks.size();
   }

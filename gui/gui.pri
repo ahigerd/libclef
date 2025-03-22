@@ -32,7 +32,7 @@ isEmpty(BUILD_DEBUG) {
   RCC_DIR = $$BUILDPATH/gui_d
   CONFIG -= release debug_and_release
   CONFIG += debug
-  LIBS += $$BUILDPATH/lib$${PLUGIN_NAME}.a_d
+  LIBS += $$BUILDPATH/lib$${PLUGIN_NAME}_d.a
   PRE_TARGETDEPS += $$BUILDPATH/lib$${PLUGIN_NAME}_d.a $$CLEF_BUILDPATH/libclef_d.a
 }
 QT = core gui widgets multimedia
