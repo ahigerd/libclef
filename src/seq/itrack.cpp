@@ -12,7 +12,7 @@ void ITrack::seek(double timestamp)
 {
   double eventTime = 0;
   if (timestamp > 0 && lastEvent) {
-    if (BaseNoteEvent* note = dynamic_cast<BaseNoteEvent*>(lastEvent.get())) {
+    if (BaseNoteEvent* note = lastEvent->cast<BaseNoteEvent>()) {
       if (lastEvent->timestamp < timestamp && lastEvent->timestamp + note->duration > timestamp) {
         // No seeking necessary, it's just going to keep playing this event
         seekEvent = lastEvent;
@@ -29,7 +29,7 @@ void ITrack::seek(double timestamp)
   }
   std::shared_ptr<SequenceEvent> event = readNextEvent();
   while (event && event->timestamp < timestamp) {
-    BaseNoteEvent* note = dynamic_cast<BaseNoteEvent*>(event.get());
+    BaseNoteEvent* note = event->cast<BaseNoteEvent>();
     if (note) {
       eventTime += note->duration;
       if (eventTime > timestamp) {
@@ -69,7 +69,7 @@ void BasicTrack::addEvent(SequenceEvent* event)
 {
   std::shared_ptr<SequenceEvent> shared(event);
   events.push_back(shared);
-  if (BaseNoteEvent* note = dynamic_cast<BaseNoteEvent*>(event)) {
+  if (BaseNoteEvent* note = event->cast<BaseNoteEvent>()) {
     if (shared->timestamp + note->duration > maximumTimestamp) {
       maximumTimestamp = shared->timestamp + note->duration;
       return;

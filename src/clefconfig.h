@@ -3,6 +3,7 @@
 
 #define _USE_MATH_DEFINES
 
+#include <cstdint>
 #include <cstdlib>
 #ifdef _MSC_VER
 typedef unsigned int ssize_t;

@@ -11,16 +11,6 @@ SequenceEvent::SequenceEvent()
   // initializers only
 }
 
-bool SequenceEvent::isNoteEvent() const
-{
-  return false;
-}
-
-bool BaseNoteEvent::isNoteEvent() const
-{
-  return true;
-}
-
 inline uint64_t BaseNoteEvent::nextPlaybackID()
 {
   return _nextPlaybackID.fetch_add(1, std::memory_order_relaxed);

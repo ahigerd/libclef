@@ -6,6 +6,7 @@
 #include <vector>
 #include <deque>
 #include <memory>
+#include <cstdint>
 #include "audionode.h"
 #include "audioparam.h"
 #include "envelope.h"
