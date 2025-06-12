@@ -64,6 +64,26 @@ T parseIntBE(const Container& buffer, size_t offset)
   return T(result);
 }
 
+template <typename T, typename Container>
+T parseInt(bool isLittleEndian, const Container& buffer, size_t offset)
+{
+  if (isLittleEndian) {
+    return parseInt<T, Container>(buffer, offset);
+  } else {
+    return parseIntBE<T, Container>(buffer, offset);
+  }
+}
+
+template <typename Container>
+std::uint32_t parseMagic(const Container& buffer, size_t offset)
+{
+#if '   A' == 0x20202041
+  return parseIntBE<std::uint32_t, Container>(buffer, offset);
+#else
+  return parseInt<std::uint32_t, Container>(buffer, offset);
+#endif
+}
+
 int countBits(uint64_t value);
 
 double noteToFreq(double midiNote);
