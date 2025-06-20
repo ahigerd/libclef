@@ -61,11 +61,11 @@ public:
     return tracks[index].get();
   }
 
-protected:
   virtual void addTrack(Track* track) {
     tracks.emplace_back(track);
   }
 
+protected:
   std::vector<std::unique_ptr<Track>> tracks;
 };
 

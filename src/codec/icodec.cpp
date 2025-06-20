@@ -1,4 +1,5 @@
 #include "icodec.h"
+#include "clefcontext.h"
 #include <fstream>
 
 ICodec::ICodec(ClefContext* ctx)
@@ -18,10 +19,10 @@ SampleData* ICodec::decodeFile(const std::string& filename, uint64_t sampleID)
 {
   std::vector<uint8_t> buffer;
   std::vector<char> block(1024);
-  std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
-  while (file.good()) {
-    file.read(block.data(), 1024);
-    int bytesRead = file.gcount();
+  auto file(ctx->openFile(filename));
+  while (file->good()) {
+    file->read(block.data(), 1024);
+    int bytesRead = file->gcount();
     buffer.insert(buffer.end(), block.begin(), block.begin() + bytesRead);
   }
   return decode(buffer, sampleID);

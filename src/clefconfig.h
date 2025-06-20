@@ -4,6 +4,7 @@
 #define _USE_MATH_DEFINES
 
 #include <cstdlib>
+#include <cstdint>
 #ifdef _MSC_VER
 typedef unsigned int ssize_t;
 #endif
