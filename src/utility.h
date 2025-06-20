@@ -104,4 +104,14 @@ std::string formatDuration(double seconds);
 std::string formatDuration(const std::string& seconds);
 std::string fourccToString(uint32_t magic);
 
+template <typename T>
+void hexdump(const std::vector<T>& buffer, int limit = -1)
+{
+  if (limit < 0 || limit > buffer.size() * sizeof(T)) {
+    limit = buffer.size() * sizeof(T);
+  }
+  hexdump(buffer.data(), limit);
+}
+void hexdump(const void* buffer, int size);
+
 #endif

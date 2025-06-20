@@ -209,3 +209,25 @@ std::string fourccToString(uint32_t magic)
   };
   return std::string(str, 4);
 }
+
+void hexdump(const void* _buffer, int size)
+{
+  const char* buffer = reinterpret_cast<const char*>(_buffer);
+  int offset = 0;
+  while (offset < size) {
+    int lineStart = offset;
+    int i;
+    std::string printable;
+    std::printf("%04x: ", uint32_t(offset));
+    for (i = 0; i < 16; i++) {
+      if (offset < size) {
+        std::printf("%02x ", uint32_t(uint8_t(buffer[offset])));
+        printable += char((buffer[offset] >= 0x20 && buffer[offset] < 0x7F) ? buffer[offset] : '.');
+      } else {
+        std::printf("   ");
+      }
+      ++offset;
+    }
+    std::printf("%s\n", printable.c_str());
+  }
+}
