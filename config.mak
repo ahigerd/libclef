@@ -55,7 +55,7 @@ endif
 
 CXXFLAGS_R := $(CXXFLAGS) -O3 -ffast-math
 ifeq ($(OS),Windows_NT)
-CXXFLAGS_D := $(CXXFLAGS) -Og -ffast-math -gstabs
+CXXFLAGS_D := $(CXXFLAGS) -Og -ffast-math -ggdb3
 else
 CXXFLAGS_D := $(CXXFLAGS) -Og -ffast-math -ggdb3
 endif

@@ -13,7 +13,7 @@ public:
     PitchBend = 'bend',
   };
 
-  Sampler(const SynthContext* ctx, const SampleData* sample, double pitch = 1.0);
+  Sampler(const SynthContext* ctx, const SampleData* sample, double pitch = 1.0, double pitchBend = 1.0);
 
   IInterpolator* interpolator;
 

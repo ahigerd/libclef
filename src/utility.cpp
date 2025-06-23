@@ -231,3 +231,15 @@ void hexdump(const void* _buffer, int size)
     std::printf("%s\n", printable.c_str());
   }
 }
+
+static const char* midiNoteNames[] = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+
+std::string midiNoteName(int noteNumber)
+{
+  return midiNoteNames[noteNumber % 12];
+}
+
+std::string midiNoteSymbol(int noteNumber)
+{
+  return midiNoteName(noteNumber) + std::to_string(int(std::floor(noteNumber / 12.0)));
+}

@@ -96,6 +96,10 @@ force_inline double fastCos(double theta) { return fastSin(M_PI_2 - theta); }
 force_inline double combinePan(double a, double b) {
   return clamp(a + b - 0.5, 0.0, 1.0);
 }
+force_inline double semitonesToFactor(double semitones) {
+  constexpr double expPitch = M_LN2 / 12.0;
+  return fastExp(semitones, expPitch);
+}
 
 std::string trim(const std::string& str);
 std::wstring toUtf16(const std::string& str);
@@ -104,6 +108,7 @@ std::string formatDuration(double seconds);
 std::string formatDuration(const std::string& seconds);
 std::string fourccToString(uint32_t magic);
 
+void hexdump(const void* buffer, int size);
 template <typename T>
 void hexdump(const std::vector<T>& buffer, int limit = -1)
 {
@@ -112,6 +117,8 @@ void hexdump(const std::vector<T>& buffer, int limit = -1)
   }
   hexdump(buffer.data(), limit);
 }
-void hexdump(const void* buffer, int size);
+
+std::string midiNoteName(int noteNumber);
+std::string midiNoteSymbol(int noteNumber);
 
 #endif

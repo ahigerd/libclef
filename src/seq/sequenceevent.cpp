@@ -82,7 +82,7 @@ void BaseNoteEvent::setEnvelope(double start, double attack, double hold, double
 }
 
 SampleEvent::SampleEvent()
-: sampleID(0xFFFFFFFFFFFFFFFFULL), pitchBend(1.0)
+: sampleID(0xFFFFFFFFFFFFFFFFULL), pitchBend(1.0), modPitchBend(1.0)
 {
   // initializers only
 }

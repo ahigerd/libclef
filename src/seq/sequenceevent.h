@@ -131,6 +131,7 @@ public:
 
   uint64_t sampleID;    // looked up in sound bank
   double pitchBend;
+  double modPitchBend;
 };
 
 class OscillatorEvent : public NoteEvent<OscillatorEvent, SequenceEvent::Oscillator> {

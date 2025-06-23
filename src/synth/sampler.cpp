@@ -3,11 +3,11 @@
 #include "iinterpolator.h"
 #include "utility.h"
 
-Sampler::Sampler(const SynthContext* ctx, const SampleData* sample, double pitch)
+Sampler::Sampler(const SynthContext* ctx, const SampleData* sample, double pitch, double pitchBend)
 : AudioNode(ctx), interpolator(ctx->interpolator), sample(sample), offset(0), lastTime(0)
 {
   pPitch = addParam(Pitch, pitch).get();
-  pPitchBend = addParam(PitchBend, 1.0).get();
+  pPitchBend = addParam(PitchBend, pitchBend).get();
   addParam(Gain, 1.0);
   addParam(Pan, 0.5);
 }
