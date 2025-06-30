@@ -48,7 +48,7 @@ void IInstrument::modulatorEvent(Channel* channel, std::shared_ptr<ModulatorEven
 
 Channel::Note* IInstrument::userEvent(Channel* channel, std::shared_ptr<SequenceEvent> event)
 {
-  std::cerr << "ERROR: unhandled user event" << std::endl;
+  std::cerr << "WARNING: unhandled user event" << std::endl;
   return nullptr;
 }
 
@@ -73,7 +73,7 @@ Channel::Note* DefaultInstrument::noteEvent(Channel* channel, std::shared_ptr<Ba
       std::cerr << "ERROR: sample " << std::hex << sampEvent->sampleID << std::dec << " not found" << std::endl;
       return nullptr;
     }
-    Sampler* samp = new Sampler(channel->ctx, sampleData, sampEvent->pitchBend);
+    Sampler* samp = new Sampler(channel->ctx, sampleData, sampEvent->pitchBend, sampEvent->modPitchBend);
     node.reset(samp);
     samp->param(AudioNode::Gain)->setConstant(sampEvent->volume);
     samp->param(AudioNode::Pan)->setConstant(sampEvent->pan);
