@@ -73,6 +73,18 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
           noteIter->second->duration = killEvent->timestamp - noteIter->second->event->timestamp;
           noteIter->second->kill = noteIter->second->kill || killEvent->immediate;
         }
+      } else if (auto updateEvent = event->cast<NoteUpdateEvent>()) {
+        auto iter = notes.find(updateEvent->playbackID);
+        if (iter != notes.end()) {
+          Note* note = iter->second;
+          note->duration = event->timestamp + updateEvent->newDuration - note->event->timestamp;
+          for (auto iter : updateEvent->params) {
+            auto param = note->source->param(iter.first);
+            if (param) {
+              param->setValueAt(event->timestamp, iter.second);
+            }
+          }
+        }
       } else if (auto instEvent = event->cast<SetInstrumentEvent>()) {
         instrument = instEvent->instrument;
         if (!instrument) {

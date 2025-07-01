@@ -117,6 +117,12 @@ ModulatorEvent::ModulatorEvent(int32_t param, double value)
   // initializers only
 }
 
+NoteUpdateEvent::NoteUpdateEvent(uint64_t playbackID)
+: playbackID(playbackID), newDuration(-1)
+{
+  // initializers only
+}
+
 KillEvent::KillEvent(uint64_t playbackID, double timestamp)
 : playbackID(playbackID), immediate(false)
 {

@@ -39,7 +39,7 @@ private:
 
 class FilterNode : public AudioNode {
 public:
-  void connect(std::shared_ptr<AudioNode> source);
+  void connect(std::shared_ptr<AudioNode> source, bool forwardGainPan = false);
 
   virtual bool isActive() const;
 

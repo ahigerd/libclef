@@ -52,6 +52,7 @@ private:
 };
 
 class AudioParamContainer {
+  friend class Channel;
 public:
   std::shared_ptr<AudioParam> param(int32_t key) const;
   std::shared_ptr<AudioParam> addParam(int32_t key, double initialValue);

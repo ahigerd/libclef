@@ -42,12 +42,12 @@ FilterNode::FilterNode(std::shared_ptr<AudioNode> source)
   connect(source);
 }
 
-void FilterNode::connect(std::shared_ptr<AudioNode> source)
+void FilterNode::connect(std::shared_ptr<AudioNode> source, bool forwardGainPan)
 {
   this->source = source;
   addParam(Trigger, 1.0);
   for (const auto& iter : source->params) {
-    if (iter.first == Gain || iter.first == Pan) continue;
+    if (!forwardGainPan && (iter.first == Gain || iter.first == Pan)) continue;
     addParam(iter.first, iter.second);
   }
 }

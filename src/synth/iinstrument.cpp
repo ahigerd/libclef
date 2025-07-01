@@ -38,8 +38,10 @@ void IInstrument::modulatorEvent(Channel* channel, std::shared_ptr<ModulatorEven
     if (noteIter != channel->notes.end()) {
       auto param = noteIter->second->source->param(event->param);
       if (param) {
-        if (event->transitionDuration > 0) {
-          param->setValueAt(event->timestamp, param->valueAt(event->timestamp));
+        if (event->transitionDuration >= 0) {
+          if (event->transitionDuration > 0 && event->transition != AudioParam::Step) {
+            param->setValueAt(event->timestamp, param->valueAt(event->timestamp));
+          }
           param->addTransition(event->transition, event->timestamp + event->transitionDuration, event->value);
         } else {
           param->setConstant(event->value);
@@ -50,8 +52,10 @@ void IInstrument::modulatorEvent(Channel* channel, std::shared_ptr<ModulatorEven
     for (auto& pair : channel->notes) {
       auto param = pair.second->source->param(event->param);
       if (param) {
-        if (event->transitionDuration > 0) {
-          param->setValueAt(event->timestamp, param->valueAt(event->timestamp));
+        if (event->transitionDuration >= 0) {
+          if (event->transitionDuration > 0 && event->transition != AudioParam::Step) {
+            param->setValueAt(event->timestamp, param->valueAt(event->timestamp));
+          }
           param->addTransition(event->transition, event->timestamp + event->transitionDuration, event->value);
         } else {
           param->setConstant(event->value);
@@ -113,6 +117,6 @@ void DefaultInstrument::applyEnvelope(Channel* channel, Channel::Note* note)
   env->expAttack = event->expAttack;
   env->expDecay = event->expDecay;
   env->param(Envelope::StartGain)->setConstant(event->startGain);
-  env->connect(note->source);
+  env->connect(note->source, true);
   note->source.reset(env);
 }

@@ -18,6 +18,7 @@ public:
     Sample,
     Oscillator,
     InstrumentNote,
+    NoteUpdate,
     AudioNode,
     Channel,
     Modulator,
@@ -171,7 +172,16 @@ public:
   int32_t param;
   double value;
   AudioParam::Transition transition = AudioParam::Step;
-  double transitionDuration = 0;
+  double transitionDuration = -1;
+};
+
+class NoteUpdateEvent : public BaseEvent<NoteUpdateEvent, SequenceEvent::NoteUpdate> {
+public:
+  NoteUpdateEvent(uint64_t playbackID);
+
+  uint64_t playbackID;
+  double newDuration;
+  std::map<int32_t, double> params;
 };
 
 class KillEvent : public BaseEvent<KillEvent, SequenceEvent::Kill> {
