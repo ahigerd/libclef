@@ -22,7 +22,7 @@ public:
   void removeModulator(std::shared_ptr<IModulator> mod);
 
   virtual bool isActive() const = 0;
-  int16_t getSample(double time, int channel = 0);
+  virtual int16_t getSample(double time, int channel = 0);
 
 protected:
   AudioNode(const SynthContext* ctx);

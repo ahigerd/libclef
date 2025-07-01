@@ -20,9 +20,14 @@ std::vector<int32_t> IInstrument::supportedNoteParams() const
 void IInstrument::channelEvent(Channel* channel, std::shared_ptr<ChannelEvent> event)
 {
   // TODO: more types
-  auto target = channel->param(event->param);
-  if (target) {
-    target->setValueAt(event->timestamp, event->value);
+  auto param = channel->param(event->param);
+  if (param) {
+    if (event->transitionDuration > 0) {
+      param->setValueAt(event->timestamp, param->valueAt(event->timestamp));
+      param->addTransition(event->transition, event->timestamp + event->transitionDuration, event->value);
+    } else {
+      param->setValueAt(event->timestamp, event->value);
+    }
   }
 }
 
@@ -33,14 +38,24 @@ void IInstrument::modulatorEvent(Channel* channel, std::shared_ptr<ModulatorEven
     if (noteIter != channel->notes.end()) {
       auto param = noteIter->second->source->param(event->param);
       if (param) {
-        param->setConstant(event->value);
+        if (event->transitionDuration > 0) {
+          param->setValueAt(event->timestamp, param->valueAt(event->timestamp));
+          param->addTransition(event->transition, event->timestamp + event->transitionDuration, event->value);
+        } else {
+          param->setConstant(event->value);
+        }
       }
     }
   } else {
     for (auto& pair : channel->notes) {
       auto param = pair.second->source->param(event->param);
       if (param) {
-        param->setConstant(event->value);
+        if (event->transitionDuration > 0) {
+          param->setValueAt(event->timestamp, param->valueAt(event->timestamp));
+          param->addTransition(event->transition, event->timestamp + event->transitionDuration, event->value);
+        } else {
+          param->setConstant(event->value);
+        }
       }
     }
   }

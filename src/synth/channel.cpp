@@ -73,12 +73,17 @@ uint32_t Channel::fillBuffer(std::vector<int16_t>& buffer, ssize_t numSamples)
           noteIter->second->duration = killEvent->timestamp - noteIter->second->event->timestamp;
           noteIter->second->kill = noteIter->second->kill || killEvent->immediate;
         }
+      } else if (auto instEvent = event->cast<SetInstrumentEvent>()) {
+        instrument = instEvent->instrument;
+        if (!instrument) {
+          instrument = ctx->defaultInstrument();
+        }
       }
     }
   } while (event);
   int pos = 0;
   while (pos < numSamples && !isFinished()) {
-    double panValue = ctx->outputChannels > 1 ? pan->valueAt(timestamp) : 1;
+    double panValue = ctx->outputChannels > 1 ? 1 - pan->valueAt(timestamp) : 1;
     for (int ch = 0; ch < ctx->outputChannels; ch++) {
       int32_t sample = 0;
       std::vector<uint64_t> toErase;

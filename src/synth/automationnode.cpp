@@ -3,7 +3,7 @@
 #include <iostream>
 
 AutomationNode::AutomationNode(const SynthContext* ctx, double initialValue)
-: AudioNode(ctx), initialValue(initialValue), phase(0)
+: AudioNode(ctx), initialValue(initialValue), phase(0), previousTime(-1)
 {
   // initializers only
 }
@@ -13,11 +13,15 @@ bool AutomationNode::isActive() const
   return true;
 }
 
-int16_t AutomationNode::getSample(double time, int)
+int16_t AutomationNode::getSample(double time, int ch)
 {
   if (!phases.size()) {
     return initialValue;
   }
+  if (time < previousTime) {
+    phase = 0;
+  }
+  previousTime = time;
   double startTime = 0, startValue = initialValue;
   while (phase < phases.size()) {
     const Endpoint& endPhase = phases[phase];
@@ -34,15 +38,15 @@ int16_t AutomationNode::getSample(double time, int)
     }
     double timeStep = (time - startTime) / (endTime - startTime);
     switch (endPhase.transition) {
-      case Step:
+      case AudioParam::Step:
         return startValue;
-      case Linear:
+      case AudioParam::Linear:
         return lerp(startValue, endValue, timeStep);
-      case Cosine:
+      case AudioParam::Cosine:
         return lerp(startValue, endValue, fastCos(timeStep * M_PI) * -0.5 + 0.5);
-      case EaseIn:
+      case AudioParam::EaseIn:
         return lerp(startValue, endValue, timeStep * timeStep * timeStep);
-      case EaseOut:
+      case AudioParam::EaseOut:
         timeStep = 1.0 - timeStep;
         return lerp(startValue, endValue, 1.0 - timeStep * timeStep * timeStep);
     }
@@ -50,7 +54,7 @@ int16_t AutomationNode::getSample(double time, int)
   return phases.back().value;
 }
 
-void AutomationNode::addTransition(Transition transition, double time, double value)
+void AutomationNode::addTransition(AudioParam::Transition transition, double time, double value)
 {
   if (time <= 0) {
     phases.clear();
@@ -62,4 +66,5 @@ void AutomationNode::addTransition(Transition transition, double time, double va
     phases.pop_back();
   }
   phases.push_back(Endpoint{ time, value, transition });
+  phase = 0;
 }

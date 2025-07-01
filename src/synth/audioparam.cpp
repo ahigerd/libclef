@@ -39,18 +39,20 @@ void AudioParam::setConstant(double value)
   constant = value;
 }
 
-void AudioParam::setValueAt(double time, double value)
+void AudioParam::addTransition(AudioParam::Transition transition, double time, double value)
 {
   if (time <= 0.0) {
     setConstant(value);
     return;
   }
-  auto automation = std::dynamic_pointer_cast<AutomationNode>(sourceNode);
+  AutomationNode* automation = dynamic_cast<AutomationNode*>(sourceNode.get());
   if (!automation) {
-    connect(std::shared_ptr<AudioNode>(new AutomationNode(ctx, valueAt(time))));
-    automation = std::dynamic_pointer_cast<AutomationNode>(sourceNode);
+    connect(std::shared_ptr<AudioNode>(new AutomationNode(ctx, valueAt(time) * 8192)));
+    automation = dynamic_cast<AutomationNode*>(sourceNode.get());
+    scale = 1/8192.0;
+    constant = 0;
   }
-  automation->setValueAt(time, value / scale);
+  automation->addTransition(transition, time, value / scale);
 }
 
 void AudioParam::connect(std::shared_ptr<AudioNode> source, double scale, double offset)
@@ -110,4 +112,3 @@ double AudioParamContainer::paramValue(int32_t key, double time, double defaultV
   }
   return defaultValue;
 }
-

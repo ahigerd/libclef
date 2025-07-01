@@ -5,6 +5,9 @@
 #include <vector>
 #include <memory>
 #include "synth/audionode.h"
+#include "synth/automationnode.h"
+
+class IInstrument;
 
 class SequenceEvent {
 public:
@@ -19,6 +22,7 @@ public:
     Channel,
     Modulator,
     Kill,
+    SetInstrument,
     UserBase,
   };
 
@@ -166,6 +170,8 @@ public:
   uint64_t playbackID;
   int32_t param;
   double value;
+  AudioParam::Transition transition = AudioParam::Step;
+  double transitionDuration = 0;
 };
 
 class KillEvent : public BaseEvent<KillEvent, SequenceEvent::Kill> {
@@ -186,6 +192,15 @@ public:
     double value;
     uint64_t intValue;
   };
+  AudioParam::Transition transition = AudioParam::Step;
+  double transitionDuration = 0;
+};
+
+class SetInstrumentEvent : public BaseEvent<SetInstrumentEvent, SequenceEvent::SetInstrument> {
+public:
+  SetInstrumentEvent(IInstrument* instrument);
+
+  IInstrument* instrument;
 };
 
 #endif

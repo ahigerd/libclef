@@ -5,17 +5,31 @@
 #include <memory>
 #include <map>
 class AudioNode;
+class AutomationNode;
 class SynthContext;
 
 class AudioParam {
 public:
+  enum Transition {
+    Step,
+    Linear,
+    Cosine,
+    EaseIn,
+    EaseOut,
+  };
+
   AudioParam(const SynthContext* ctx, double initialValue = 1.0);
   AudioParam(std::shared_ptr<AudioNode> source, double scale = 1/8192.0, double offset = 0);
   AudioParam(std::shared_ptr<AudioParam> source, double scale = 1.0, double offset = 0);
 
   double valueAt(double time) const;
   void setConstant(double value);
-  void setValueAt(double time, double value);
+  void addTransition(Transition transition, double time, double value);
+  inline void setValueAt(double time, double value) { addTransition(Step, time, value); }
+  inline void linearTo(double time, double value) { addTransition(Linear, time, value); }
+  inline void cosineTo(double time, double value) { addTransition(Cosine, time, value); }
+  inline void easeInTo(double time, double value) { addTransition(EaseIn, time, value); }
+  inline void easeOutTo(double time, double value) { addTransition(EaseOut, time, value); }
   void connect(std::shared_ptr<AudioNode> source, double scale = 1/8192.0, double offset = 0);
   void connect(std::shared_ptr<AudioParam> source, double scale = 1.0, double offset = 0);
 

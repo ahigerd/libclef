@@ -134,3 +134,9 @@ ChannelEvent::ChannelEvent(uint32_t param, uint64_t intValue)
 {
   // initializers only
 }
+
+SetInstrumentEvent::SetInstrumentEvent(IInstrument* instrument)
+: instrument(instrument)
+{
+  // initializers only
+}
